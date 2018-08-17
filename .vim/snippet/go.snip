@@ -1,0 +1,43 @@
+snippet     start
+alias s
+abbr        package main\nimport fmt...
+options     head
+  package main
+
+  import ${1:TARGET}
+
+  func main() {
+    ${0}
+  }
+
+snippet     println
+alias pl
+options     word
+  fmt.Println(${0})
+
+snippet     printf
+alias pf
+options     head
+  fmt.Printf(${0:TARGET})
+
+snippet     print
+alias pr
+options     word
+  fmt.Print(${0:TARGET})
+
+snippet     func
+alias f
+options     head
+  func ${1} {
+    ${0}
+  }
+
+snippet     fl
+abbr        float
+options     word
+    float
+
+snippet     fll
+abbr        float64
+options     word
+    float64
