@@ -99,10 +99,6 @@ call minpac#init({'package_name': 'm', 'verbose': 3})
 " minpac
 call minpac#add('k-takata/minpac', {'type': 'opt'})
 
-" kaoriya Vim's
-call minpac#add('my_kaoriya/autofmt',   {'frozen': 1})
-call minpac#add('my_kaoriya/vimproc',   {'frozen': 1})
-
 " unite
 call minpac#add('Shougo/unite.vim', {'type': 'opt'})
 call minpac#add('Shougo/denite.nvim')
@@ -110,10 +106,10 @@ call minpac#add('Shougo/neomru.vim')
 call minpac#add('Shougo/neoyank.vim')
 call minpac#add('Shougo/unite-outline')
 call minpac#add('Shougo/vimfiler.vim', {'type': 'opt'})
-call minpac#add('rhysd/unite-oldfiles.vim')
+call minpac#add('Shougo/vimproc')
 
 " complete
-call minpac#add('Shougo/neocomplete.vim', {'type': 'opt'})
+" call minpac#add('Shougo/neocomplete.vim', {'type': 'opt'})
 call minpac#add('Shougo/neosnippet.vim')
 call minpac#add('Shougo/neosnippet-snippets')
 
@@ -171,14 +167,10 @@ call minpac#add('glidenote/memolist.vim')
 call minpac#add('kannokanno/previm')
 call minpac#add('haya14busa/vim-edgemotion')
 call minpac#add('kana/vim-altr', {'type': 'opt'})
-
-" call minpac#add('itchyny/vim-cursorword', {'type': 'opt'})
+call minpac#add('vim-jp/autofmt')
 
 " mine
-call minpac#add('my/vim-textobj-pit',     {'frozen': 1})
-call minpac#add('my/ashougi.vim',         {'frozen': 1, 'type': 'opt'})
-" call minpac#add('my/my-syntax-files.vim', {'frozen': 1, 'type': 'opt'})
-" call minpac#add('my/my.vim',              {'frozen': 1, 'type': 'opt'})
+call minpac#add('my/ashougi.vim', {'frozen': 1, 'type': 'opt'})
 
 " go
 call minpac#add('fatih/vim-go')
@@ -1286,7 +1278,6 @@ xmap ii <Plug>(textobj-indent-a)
 " = mapping: (Plugin)vim-textobj-multiblock
 
 " 全角の「」, （）、【】にも反応するように追加
-" 使うときにコメントアウトを取る
 " let g:textobj_multiblock_blocks = [
 " \   ['「', '」'],
 " \   ['（', '）'],
@@ -1297,18 +1288,6 @@ omap aq <Plug>(textobj-multiblock-a)
 omap iq <Plug>(textobj-multiblock-i)
 xmap aq <Plug>(textobj-multiblock-a)
 xmap iq <Plug>(textobj-multiblock-i)
-
-" =================================
-" = mapping: (Plugin)vim-textobj-wiw
-
-omap a, <Plug>(textobj-wiw-a)
-omap i, <Plug>(textobj-wiw-i)
-xmap a, <Plug>(textobj-wiw-a)
-xmap i, <Plug>(textobj-wiw-i)
-
-" 動かない..
-" map \w  <Plug>(textobj-wiw-n)
-" map \b  <Plug>(textobj-wiw-p)
 
 " =================================
 " = mapping: (Plugin)vim-jplus
@@ -1327,7 +1306,6 @@ xnoremap <Leader>R :QuickRun
 
 " =================================
 " = mapping: (Plugin)open-browser.vim
-" = mapping: (Plugin)open-browser-github.vim
 
 nmap <Leader>ob <Plug>(openbrowser-smart-search)
 xmap <Leader>ob <Plug>(openbrowser-smart-search)
@@ -1349,6 +1327,15 @@ nmap <C-Up>    <Plug>(textmanip-duplicate-up)
 
 " nmap <F10>   <Plug>(textmanip-toggle-mode)
 " xmap <F10>   <Plug>(textmanip-toggle-mode)
+
+
+" =================================
+" = mapping: (Plugin)ashougi.vim
+
+" xmap h <Plug>(ashougi-h)
+" xmap j <Plug>(ashougi-j)
+" xmap k <Plug>(ashougi-k)
+" xmap l <Plug>(ashougi-l)
 
 " --------------------------
 " |                        |
@@ -1409,14 +1396,6 @@ nnoremap <Leader>ml :<C-u>MemoList<CR>
 nnoremap <leader>mo :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.txt', 1, 10, 0)<CR>
 nnoremap <leader>mc :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.txt', 1, 10, 1)<CR>
 \ :1,3s/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d/\=strftime(g:memolist_memo_date)/g<CR>
-
-" =================================
-" = mapping: (Plugin)ashougi.vim
-
-" xmap h <Plug>(ashougi-h)
-" xmap j <Plug>(ashougi-j)
-" xmap k <Plug>(ashougi-k)
-" xmap l <Plug>(ashougi-l)
 
 " =================================
 " = mapping: (Plugin)vim-edgemotion
@@ -1723,7 +1702,7 @@ nmap <F12> <Plug>(my-toggle-fontsize)
 if filereadable($HOME . '/my_job.vimrc')
   source $HOME/my_job.vimrc
 
-  call altr#define('vimrc', 'my_job.vimrc')
+  call altr#define('_vimrc', 'my_job.vimrc')
 endif
 
 " ===========================
