@@ -2,8 +2,46 @@ function! my#filetypes#setting(ftype) abort
   if !empty(a:ftype) && exists('*' . 'my#filetypes#' . a:ftype)
     execute 'call my#filetypes#' . a:ftype . '()'
   else
+    call s:set_indent(4, 0)
     return
   endif
+endfunction
+
+function! s:set_indent(tab_length, is_hard_tab)
+  if a:is_hard_tab
+    setlocal noexpandtab
+  else
+    setlocal expandtab
+  endif
+
+  let &shiftwidth  = a:tab_length
+  let &softtabstop = a:tab_length
+  let &tabstop     = a:tab_length
+endfunction
+
+function! my#filetypes#vim() abort
+  call s:set_indent(2, 0)
+endfunction
+
+function! my#filetypes#txt() abort
+  call s:set_indent(2, 0)
+endfunction
+
+function! my#filetypes#ps1() abort
+  call s:set_indent(2, 0)
+endfunction
+
+function! my#filetypes#ruby() abort
+  call s:set_indent(2, 0)
+endfunction
+
+function! my#filetypes#markdown() abort
+  call s:set_indent(2, 0)
+endfunction
+
+function! my#filetypes#help() abort
+  " qで閉じる
+  nnoremap <buffer> q ZZ
 endfunction
 
 function! my#filetypes#unite() abort
@@ -33,6 +71,7 @@ function! my#filetypes#unite() abort
 endfunction
 
 function! my#filetypes#vimfiler() abort
+
   " 横幅のsyntaxハイライトが効くようにする(columns=''に設定しているから意味ないけど)
   setlocal synmaxcol=0
 
@@ -77,20 +116,13 @@ function! my#filetypes#vimfiler() abort
   " augroup END
 endfunction
 
-function! my#filetypes#diff() abort
-  if &diff
-    setlocal nocursorline
-
-    nnoremap <buffer> <C-j> ]c
-    nnoremap <buffer> <C-k> [c
-    nnoremap <buffer> u     u:diffupdate<CR>
-    nnoremap <buffer> <C-r> <C-r>:diffupdate<CR>
-  endif
-endfunction
-
 " REF: http://thinca.hatenablog.com/entry/20130708/1373210009
 function! my#filetypes#qf() abort
   setlocal nocursorline
+
+  " qで閉じる
+  nnoremap <buffer> q ZZ
+
   " <CR>は普通のCRに戻す
   nnoremap <buffer> <CR> <CR>
 
@@ -129,8 +161,12 @@ function! my#filetypes#qf() abort
   endfunction
 endfunction
 
+
 function! my#filetypes#go() abort
-  nnoremap <buffer> <Leader>gr :<C-u>!go build % && %:r.exe<CR>
+  call s:set_indent(4, 1)
+
+  nnoremap <buffer> <Leader>R :<C-u>!go build -o %:r.exe % && %:r.exe<CR>
+  xnoremap <buffer> <Leader>R :<C-u>echo 'no map'<CR>
 
   " for Tour of Go
   nnoremap <buffer> <Space><Space> :<C-u>call my#filetypes#go_comment_for_tour_of_go('\_.*\_^\s*\/\/\zs', 'n', '\%' . line('$') . 'l', 'n')<CR>
@@ -157,4 +193,16 @@ function! my#filetypes#go_comment_for_tour_of_go(search1, search1_flgs, search2,
   execute 'normal!' "Go\<Esc>p\<C-a>"
 endfunction
 
+
+function! s:set_indent(tab_length, is_hard_tab)
+  if a:is_hard_tab
+    setlocal noexpandtab
+  else
+    setlocal expandtab
+  endif
+
+  let &shiftwidth  = a:tab_length
+  let &softtabstop = a:tab_length
+  let &tabstop     = a:tab_length
+endfunction
 

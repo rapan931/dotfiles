@@ -54,7 +54,7 @@ endfunction
 " if check vital source, can make more tightly
 function! my#get_root_dir(...) abort
   " 検索対象にvimも含む(vimを構成するファイルを開いた場合を考慮)
-  let search_dir_names = ['.svn', '.git', 'vim']
+  let search_dir_names = ['.svn', '.git', 'vim74', 'vim80']
 
   for dir_name in search_dir_names
     let ret_dir = finddir(dir_name, expand('%:p:h') . ';')
@@ -78,10 +78,14 @@ function! my#is_versioning_dir(...) abort
 endfunction
 
 " do ctags
-function! my#do_ctags() abort
+function! my#do_ctags(do_all) abort
   if isdirectory('.svn') || isdirectory('.git')
     if input('now: ' . getcwd() . "\nrun ctags? (y)es or (n)o : ") =~ '^y$\|^yes$'
-      silent !start ctags -R --exclude=test
+      if a:do_all
+        silent !start ctags -R
+      else
+        silent !start ctags -R --exclude=test
+      endif
     endif
   else
     call my#error_msg('check current dir!')

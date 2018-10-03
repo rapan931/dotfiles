@@ -1,6 +1,12 @@
 scriptencoding utf-8
 let g:skip_defaults_vim = 1
 
+" if filereadable($HOME . '/minimal.vimrc')
+"   set noloadplugins
+"   source $HOME/minimal.vimrc
+"   finish
+" endif
+
 " =================================
 " = setting: initialize
 function! s:mkdir(dir_path)
@@ -12,21 +18,25 @@ endfunction
 
 if has('vim_starting')
   if has('win32')
-    let $RUNTIME_DIR = $HOME . '/vimfiles'
+    if exists('$VIMFILES')
+      " REF: https://github.com/vim-jp/issues/issues/1189
+      let &runtimepath = expand('$VIMFILES') . ',' . &runtimepath
+    else
+      let $VIMFILES = $HOME . '/vimfiles'
+    endif
   else
-    let $RUNTIME_DIR = $HOME . '/.vim'
+    let $VIMFILES = $HOME . '/.vim'
   endif
 
   " @Shougo's ware use $XDG_CACHE_HOME, but windows not exist $XDG_CACHE_HOME, it set up.
   if !exists('$XDG_CACHE_HOME')
-    let $XDG_CACHE_HOME = $RUNTIME_DIR . '/.cache'
+    let $XDG_CACHE_HOME = $VIMFILES . '/.cache'
     call s:mkdir($XDG_CACHE_HOME)
   endif
 
   " delete unused 'vimfiles' from runtimepath
-  " (do not understand what 'vimfiles' should use..)
-  set runtimepath-=$HOME/vimfiles/after
-  set runtimepath-=$VIM/vimfiles/after
+  " set runtimepath-=$VIM/vimfiles
+  " set runtimepath-=$VIM/vimfiles/after
 
   " prepare dev go
   " set runtimepath+=$GOROOT\misc\vim
@@ -39,11 +49,11 @@ let g:ruby_no_expensive = 1
 
 " REF: https://github.com/rhysd/dotfiles/blob/master/vimrc
 " REF: :h autocmd-define
-augroup my_augroup
+augroup vimrc_augroup
   autocmd!
 augroup END
-command! -nargs=* MyAutoCmd autocmd my_augroup <args>
-command! -nargs=* MyAutoCmdFT autocmd my_augroup FileType <args>
+command! -nargs=* MyAutoCmd autocmd vimrc_augroup <args>
+command! -nargs=* MyAutoCmdFT autocmd vimrc_augroup FileType <args>
 
 " do not load unnecessary plugin
 let g:plugin_autodate_disable  = 1
@@ -68,7 +78,6 @@ let g:loaded_2html_plugin      = 1
 
 " do not load menu.vim
 " NOTE: have to setting M option before 'syntax on'
-set guioptions&
 set guioptions-=M
 
 " also delete other guioptions and empty
@@ -90,7 +99,10 @@ endfunction
 " =================================
 " = Plugin install (by minpac)
 
-set packpath=$RUNTIME_DIR
+set packpath=$VIMFILES
+" packpack's path add rtp
+" REF: https://github.com/vim-jp/issues/issues/1189
+
 call s:mkdir(&packpath . '/pack/m/opt')
 call s:mkdir(&packpath . '/pack/m/start')
 packadd minpac
@@ -100,7 +112,8 @@ call minpac#init({'package_name': 'm', 'verbose': 3})
 call minpac#add('k-takata/minpac', {'type': 'opt'})
 
 " unite
-call minpac#add('Shougo/unite.vim', {'type': 'opt'})
+" call minpac#add('Shougo/unite.vim', {'type': 'opt'})
+call minpac#add('Shougo/unite.vim', {'type': 'opt', 'frozen': 1})
 call minpac#add('Shougo/denite.nvim')
 call minpac#add('Shougo/neomru.vim')
 call minpac#add('Shougo/neoyank.vim')
@@ -113,13 +126,26 @@ call minpac#add('Shougo/vimproc')
 call minpac#add('Shougo/neosnippet.vim')
 call minpac#add('Shougo/neosnippet-snippets')
 
+" " deoplete系
+" call minpac#add('Shougo/deoplete.nvim',     { 'type': 'opt'})
+" call minpac#add('roxma/nvim-yarp',          { 'type': 'opt'})
+" call minpac#add('roxma/vim-hug-neovim-rpc', { 'type': 'opt'})
+" let g:deoplete#enable_at_startup = 1
+" let g:deoplete#auto_complete_delay = 0
+" let g:deoplete#auto_complete_start_length = 1
+" let g:deoplete#enable_camel_case = 0
+" let g:deoplete#enable_ignore_case = 0
+" let g:python3_host_prog = expand('$HOME') . '/AppData/Local/Programs/Python/Python36-32/python.exe'
+" let &pythonthreedll = expand('$HOME') . '\AppData\Local\Programs\Python\Python36-32\python36.dll'
+" let &pythonthreehome = expand('$HOME') . '\AppData\Local\Programs\Python\Python36-32\'
+
 " search
 call minpac#add('easymotion/vim-easymotion')
 call minpac#add('haya14busa/incsearch.vim')
 call minpac#add('haya14busa/vim-asterisk')
 call minpac#add('osyo-manga/vim-anzu')
 
-"textobj
+" textobj
 call minpac#add('kana/vim-textobj-user')
 call minpac#add('kana/vim-textobj-line')
 call minpac#add('kana/vim-textobj-indent')
@@ -131,18 +157,21 @@ call minpac#add('osyo-manga/vim-textobj-multiblock')
 " operator
 call minpac#add('kana/vim-operator-user')
 call minpac#add('kana/vim-operator-replace')
-call minpac#add('machakann/vim-highlightedyank')
-call minpac#add('rhysd/vim-operator-surround')
+call minpac#add('haya14busa/vim-operator-flashy')
 call minpac#add('machakann/vim-sandwich', {'type': 'opt'})
 
 " colorscheme
 call minpac#add('chriskempson/vim-tomorrow-theme')
 call minpac#add('nanotech/jellybeans.vim')
-call minpac#add('danilo-augusto/vim-afterglow')
+" call minpac#add('danilo-augusto/vim-afterglow')
 
-" Gist
-call minpac#add('mattn/gist-vim')
-call minpac#add('mattn/webapi-vim')
+" go
+call minpac#add('fatih/vim-go', {'type': 'opt'})
+
+" markdown
+call minpac#add('kannokanno/previm')
+call minpac#add('Shougo/context_filetype.vim')
+call minpac#add('osyo-manga/vim-precious')
 
 " other
 call minpac#add('itchyny/lightline.vim')
@@ -164,22 +193,20 @@ call minpac#add('kshenoy/vim-signature')
 call minpac#add('mattn/vim-vsopen')
 call minpac#add('t9md/vim-textmanip')
 call minpac#add('glidenote/memolist.vim')
-call minpac#add('kannokanno/previm')
 call minpac#add('haya14busa/vim-edgemotion')
 call minpac#add('kana/vim-altr', {'type': 'opt'})
+call minpac#add('lambdalisue/gina.vim')
 call minpac#add('vim-jp/autofmt')
 
 " mine
-call minpac#add('my/ashougi.vim', {'frozen': 1, 'type': 'opt'})
-
-" go
-call minpac#add('fatih/vim-go')
+" call minpac#add('my/ashougi.vim', {'frozen': 1, 'type': 'opt'})
 
 " doc
 call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
 
 " view only
 call minpac#add('vim-jp/vital.vim', {'type': 'opt'})
+
 
 filetype plugin indent on
 syntax enable
@@ -191,13 +218,13 @@ packadd vim-altr
 packadd unite.vim
 packadd vimfiler.vim
 packadd vimdoc-ja
-packadd ashougi.vim
+packadd vim-go
 
 " =================================
 " = setting: (Plugin)unite.vim & unite_source
 
 let g:unite_source_find_command = 'C:/Program Files/Git/usr/bin/find.exe'
-let g:unite_source_grep_command = $GOPATH . '/bin/jvgrep.exe'
+let g:unite_source_grep_command = $GOROOT . '/bin/jvgrep.exe'
 let g:unite_source_grep_default_opts = '-i --exclude ''\.(git|svn|hg|bzr)'''
 let g:unite_source_grep_recursive_opt = '-R'
 let g:unite_source_rec_async_command = ['files', '-A', '-a']
@@ -280,6 +307,14 @@ if has('win32')
 endif
 
 " =================================
+" = setting: (Plugin)vim-precious & context_filetype.vim
+
+" markdownでのみ機能するよう修正
+let g:precious_enable_switchers = {'*': {'setfiletype': 0}, 'markdown': {'setfiletype': 1}}
+let g:precious_enable_switch_CursorMoved   = {'*': 0, 'markdown': 1}
+let g:precious_enable_switch_CursorMoved_i = {'*': 0, 'markdown': 1}
+
+" =================================
 " = setting: (Plugin)vim-altr
 
 call altr#remove_all()
@@ -305,7 +340,7 @@ call altr#define('autoload/%/%.vim', 'doc/%-%.txt', 'plugin/%/%.vim')
 " =================================
 " = setting: (Plugin)neosnippet.vim
 
-let g:neosnippet#snippets_directory = $RUNTIME_DIR . '/snippet'
+let g:neosnippet#snippets_directory = $VIMFILES . '/snippet'
 call s:mkdir(g:neosnippet#snippets_directory)
 let g:neosnippet#scope_aliases = {'cpp': 'c'}
 
@@ -354,28 +389,17 @@ let g:clever_f_show_prompt = 1
 " = setting: (Plugin)vim-easymotion
 
 " プラグインのデフォルトキーマップを適用しない
-" smartcaseで楽々
-" jkモーション時のカーソル位置を保持しない
 " easymotion用のキーもvimfilerに合わせる
 let g:EasyMotion_do_mapping = 0
-let g:EasyMotion_smartcase = 1
-let g:EasyMotion_startofline = 1
 let g:EasyMotion_keys = 'sdfghjkl;qwertyuiopzcvbnm'
 
 " =================================
-" = setting: (Plugin) vim-highlightedyank
+" = setting: (Plugin)vim-operator-flashy
 
 " 点灯時間を300msに変更
-let g:highlightedyank_highlight_duration = 500
-
-" =================================
-" = setting: (Plugin)vim-operator-surround
-
-" let g:operator#surround#blocks = {
-" \   'markdown': [
-" \     {'block': ["```", "```"], 'motionwise': ['line'], 'keys': ['`'], 'nest_line': 1}
-" \   ],
-" \ }
+" ハイライトグループを'MyFlashy'に変更
+let g:operator#flashy#flash_time = 300
+let g:operator#flashy#group = 'MyFlashy'
 
 " =================================
 " = setting: (Plugin)vim-signature
@@ -413,7 +437,6 @@ let g:SignatureMap = {
 " =================================
 " = setting: (Plugin)vim-submode
 
-" let g:submode_timeout = 1
 
 " windowサイズの変更
 call submode#enter_with('winsize', 'n', '', 'z>', '<C-w>>')
@@ -564,10 +587,12 @@ let g:clurin = {
 \       ['ok', 'ng'],
 \       ['Ok', 'Ng'],
 \       ['OK', 'NG'],
+\       ['ON', 'OFF'],
 \       ['enable', 'disable'],
 \       ['Enable', 'Disable'],
 \       ['ENABLE', 'DISABLE'],
 \       ['有効', '無効'],
+\       ['有り', '無し'],
 \       ['作成', '削除'],
 \       ['未着手', '着手', '完了'],
 \       ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
@@ -592,7 +617,7 @@ let g:clurin = {
 " echoに表示されるメッセージに末尾から先頭or先頭から末尾への移動時のメッセージを追加
 let g:anzu_status_format = "%p(%i/%l) %#ErrorMsg#%w"
 
-MyAutoCmd CmdlineLeave / :if !empty(getcmdline()) |
+MyAutoCmd CmdlineLeave / if !empty(getcmdline()) |
 \   call feedkeys(":AnzuUpdateSearchStatus | if anzu#search_status() != '' | AnzuUpdateSearchStatusOutput | endif\<CR>", 'n')          |
 \ endif
 
@@ -600,10 +625,11 @@ MyAutoCmd CmdlineLeave / :if !empty(getcmdline()) |
 " = setting: (Plugin)vim-textobj-xxxxx
 
 " デフォルトのキーマッピングを使わない
-let g:textobj_indent_no_default_key_mappings = 1
+let g:textobj_indent_no_default_key_mappings     = 1
 let g:textobj_multiblock_no_default_key_mappings = 1
-let g:textobj_parameter_no_default_key_mappings = 1
-let g:textobj_wiw_no_default_key_mappings = 1
+let g:textobj_parameter_no_default_key_mappings  = 1
+let g:textobj_wiw_no_default_key_mappings        = 1
+let g:textobj_precious_no_default_key_mappings   = 1
 
 " =================================
 " = setting: (Plugin)vim-choosewin
@@ -664,6 +690,9 @@ call lexima#add_rule({'char': '{', 'input': '{', 'syntax': 'String'})
 call lexima#add_rule({'char': '{', 'input': '{', 'syntax': 'Comment'})
 call lexima#add_rule({'char': '{', 'at': '"\%#$', 'input': '{', 'filetype': 'vim'})
 
+" call lexima#add_rule({'char': '<CR>', 'at': '```\s(\w\|\.)\+\%#```', 'input_after': '<CR>'})
+" call lexima#add_rule({'char': '<CR>', 'at': '```\%#$', 'input_after': '<CR>```', 'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1```'})
+
 " =================================
 " = setting: (Plugin)memolist.vim
 
@@ -671,9 +700,9 @@ call lexima#add_rule({'char': '{', 'at': '"\%#$', 'input': '{', 'filetype': 'vim
 " ファイル保存時の拡張子
 " uniteの設定
 " let g:memolist_path = expand('$VIM') . '\.vim\memo'
-let g:memolist_path = $RUNTIME_DIR . '/memo'
+let g:memolist_path = $VIMFILES . '/memo'
 let g:memolist_memo_date = '%Y-%m-%d %H:%M:%S'
-let g:memolist_memo_suffix = "txt"
+let g:memolist_memo_suffix = "md"
 let g:memolist_unite = 1
 let g:memolist_unite_option = "-start-insert"
 let g:memolist_unite_source = "file"
@@ -697,11 +726,20 @@ let g:operator_sandwich_no_default_key_mappings = 1
 
 packadd vim-sandwich
 
-call operator#sandwich#set('all', 'all', 'highlight', 10)
-call operator#sandwich#set('all', 'all', 'hi_duration', 10)
+call operator#sandwich#set_default()
+call textobj#sandwich#set_default()
 
 let g:sandwich#recipes = deepcopy(g:sandwich#default_recipes)
 call extend(g:sandwich#recipes, [], 0)
+
+call operator#sandwich#set('add', 'all', 'highlight', 10)
+call operator#sandwich#set('delete', 'all', 'highlight', 10)
+call operator#sandwich#set('add', 'all', 'hi_duration', 10)
+call operator#sandwich#set('delete', 'all', 'hi_duration', 10)
+" =================================
+" = setting: (Plugin)previm
+
+let g:previm_enable_realtime = 1
 
 " =================================
 " = setting: Vim
@@ -801,9 +839,9 @@ set nrformats& nrformats-=octal
 set autoindent
 set nocindent
 set expandtab
-set tabstop=2
-set softtabstop=2
-set shiftwidth=2
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
 set textwidth=0
 set shiftround
 
@@ -858,18 +896,18 @@ set fileformats=unix,dos
 
 " undoファイルを一か所にまとめる
 " スワップファイルを一か所にまとめる
-set undodir=$RUNTIME_DIR/undo
+set undodir=$VIMFILES/undo
 call s:mkdir(&undodir)
 set undofile
 
-set directory=$RUNTIME_DIR/swap
+set directory=$VIMFILES/swap
 call s:mkdir(&directory)
 set swapfile
 
 " バックアップを一か所にまとめる
 " ファイルの上書きの前にバックアップを取る
 " バックアップファイルの名前を指定する
-set backupdir=$RUNTIME_DIR/backup
+set backupdir=$VIMFILES/backup
 call s:mkdir(&backupdir)
 set writebackup
 set backup
@@ -899,6 +937,10 @@ endif
 MyAutoCmd QuickfixCmdPost grep,vimgrep,helpgrep botright copen
 MyAutoCmd QuickfixCmdPost lgrep,lvimgrep, botright lopen
 
+" ']'というファイルを無駄に作成しないようにする(:w]というコマンドをよく実行しちゃっているっぽい)
+" MyAutoCmd BufWritePre * if expand('<amatch>:t') == ']' | throw "oops!!!!!!!!!!" | endif
+cnoreabbrev w] w
+
 " printerの設定(win32とかの分岐は削除(windowでしか使わないので)
 set printfont=MS_Mincho:h12:cSHIFTJIS
 
@@ -922,7 +964,6 @@ if has('vim_starting')
     colorscheme desert
   endif
 endif
-
 
 " IME ON時のカーソルの色を設定(紫)
 " 挿入モード・検索モードでのデフォルトのIME状態設定
@@ -952,18 +993,6 @@ endif
 " タブを常に表示
 set showtabline=2
 
-" guioptionsを空にする
-" * ツールバーを非表示に
-" * 非GUIのタブページラインを使用する
-" * スクロールバー非表示化
-" * メニューバーを表示しない
-" * メニューの切り離し機能を無効化
-" * メニュー項目の灰色表示を無効に
-set guioptions&
-set guioptions-=T guioptions-=e
-set guioptions-=r guioptions-=R guioptions-=l guioptions-=L
-set guioptions-=m guioptions-=t guioptions-=g
-
 " 全てのイベントでベルが鳴らないようにする
 set belloff=all
 
@@ -973,8 +1002,8 @@ highlight default TrailingSpaces guibg=darkgray
 " MyAutoCmdとMyAutoCmdFTの強調
 "   参考：http://pocke.hatenablog.com/entry/2014/06/21/101827
 "   参考：sytanx/vim.vim
-MyAutoCmdFT vimrc,vim call s:my_hl_autocmd()
-MyAutoCmd BufWinEnter,ColorScheme vimrc call s:my_hl_autocmd()
+MyAutoCmdFT vim call s:my_hl_autocmd()
+MyAutoCmd BufWinEnter,ColorScheme _vimrc,.vimrc call s:my_hl_autocmd()
 function! s:my_hl_autocmd() abort
   syntax keyword myVimAutoCmd MyAutoCmd skipwhite nextgroup=vimAutoEventList
   highlight link myVimAutoCmd vimAutoCmd
@@ -992,28 +1021,19 @@ MyAutoCmdFT vimfiler match none
 " どのウィンドウにカーソルがあるかわかるように、Vimにforcusが戻ったら対象ウィンドウをハイライトする。
 MyAutoCmd FocusGained * call my#flash_window(1000, 'MyFlashy')
 "
-" runtime! ftdetect/*.vim
-
-" filetype毎のインデントの設定
-MyAutoCmdFT html       setl sw=4 sts=4 ts=4 et
-MyAutoCmdFT jsp        setl sw=4 sts=4 ts=4 noet
-MyAutoCmdFT java       setl sw=4 sts=4 ts=4 noet
-MyAutoCmdFT javascript setl sw=4 sts=4 ts=4 et
-MyAutoCmdFT cpp,c      setl sw=4 sts=4 ts=4 et
-MyAutoCmdFT text,txt   setl sw=2 sts=2 ts=2 et
-MyAutoCmdFT vb         setl sw=4 sts=4 ts=4 et
-MyAutoCmdFT ps1        setl sw=4 sts=4 ts=4 et
-MyAutoCmdFT go         setl sw=4 sts=4 ts=4 noet
-MyAutoCmdFT ps1        setl tw=0
-
-" helpとquickfixはqで離脱できるようにする
-MyAutoCmdFT help,qf nnoremap <buffer> q ZZ
-
-" .hファイルもfiletypeはcppにする
-" MyAutoCmd BufNewFile,BufRead *.h setl ft=cpp
-"
 " http://qiita.com/kentaro/items/6aa9f108df825b2a8b39
 MyAutoCmd BufEnter ruby,vim silent execute 'lcd' my#get_root_dir()
+
+" diffの設定
+MyAutoCmd FilterWritePre * call s:my_diff_settings()
+function! s:my_diff_settings() abort
+  if &diff
+    nnoremap <buffer> <C-j> ]c
+    nnoremap <buffer> <C-k> [c
+    nnoremap <buffer> u     u:diffupdate<CR>
+    nnoremap <buffer> <C-r> <C-r>:diffupdate<CR>
+  endif
+endfunction
 
 " その他の各種設定の長めの設定
 MyAutoCmdFT * call my#filetypes#setting(expand('<amatch>'))
@@ -1037,7 +1057,7 @@ command! -range SumFloat call my#sum(1)
 
 " よく使うファイルとか
 command! EVimrc edit $MYVIMRC
-command! EFiletypeSetting edit $RUNTIME_DIR/autoload/my/filetypes.vim
+command! EFiletypeSetting edit $VIMFILES/autoload/my/filetypes.vim
 command! ReflectVimrc source $MYVIMRC
 command! RunVimScript source $VIM/vim_script.vim
 
@@ -1047,9 +1067,6 @@ command! -nargs=0 CdCurrent cd %:p:h
 if executable('touch')
   command! -nargs=0 Touch if &modified | call my#error_msg('modified file!') | else | silent execute '!start touch' expand('%:p') | endif
 endif
-
-" command! MinpacUpdate call minpac#update('', {'do': 'filter /Skip/ messages'})
-command! MinpacUpdate call minpac#update('', {'do': 'messages'})
 
 " =================================
 " = mapping: initialize
@@ -1138,38 +1155,22 @@ nmap <Leader>r <Plug>(operator-replace)
 vmap <Leader>r <Plug>(operator-replace)
 
 " =================================
-" = mapping: (Plugin)vim-operator-surround
-
-xmap za <Plug>(operator-surround-append)
-" xmap sd <Plug>(operator-surround-delete)
-" xmap sr <Plug>(operator-surround-replace)
-" nmap sa viw<Plug>(operator-surround-append)
-" nmap sA viW<Plug>(operator-surround-append)
-" nmap sd <Plug>(operator-surround-delete)<Plug>(textobj-multiblock-a)
-" nmap sr <Plug>(operator-surround-replace)<Plug>(textobj-multiblock-a)
-
-" =================================
 " = mapping: (Plugin)vim-sandwich
-nmap sd <Plug>(operator-sandwich-delete)<Plug>(textobj-sandwich-auto-a)
 xmap sd <Plug>(operator-sandwich-delete)
-nmap sr <Plug>(operator-sandwich-replace)<Plug>(textobj-sandwich-auto-a)
 xmap sr <Plug>(operator-sandwich-replace)
 nmap sa <Plug>(operator-sandwich-add)iw
 nmap sA <Plug>(operator-sandwich-add)iW
 xmap sa <Plug>(operator-sandwich-add)
 
-" =================================
-" = mapping: (Plugin)vim-highlightedyank
-
-map y <Plug>(highlightedyank)
-nmap Y <Plug>(highlightedyank)$
+" REF: vim-sandwich/plugin/sandwich.vim
+nmap sd <Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-auto-a)
+nmap sr <Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-auto-a)
 
 " =================================
-" = mapping: (Plugin)vim-operator-swap
+" = mapping: (Plugin)vim-operator-flashy
 
-" noremap <expr> <C-m>b operator#sequence#map("\<Plug>(operator-swap-marking)", "\<Plug>(operator-highlighter-once)")
-" noremap <expr> <C-m>a operator#sequence#map("\<Plug>(operator-swap)", "\<Plug>(operator-highlighter-clear)")
-" nmap <silent> <C-m>s <Plug>(operator-swap-reset)<Plug>(operator-highlighter-clear)
+map y <Plug>(operator-flashy)
+nmap Y <Plug>(operator-flashy)$
 
 " =================================
 " = mapping: (Plugin)vim-easy-align
@@ -1185,7 +1186,7 @@ endif
 map z/ <Plug>(incsearch-stay)
 
 " クリップボードから検索(改行に対応したい) check asterisk.vim
-nmap g/ <Plug>(incsearch-forward)<C-u>\V<C-r>=escape(@+, '\/')<CR><CR>
+nmap g/ /<C-u>\V<C-r>=escape(@+, '\/')<CR><CR>
 
 " =================================
 " = mapping: (Plugin)vim-anzu & vim-asterisk
@@ -1216,26 +1217,28 @@ nmap <Leader>g* :<C-u>normal! _<CR>v$h<Plug>(asterisk-gz*)<Plug>(anzu-update-sea
 nnoremap <Space>ec :<C-u>VimFilerBufferDir -winwidth=60 -explorer  -no-toggle<CR>
 nnoremap <Space>ee :<C-u>VimFilerExplorer  -winwidth=60<CR>
 nnoremap <Space>ef :<C-u>VimFilerBufferDir -winwidth=60 -explorer  -find<CR>
-nnoremap <Space>ep :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle $RUNTIME_DIR/pack<CR>
+nnoremap <Space>ep :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle $VIMFILES/pack<CR>
 nnoremap <Space>ev :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle $VIM<CR>
 nnoremap <Space>eh :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle $HOME<CR>
+nnoremap <Space>ed :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle $HOME/dotfiles<CR>
 nnoremap <Space>er :<C-u>VimFilerBufferDir -winwidth=60 -no-toggle -explorer -project<CR>
 
 nnoremap <Space>f  :<C-u>UniteWithProjectDir -buffer-name=proj_file_mru file_mru<CR>
-nnoremap <Space>F  :<C-u>Unite -buffer-name=file_mrua file_mru<CR>
+nnoremap <Space>F  :<C-u>Unite -buffer-name=file_mru file_mru<CR>
 nnoremap <Space>bo :<C-u>Unite -buffer-name=bookmark bookmark<CR>
 nnoremap <Space>bu :<C-u>Unite -buffer-name=buffer buffer<CR>
 nnoremap <Space>R  :<C-u>UniteResume<CR>
+nnoremap <Space>w  :<C-u>Unite window:all<CR>
 
 " たまに使う
 nnoremap <Space>ql  :<C-u>UniteWithInput -buffer-name=with_input_line line<CR>
-nnoremap <Space>q*  :<C-u>UniteWithCursorWord -buffer-name=with_cursor_word_line line<CR>
 nnoremap <Space>qol :<C-u>Unite -create -vertical -no-quit -winwidth=50 -direction=botright -no-start-insert outline<CR>
 nnoremap <Space>qop :<C-u>Unite -buffer-name=output output:<CR>
 nnoremap <Space>qmm :<C-u>Unite menu:m<CR>
 nnoremap <Space>qmj :<C-u>Unite menu:job<CR>
 
 " ほぼ使わない
+nnoremap <Space>q*  :<C-u>UniteWithCursorWord -buffer-name=with_cursor_word_line line<CR>
 nnoremap <Space>qhy :<C-u>Unite -buffer-name=history_yank history/yank<CR>
 nnoremap <Space>qr  :<C-u>Unite -buffer-name=register register<CR>
 
@@ -1278,6 +1281,7 @@ xmap ii <Plug>(textobj-indent-a)
 " = mapping: (Plugin)vim-textobj-multiblock
 
 " 全角の「」, （）、【】にも反応するように追加
+" 使うときにコメントアウトを取る
 " let g:textobj_multiblock_blocks = [
 " \   ['「', '」'],
 " \   ['（', '）'],
@@ -1393,8 +1397,8 @@ nmap <C-Up>    <Plug>(textmanip-duplicate-up)
 
 nnoremap <Leader>mn :<C-u>MemoNew<CR>task<CR>
 nnoremap <Leader>ml :<C-u>MemoList<CR>
-nnoremap <leader>mo :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.txt', 1, 10, 0)<CR>
-nnoremap <leader>mc :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.txt', 1, 10, 1)<CR>
+nnoremap <leader>mo :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.' . g:memolist_memo_suffix, 1, 10, 0)<CR>
+nnoremap <leader>mc :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.' . g:memolist_memo_suffix, 1, 10, 1)<CR>
 \ :1,3s/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d/\=strftime(g:memolist_memo_date)/g<CR>
 
 " =================================
@@ -1515,16 +1519,17 @@ map mk ['
 
 " ctags
 nmap <Leader>ct <Plug>(my-do-ctags)
+nmap <Leader>cT <Plug>(my-do-ctags-all)
 
 " cscope
-nmap <Leader>zb <Plug>(my-cscope-build)
-nmap <Leader>za <Plug>(my-cscope-add)
-nnoremap <Leader>zs :<C-u>cscope show<CR>
-nnoremap <Leader>zk :<C-u>cscope kill -1<CR>
-nnoremap <Leader>zfc :<C-u>cscope find c <C-r>=expand('<cword>')<CR><CR>
-nnoremap <Leader>zfC :<C-u>cscope find c <C-r>=@+<CR><CR>
-nnoremap <Leader>zfs :<C-u>cscope find s <C-r>=expand('<cword>')<CR><CR>
-nnoremap <Leader>zfS :<C-u>cscope find s <C-r>=@+<CR><CR>
+nmap <Leader>csb <Plug>(my-cscope-build)
+nmap <Leader>csa <Plug>(my-cscope-add)
+nnoremap <Leader>css :<C-u>cscope show<CR>
+nnoremap <Leader>csk :<C-u>cscope kill -1<CR>
+nnoremap <Leader>csfc :<C-u>cscope find c <C-r>=expand('<cword>')<CR><CR>
+nnoremap <Leader>csfC :<C-u>cscope find c <C-r>=@+<CR><CR>
+nnoremap <Leader>csfs :<C-u>cscope find s <C-r>=expand('<cword>')<CR><CR>
+nnoremap <Leader>csfS :<C-u>cscope find s <C-r>=@+<CR><CR>
 " nnoremap <Leader>zff :<C-u>cscope find f <C-r>=expand('<cfile>')<CR><CR>
 " nnoremap <Leader>zfF :<C-u>cscope find f <C-r>=@+<CR><CR>
 
@@ -1548,8 +1553,8 @@ inoremap <expr> <S-CR> '<C-r>=cursor(line("."), 10000)<CR><BS>' . lexima#expand(
 " normalでもleximaを呼び出したいので、feedkeysを使用して実現
 nnoremap <silent> z<CR> :<C-u>call feedkeys("ia\<LT>BS>\<LT>End>\<LT>CR>", 't')<CR>
 
-" 9はあんまり使わないので他に割り当て
-nnoremap 9 :<C-u>Cfp<CR>
+" ^はあんまり使わない(_を使う)ので他に割り当て
+nnoremap ^ :<C-u>Cfp<CR>
 
 " H,Lを拡張
 nmap H <Plug>(my-H)
@@ -1563,8 +1568,8 @@ xmap _ <Plug>(my-underscore)
 
 " カーソルを動かさずに全体をコピー、削除
 nmap yie <Plug>(my-flash-window-and-yank-entire)
-nmap die :<C-u>%d<CR>
-xmap ie  <Esc>ggVG
+nnoremap die :<C-u>%d<CR>
+xnoremap ie  <Esc>ggVG
 
 " " :h ins-completion
 
@@ -1695,14 +1700,17 @@ nmap <F9> <Plug>(my-toggle-transparency)
 nmap <F12> <Plug>(my-toggle-fontsize)
 " nnoremap <F12> :<C-u>set guifont=*<CR>
 
-
 " ================================
 " = for private job
 
 if filereadable($HOME . '/my_job.vimrc')
   source $HOME/my_job.vimrc
 
-  call altr#define('_vimrc', 'my_job.vimrc')
+  if has('win32')
+    call altr#define('_vimrc', 'my_job.vimrc')
+  else
+    call altr#define('.vimrc', 'my_job.vimrc')
+  endif
 endif
 
 " ===========================

@@ -23,7 +23,8 @@ nnoremap <silent> <Plug>(my-flash-search-ward) :<C-u>call my#flash_search_ward(3
 nnoremap <silent> <Plug>(my-toggle-fontsize) :<C-u>call my#toggle_fontsize()<CR>
 nnoremap <silent> <Plug>(my-toggle-transparency) :<C-u>call my#toggle_transparency()<CR>
 
-nnoremap <silent> <Plug>(my-do-ctags) :<C-u>call my#do_ctags()<CR>
+nnoremap <silent> <Plug>(my-do-ctags) :<C-u>call my#do_ctags(0)<CR>
+nnoremap <silent> <Plug>(my-do-ctags-all) :<C-u>call my#do_ctags(1)<CR>
 
 nnoremap <silent> <Plug>(my-cscope-build) :<C-u>call my#cscope_build()<CR>
 nnoremap <silent> <Plug>(my-cscope-add) :<C-u>call my#cscope_add()<CR>
