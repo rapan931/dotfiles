@@ -39,6 +39,10 @@ function! my#filetypes#markdown() abort
   call s:set_indent(2, 0)
 endfunction
 
+function! my#filetypes#gitconfig() abort
+  call s:set_indent(4, 1)
+endfunction
+
 function! my#filetypes#help() abort
   " qで閉じる
   nnoremap <buffer> q ZZ
@@ -116,6 +120,11 @@ function! my#filetypes#vimfiler() abort
   " augroup END
 endfunction
 
+function! my#filetypes#godoc() abort
+  " qで閉じる
+  nnoremap <buffer> q ZZ
+endfunction
+
 " REF: http://thinca.hatenablog.com/entry/20130708/1373210009
 function! my#filetypes#qf() abort
   setlocal nocursorline
@@ -160,7 +169,6 @@ function! my#filetypes#qf() abort
     execute a:firstline
   endfunction
 endfunction
-
 
 function! my#filetypes#go() abort
   call s:set_indent(4, 1)

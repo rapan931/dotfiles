@@ -113,7 +113,8 @@ call minpac#add('k-takata/minpac', {'type': 'opt'})
 
 " unite
 " call minpac#add('Shougo/unite.vim', {'type': 'opt'})
-call minpac#add('Shougo/unite.vim', {'type': 'opt', 'frozen': 1})
+" call minpac#add('Shougo/unite.vim', {'type': 'opt', 'frozen': 1})
+call minpac#add('Shougo/unite.vim', {'type': 'opt'})
 call minpac#add('Shougo/denite.nvim')
 call minpac#add('Shougo/neomru.vim')
 call minpac#add('Shougo/neoyank.vim')
@@ -224,7 +225,7 @@ packadd vim-go
 " = setting: (Plugin)unite.vim & unite_source
 
 let g:unite_source_find_command = 'C:/Program Files/Git/usr/bin/find.exe'
-let g:unite_source_grep_command = $GOROOT . '/bin/jvgrep.exe'
+let g:unite_source_grep_command = $GOPATH . '/bin/jvgrep.exe'
 let g:unite_source_grep_default_opts = '-i --exclude ''\.(git|svn|hg|bzr)'''
 let g:unite_source_grep_recursive_opt = '-R'
 let g:unite_source_rec_async_command = ['files', '-A', '-a']
@@ -240,6 +241,9 @@ let g:neomru#file_mru_limit = 1000
 " mru exclude server path(start '//' or '\\')
 call unite#custom#source('file_mru', 'ignore_pattern', '\~$\|\.\%(o\|exe\|dll\|bak\|sw[po]\)$\|\%(^\|/\)\.\%(git\|svn\)\%($\|/\)\|^\%(//\|\\\\\)')
 call unite#custom#source('directory_mru', 'ignore_pattern', '\%(^\|/\)\.\%(hg\|git\|bzr\|svn\)\%($\|/\)\|^\%(//\|\\\\\)')
+
+" neomru/file do project directory(file_mru is target all files)
+call unite#custom#source('neomru/file', 'matchers', ['matcher_project_files', 'matcher_default'])
 
 " start insert mode
 call unite#custom#profile('default', 'context', {'start_insert' : 1})
@@ -736,6 +740,7 @@ call operator#sandwich#set('add', 'all', 'highlight', 10)
 call operator#sandwich#set('delete', 'all', 'highlight', 10)
 call operator#sandwich#set('add', 'all', 'hi_duration', 10)
 call operator#sandwich#set('delete', 'all', 'hi_duration', 10)
+
 " =================================
 " = setting: (Plugin)previm
 
@@ -1200,6 +1205,8 @@ nnoremap <silent> <Plug>(my-anzu-N) :<C-u>silent execute 'normal' "\<Plug>(anzu-
 
 nmap n <Plug>(my-anzu-jump-n)<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-ward)
 nmap N <Plug>(my-anzu-N)<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-ward)
+nmap <C-n> <Plug>(my-anzu-jump-n);z<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-ward)
+nmap <C-p> <Plug>(my-anzu-N);z<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-ward)
 
 map *  <Plug>(asterisk-z*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
 map g* <Plug>(asterisk-gz*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
@@ -1217,13 +1224,14 @@ nmap <Leader>g* :<C-u>normal! _<CR>v$h<Plug>(asterisk-gz*)<Plug>(anzu-update-sea
 nnoremap <Space>ec :<C-u>VimFilerBufferDir -winwidth=60 -explorer  -no-toggle<CR>
 nnoremap <Space>ee :<C-u>VimFilerExplorer  -winwidth=60<CR>
 nnoremap <Space>ef :<C-u>VimFilerBufferDir -winwidth=60 -explorer  -find<CR>
-nnoremap <Space>ep :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle $VIMFILES/pack<CR>
-nnoremap <Space>ev :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle $VIM<CR>
-nnoremap <Space>eh :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle $HOME<CR>
-nnoremap <Space>ed :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle $HOME/dotfiles<CR>
+nnoremap <Space>ep :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($VIMFILES)<CR>/pack<CR>
+nnoremap <Space>ev :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($VIM)<CR><CR>
+nnoremap <Space>eh :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($HOME)<CR><CR>
+nnoremap <Space>ed :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($HOME)<CR>/dotfiles<CR>
 nnoremap <Space>er :<C-u>VimFilerBufferDir -winwidth=60 -no-toggle -explorer -project<CR>
 
-nnoremap <Space>f  :<C-u>UniteWithProjectDir -buffer-name=proj_file_mru file_mru<CR>
+" 多用
+nnoremap <Space>f  :<C-u>:UniteWithProjectDir -buffer-name=proj_file_mru neomru/file<CR>
 nnoremap <Space>F  :<C-u>Unite -buffer-name=file_mru file_mru<CR>
 nnoremap <Space>bo :<C-u>Unite -buffer-name=bookmark bookmark<CR>
 nnoremap <Space>bu :<C-u>Unite -buffer-name=buffer buffer<CR>
@@ -1231,15 +1239,15 @@ nnoremap <Space>R  :<C-u>UniteResume<CR>
 nnoremap <Space>w  :<C-u>Unite window:all<CR>
 
 " たまに使う
+nnoremap <Space>ol :<C-u>Unite -create -vertical -no-quit -winwidth=50 -direction=botright -no-start-insert outline<CR>
+nnoremap <Space>op :<C-u>Unite -buffer-name=output output:<CR>
+nnoremap <Space>hy :<C-u>Unite -buffer-name=history_yank history/yank<CR>
+
+" ほぼ使わない(もう消してよさそう)
 nnoremap <Space>ql  :<C-u>UniteWithInput -buffer-name=with_input_line line<CR>
-nnoremap <Space>qol :<C-u>Unite -create -vertical -no-quit -winwidth=50 -direction=botright -no-start-insert outline<CR>
-nnoremap <Space>qop :<C-u>Unite -buffer-name=output output:<CR>
 nnoremap <Space>qmm :<C-u>Unite menu:m<CR>
 nnoremap <Space>qmj :<C-u>Unite menu:job<CR>
-
-" ほぼ使わない
 nnoremap <Space>q*  :<C-u>UniteWithCursorWord -buffer-name=with_cursor_word_line line<CR>
-nnoremap <Space>qhy :<C-u>Unite -buffer-name=history_yank history/yank<CR>
 nnoremap <Space>qr  :<C-u>Unite -buffer-name=register register<CR>
 
 nnoremap <Leader><Leader>f :<C-u>UniteWithBufferDir -buffer-name=buffer_dir_file file<CR>
@@ -1536,6 +1544,10 @@ nnoremap <Leader>csfS :<C-u>cscope find s <C-r>=@+<CR><CR>
 " =================================
 " = mapping: other
 
+" :cnext, :cprev
+nnoremap gl :<C-u>cnext<CR>zz
+nnoremap gh :<C-u>cprev<CR>zz
+
 " 明示的に \ を付けて改行する
 imap <C-CR> <Plug>(back_slash_linefeed)
 
@@ -1651,10 +1663,6 @@ nnoremap  gF :<C-u>vertical botright wincmd F<CR>zz
 " insertモード,commandモードのC-yでクリップボードからペースト
 cnoremap <C-y> <C-r>+
 inoremap <expr> <C-y> pumvisible() ? '<C-y>' : '<C-g>u<C-r>+'
-
-" <Up><Down>を割り当て
-cnoremap <C-p> <Up>
-cnoremap <C-n> <Down>
 
 " visualモードでの<Esc>は選択開始位置に戻ってから終了
 " gvはoを使ってビジュアルモードで最後に選択していたカーソル位置にカーソルを戻す
