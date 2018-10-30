@@ -3,7 +3,6 @@ function! my#filetypes#setting(ftype) abort
     execute 'call my#filetypes#' . a:ftype . '()'
   else
     call s:set_indent(4, 0)
-    return
   endif
 endfunction
 
@@ -68,7 +67,7 @@ function! my#filetypes#unite() abort
   nnoremap <silent><buffer><expr> <Leader><Leader>v unite#do_action('right')
   nnoremap <silent><buffer><expr> <Leader><Leader>s unite#do_action('above')
   nnoremap <silent><buffer><expr> <Leader><Leader>g unite#do_action('outer_grep')
-  nnoremap <silent><buffer><expr> <Leader><Leader>p unite#do_action('outer_grep_on_parent_directory')
+  nnoremap <silent><buffer><expr> <Leader><Leader>G unite#do_action('outer_grep_add')
 
   " <Leader><Leader>fでfile action
   nnoremap <silent><buffer><expr> <Leader><Leader>f unite#do_action('file')
@@ -106,7 +105,7 @@ function! my#filetypes#vimfiler() abort
   nnoremap <silent><buffer><expr> <Leader><Leader>v vimfiler#do_action('right')
   nnoremap <silent><buffer><expr> <Leader><Leader>s vimfiler#do_action('above')
   nnoremap <silent><buffer><expr> <Leader><Leader>g vimfiler#do_action('outer_grep')
-  nnoremap <silent><buffer><expr> <Leader><Leader>p vimfiler#do_action('outer_grep_on_parent_directory')
+  nnoremap <silent><buffer><expr> <Leader><Leader>a vimfiler#do_action('outer_grep_add')
 
   " gcでカレントディレクトリを移動後にディレクトリ名を表示
   " nmap <buffer> gc <Plug>(vimfiler_cd_vim_current_dir):<C-u>pwd<CR>
@@ -173,7 +172,8 @@ endfunction
 function! my#filetypes#go() abort
   call s:set_indent(4, 1)
 
-  nnoremap <buffer> <Leader>R :<C-u>!go build -o %:r.exe % && %:r.exe<CR>
+  nnoremap <buffer> <Leader><Leader>r :<C-u>!go build -o %:r.exe %<CR>
+  nnoremap <buffer> <Leader><Leader>R :<C-u>!go build -o %:r.exe % && %:r.exe<CR>
   xnoremap <buffer> <Leader>R :<C-u>echo 'no map'<CR>
 
   " for Tour of Go

@@ -208,6 +208,7 @@ call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
 " view only
 call minpac#add('vim-jp/vital.vim', {'type': 'opt'})
 
+command! MinpackUpdate call minpac#update('', {'do': 'call minpac#status()'})
 
 filetype plugin indent on
 syntax enable
@@ -257,44 +258,38 @@ call unite#custom#profile('source/grep', 'context', {'no-quit' : 1})
 " Unite file/file_mruで編集中のファイルは表示しない
 " call unite#custom#source('file,file_mru', 'matchers', ['matcher_hide_current_file'])
 
-" outer_grep, outer_grep_on_parent_directory actionを追加
+" outer_grep, outer_grep_add actionを追加
 let s:outer_grep = { 'description' : 'do outer grep' }
 function! s:outer_grep.func(candidate)
   try
-    " let pattern = input(&grepprg . ' ')
     let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
     if pattern != ""
       silent execute 'grep!' pattern a:candidate.action__path
-      " call feedkeys(':RG')
     else
       throw 'non-pattern'
     endif
   catch /^Vim:Interrupt$\|^non-pattern$/
-    " <C-c> or Pattern未入力
-    echo
     echo 'Cancel'
   endtry
 endfunction
 call unite#custom_action('directory,file', 'outer_grep', s:outer_grep)
 unlet s:outer_grep
 
-let s:outer_grep_on_parent_directory = { 'description' : 'do outer grep on parent directory' }
-function! s:outer_grep_on_parent_directory.func(candidate)
+let s:outer_grep_add = { 'description' : 'do outer grep directory(add quickfix list)' }
+function! s:outer_grep_add.func(candidate)
   try
-    " let pattern = input(&grepprg . ' ')
     let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
     if pattern != ""
-      silent execute 'grep!' pattern fnamemodify(a:candidate.action__path, ':h')
+      silent execute 'grepadd!' pattern a:candidate.action__path
     else
       throw 'non-pattern'
     endif
   catch /^Vim:Interrupt$\|^non-pattern$/
-    " <C-c> or Pattern未入力
     echo 'Cancel'
   endtry
 endfunction
-call unite#custom_action('directory,file', 'outer_grep_on_parent_directory', s:outer_grep_on_parent_directory)
-unlet s:outer_grep_on_parent_directory
+call unite#custom_action('directory,file', 'outer_grep_add', s:outer_grep_add)
+unlet s:outer_grep_add
 
 " Unite menu
 let g:unite_source_menu_menus = {}
@@ -325,6 +320,9 @@ call altr#remove_all()
 
 " vim
 call altr#define('autoload/%.vim', 'doc/%.txt', 'plugin/%.vim')
+
+" go
+call altr#define('%.go', '%_test.go')
 
 " vim(opeartor-user and textobj-user based Vim plugins)
 call altr#define('autoload/%/%.vim', 'doc/%-%.txt', 'plugin/%/%.vim')
@@ -1622,8 +1620,6 @@ nnoremap <expr> gs v:count == 0 ? ':<C-u>%s///g<Left><Left>' : 'gs'
 xnoremap gs :s///g<Left><Left>
 nnoremap gc :<C-u>vimgrep //j %<Left><Left><Left><Left>
 nnoremap gC :<C-u>vimgrep /<C-r><C-w>/j %<CR>
-nnoremap gl :<C-u>lvimgrep //j %<Left><Left><Left><Left>
-nnoremap gL :<C-u>lvimgrep /<C-r><C-w>/j %<CR>
 
 " global, vglobalコマンド
 nnoremap gV :<C-u>v//d
@@ -1663,6 +1659,10 @@ nnoremap  gF :<C-u>vertical botright wincmd F<CR>zz
 " insertモード,commandモードのC-yでクリップボードからペースト
 cnoremap <C-y> <C-r>+
 inoremap <expr> <C-y> pumvisible() ? '<C-y>' : '<C-g>u<C-r>+'
+
+" <Up><Down>を割り当て
+cnoremap <C-p> <Up>
+cnoremap <C-n> <Down>
 
 " visualモードでの<Esc>は選択開始位置に戻ってから終了
 " gvはoを使ってビジュアルモードで最後に選択していたカーソル位置にカーソルを戻す
