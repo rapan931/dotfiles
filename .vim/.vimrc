@@ -199,9 +199,6 @@ call minpac#add('kana/vim-altr', {'type': 'opt'})
 call minpac#add('lambdalisue/gina.vim')
 call minpac#add('vim-jp/autofmt')
 
-" mine
-" call minpac#add('my/ashougi.vim', {'frozen': 1, 'type': 'opt'})
-
 " doc
 call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
 
@@ -358,6 +355,14 @@ call vimfiler#custom#profile('default', 'context', {
 \   'columns' : 'type'
 \ })
 
+
+" =================================
+" = setting: (Plugin)vim-go
+
+" quickfixのみ使用
+let g:go_list_type = "quickfix"
+
+
 " =================================
 " = setting: (Plugin)incsearch.vim
 
@@ -468,8 +473,8 @@ call submode#enter_with('tag', 'n', '', 'g<C-t>', ':<C-u>tag<CR>')
 call submode#map('tag', 'n', '', 't', ':<C-u>tag<CR>')
 
 " :colder, cnewerの実行(事前にbotright copen)
-call submode#enter_with('cnew-colder', 'n', '', 'g<C-k>', ':<C-u>botright copen<CR>:<C-u>colder<CR>')
-call submode#enter_with('cnew-colder', 'n', '', 'g<C-j>', ':<C-u>botright copen<CR>:<C-u>cnewer<CR>')
+call submode#enter_with('cnew-colder', 'n', '', 'g<C-k>', ':<C-u>copen<CR>:<C-u>colder<CR>')
+call submode#enter_with('cnew-colder', 'n', '', 'g<C-j>', ':<C-u>copen<CR>:<C-u>cnewer<CR>')
 call submode#map('cnew-colder', 'n', '', '<C-k>', ':<C-u>colder<CR>')
 call submode#map('cnew-colder', 'n', '', '<C-j>', ':<C-u>cnewer<CR>')
 
@@ -1338,66 +1343,6 @@ nmap <C-Up>    <Plug>(textmanip-duplicate-up)
 " nmap <F10>   <Plug>(textmanip-toggle-mode)
 " xmap <F10>   <Plug>(textmanip-toggle-mode)
 
-
-" =================================
-" = mapping: (Plugin)ashougi.vim
-
-" xmap h <Plug>(ashougi-h)
-" xmap j <Plug>(ashougi-j)
-" xmap k <Plug>(ashougi-k)
-" xmap l <Plug>(ashougi-l)
-
-" --------------------------
-" |                        |
-" |                        |
-" |          box           |
-" |                        |
-" |                        |
-" --------------------------
-
-"
-" ENEMY-PIECES-START------------------------------------------------
-" | *wwwwww* | *wwwwww* | *wwwwww* | *wwwwww* | *wwwwww* | *wwwwww* |
-" | *      * | *      * | *      * | *      * | *      * | *      * |
-" | *  hi  * | *  hi  * | *  hi  * | *  hi  * | *  hi  * | *  hi  * |
-" |   *  *   |   *  *   |   *  *   |   *  *   |   *  *   |   *  *   |
-" |    **    |    **    |    **    |    **    |    **    |    **    |
-" ---------------------------------------------------ENEMY-PIECES-END
-"
-"                 START-KOMA------------------------
-"                 |    **    | *mmmmmm* |          |
-"                 |   *  *   | *      * |          |
-"                 | *  ra  * | *  hi  * |          |
-"                 | *      * |   *  *   |          |
-"                 | *wwwwww* |    **    |          |
-"                 ----------------------------------
-"                 |          |          |          |
-"                 |          |          |          |
-"                 |          |          |          |
-"                 |          |          |          |
-"                 |          |          |          |
-"                 ----------------------------------
-"                 |          |          |          |
-"                 |          |          |          |
-"                 |          |          |          |
-"                 |          |          |          |
-"                 |          |          |          |
-"                 ----------------------------------
-"                 |    **    |    **    |    **    |
-"                 |   *  *   |   *  *   |   *  *   |
-"                 | *  ra  * | *  hi  * | *  ra  * |
-"                 | *      * | *      * | *      * |
-"                 | *wwwwww* | *wwwwww* | *mmmmmm* |
-"                 --------------------------END-KOMA
-"
-" MINE-PIECES-START--------------------------------------------------
-" |    **    |    **    |    **    |    **    |          |    **    |
-" |   *  *   |   *  *   |   *  *   |   *  *   |          |   *  *   |
-" | *  ra  * | *  ra  * | *  ra  * | *  ra  * |          | *  ra  * |
-" | *      * | *      * | *      * | *      * |          | *      * |
-" | *mmmmmm* | *mmmmmm* | *mmmmmm* | *mmmmmm* |          | *mmmmmm* |
-" ----------------------------------------------------MINE-PIECES-END
-
 " =================================
 " = mapping: (Plugin)memolist.vim
 
@@ -1542,9 +1487,12 @@ nnoremap <Leader>csfS :<C-u>cscope find s <C-r>=@+<CR><CR>
 " =================================
 " = mapping: other
 
-" :cnext, :cprev
+" :cnext, :cprev :cclose
 nnoremap gl :<C-u>cnext<CR>zz
 nnoremap gh :<C-u>cprev<CR>zz
+nnoremap gk :<C-u>copen<CR>
+nnoremap gj :<C-u>cclose<CR>
+
 
 " 明示的に \ を付けて改行する
 imap <C-CR> <Plug>(back_slash_linefeed)

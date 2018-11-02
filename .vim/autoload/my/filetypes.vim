@@ -128,6 +128,9 @@ endfunction
 function! my#filetypes#qf() abort
   setlocal nocursorline
 
+  " 一番下に表示
+  wincmd J
+
   " qで閉じる
   nnoremap <buffer> q ZZ
 
