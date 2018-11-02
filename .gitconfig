@@ -1,0 +1,21 @@
+[core]
+	autoCRLF = false
+	editor = 'C:\\path\\to\\gvim.exe' -c 'set fenc=utf-8'
+
+[user]
+	name = rapan931
+	email = 24415677+rapan931@users.noreply.github.com
+
+[alias]
+	st = status
+	l = log
+	lp = log -p
+	co = checkout
+	b = branch
+	cp = cherry-pick
+	ad = add
+	addd = add
+	d = diff
+	dc = diff --cached
+	dn = diff --name-only
+
