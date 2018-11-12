@@ -205,8 +205,6 @@ call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
 " view only
 call minpac#add('vim-jp/vital.vim', {'type': 'opt'})
 
-command! MinpackUpdate call minpac#update('', {'do': 'call minpac#status()'})
-
 filetype plugin indent on
 syntax enable
 
@@ -1070,10 +1068,17 @@ command! ReflectVimrc source $MYVIMRC
 command! RunVimScript source $VIM/vim_script.vim
 
 " 開いているファイルに移動(元: plugins/kaoriya/plugin/cmdex.vim)
-command! -nargs=0 CdCurrent cd %:p:h
+command! CdCurrent cd %:p:h
 
 if executable('touch')
-  command! -nargs=0 Touch if &modified | call my#error_msg('modified file!') | else | silent execute '!start touch' expand('%:p') | endif
+  command! Touch if &modified | call my#error_msg('modified file!') | else | silent execute '!start touch' expand('%:p') | endif
+endif
+
+command! MinpackUpdate call minpac#update('', {'do': 'call minpac#status()'})
+
+if has('win32')
+  MyAutoCmd TerminalOpen * call feedkeys("set LANG=ja_JP.UTF-8\<CR>")
+  command! TerminalCurrent  if !empty(bufname("%")) | cd %:p:h | endif | termina
 endif
 
 " =================================
@@ -1098,7 +1103,7 @@ noremap ,      <NOP>
 noremap ;      <NOP>
 noremap #      <NOP>
 noremap g#     <NOP>
- 
+
 " prefix keyとして z, <Space>を使用
 " - ウィンドウ移動系の操作にs使ってたけど
 "   このvimrcがない環境だとs使って意図しない編集しまくりだったので、sは基本使わないようにする
