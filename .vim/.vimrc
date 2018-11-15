@@ -622,8 +622,9 @@ let g:clurin = {
 " echoに表示されるメッセージに末尾から先頭or先頭から末尾への移動時のメッセージを追加
 let g:anzu_status_format = "%p(%i/%l) %#ErrorMsg#%w"
 
+" anzu関係ないけど、先にimsearchを設定して、常にIMEオフ状態で/が始まるようにする
 MyAutoCmd CmdlineLeave / if !empty(getcmdline()) |
-\   call feedkeys(":AnzuUpdateSearchStatus | if anzu#search_status() != '' | AnzuUpdateSearchStatusOutput | endif\<CR>", 'n')          |
+\   call feedkeys(":silent set imsearch=0 | :AnzuUpdateSearchStatus | if anzu#search_status() != '' | AnzuUpdateSearchStatusOutput | endif\<CR>", 'n') |
 \ endif
 
 " =================================
@@ -1198,8 +1199,9 @@ if v:version < 801
 endif
 map z/ <Plug>(incsearch-stay)
 
-" クリップボードから検索(改行に対応したい) check asterisk.vim
-nmap g/ /<C-u>\V<C-r>=escape(@+, '\/')<CR><CR>
+" クリップボードから検索(改行に対応)
+" nmap g/ /<C-u>\V<C-r>=escape(@+, '\/')<CR><CR>
+nmap g/ /<C-u>\V<C-r>=join(map(getreg("+", 1, 1), {key, val -> escape(val, '\/')}), "\\n")<CR><CR>
 
 " =================================
 " = mapping: (Plugin)vim-anzu & vim-asterisk
