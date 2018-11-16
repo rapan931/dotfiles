@@ -96,6 +96,9 @@ function! s:sid() abort
   return matchstr(expand('<sfile>'), '\zs<SNR>\d\+_\zeSID$')
 endfunction
 
+" 先にimsearchを設定して、常にIMEオフ状態で/が始まるようにする(ダサいけど、echoつけてcmdlineきれいにする)
+MyAutoCmd CmdlineLeave / call feedkeys(":set imsearch=0 | :echo\<CR>")
+
 " =================================
 " = Plugin install (by minpac)
 
@@ -286,8 +289,6 @@ if has('win32')
   \   ['control panel',    '!start control'],
   \ ]
 endif
-
-call unite#sources#neomru#define()
 
 " =================================
 " = setting: (Plugin)vim-precious & context_filetype.vim
@@ -610,9 +611,8 @@ let g:clurin = {
 " echoに表示されるメッセージに末尾から先頭or先頭から末尾への移動時のメッセージを追加
 let g:anzu_status_format = "%p(%i/%l) %#ErrorMsg#%w"
 
-" anzu関係ないけど、先にimsearchを設定して、常にIMEオフ状態で/が始まるようにする
 MyAutoCmd CmdlineLeave / if !empty(getcmdline()) |
-\   call feedkeys(":silent set imsearch=0 | :AnzuUpdateSearchStatus | if anzu#search_status() != '' | AnzuUpdateSearchStatusOutput | endif\<CR>", 'n') |
+\   call feedkeys(":AnzuUpdateSearchStatus | if anzu#search_status() != '' | AnzuUpdateSearchStatusOutput | endif\<CR>", 'n') |
 \ endif
 
 " =================================
@@ -1067,7 +1067,7 @@ command! MinpackUpdate call minpac#update('', {'do': 'call minpac#status()'})
 
 if has('win32')
   MyAutoCmd TerminalOpen * call feedkeys("set LANG=ja_JP.UTF-8\<CR>")
-  command! TerminalCurrent  if !empty(bufname("%")) | cd %:p:h | endif | termina
+  command! TerminalCurrent  if !empty(bufname("%")) | cd %:p:h | endif | terminal
 endif
 
 " =================================
