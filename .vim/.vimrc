@@ -112,10 +112,7 @@ call minpac#init({'package_name': 'm', 'verbose': 3})
 call minpac#add('k-takata/minpac', {'type': 'opt'})
 
 " unite
-" call minpac#add('Shougo/unite.vim', {'type': 'opt'})
-" call minpac#add('Shougo/unite.vim', {'type': 'opt', 'frozen': 1})
 call minpac#add('Shougo/unite.vim', {'type': 'opt'})
-call minpac#add('Shougo/denite.nvim')
 call minpac#add('Shougo/neomru.vim')
 call minpac#add('Shougo/neoyank.vim')
 call minpac#add('Shougo/unite-outline')
@@ -126,19 +123,6 @@ call minpac#add('Shougo/vimproc')
 " call minpac#add('Shougo/neocomplete.vim', {'type': 'opt'})
 call minpac#add('Shougo/neosnippet.vim')
 call minpac#add('Shougo/neosnippet-snippets')
-
-" " deoplete系
-" call minpac#add('Shougo/deoplete.nvim',     { 'type': 'opt'})
-" call minpac#add('roxma/nvim-yarp',          { 'type': 'opt'})
-" call minpac#add('roxma/vim-hug-neovim-rpc', { 'type': 'opt'})
-" let g:deoplete#enable_at_startup = 1
-" let g:deoplete#auto_complete_delay = 0
-" let g:deoplete#auto_complete_start_length = 1
-" let g:deoplete#enable_camel_case = 0
-" let g:deoplete#enable_ignore_case = 0
-" let g:python3_host_prog = expand('$HOME') . '/AppData/Local/Programs/Python/Python36-32/python.exe'
-" let &pythonthreedll = expand('$HOME') . '\AppData\Local\Programs\Python\Python36-32\python36.dll'
-" let &pythonthreehome = expand('$HOME') . '\AppData\Local\Programs\Python\Python36-32\'
 
 " search
 call minpac#add('easymotion/vim-easymotion')
@@ -154,6 +138,9 @@ call minpac#add('sgur/vim-textobj-parameter')
 call minpac#add('thinca/vim-textobj-between')
 call minpac#add('glts/vim-textobj-comment')
 call minpac#add('osyo-manga/vim-textobj-multiblock')
+call minpac#add('osyo-manga/vim-textobj-from_regexp')
+call minpac#add('osyo-manga/vim-textobj-from_regexp')
+call minpac#add('rhysd/vim-textobj-conflict')
 
 " operator
 call minpac#add('kana/vim-operator-user')
@@ -196,8 +183,8 @@ call minpac#add('t9md/vim-textmanip')
 call minpac#add('glidenote/memolist.vim')
 call minpac#add('haya14busa/vim-edgemotion')
 call minpac#add('kana/vim-altr', {'type': 'opt'})
-call minpac#add('lambdalisue/gina.vim')
 call minpac#add('vim-jp/autofmt')
+call minpac#add('mopp/sky-color-clock.vim')
 
 " doc
 call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
@@ -235,7 +222,7 @@ let g:neomru#do_validate = 0
 let g:neomru#file_mru_limit = 1000
 
 " mru exclude server path(start '//' or '\\')
-call unite#custom#source('file_mru', 'ignore_pattern', '\~$\|\.\%(o\|exe\|dll\|bak\|sw[po]\)$\|\%(^\|/\)\.\%(git\|svn\)\%($\|/\)\|^\%(//\|\\\\\)')
+call unite#custom#source('file_mru,neomru/file', 'ignore_pattern', '\~$\|\.\%(o\|exe\|dll\|bak\|sw[po]\)$\|\%(^\|/\)\.\%(git\|svn\)\%($\|/\)\|^\%(//\|\\\\\)')
 call unite#custom#source('directory_mru', 'ignore_pattern', '\%(^\|/\)\.\%(hg\|git\|bzr\|svn\)\%($\|/\)\|^\%(//\|\\\\\)')
 
 " neomru/file do project directory(file_mru is target all files)
@@ -299,6 +286,8 @@ if has('win32')
   \   ['control panel',    '!start control'],
   \ ]
 endif
+
+call unite#sources#neomru#define()
 
 " =================================
 " = setting: (Plugin)vim-precious & context_filetype.vim
@@ -371,10 +360,11 @@ let g:incsearch#do_not_save_error_message_history = 1
 " -> feedkeys(":\<C-u>call anzu#echohl_search_status()\<CR>", 'n')だと
 "    なぜか検索文字の後ろに\cがついてしまう??(しまう??)
 " -> call anzu#echohl_search_status()だとanzuのステータス情報が出ない
-MyAutoCmd User IncSearchExecute AnzuUpdateSearchStatus |
-\ if anzu#search_status() != '' |
-\   call feedkeys(":\<C-u>AnzuUpdateSearchStatusOutput\<CR>", 'n') |
-\ endif
+" -> incsearch-stayしか使わなくなったので不要に
+" MyAutoCmd User IncSearchExecute AnzuUpdateSearchStatus |
+"\ if anzu#search_status() != '' |
+"\   call feedkeys(":\<C-u>AnzuUpdateSearchStatusOutput\<CR>", 'n') |
+"\ endif
 
 " =================================
 " = setting: (Plugin)clever-f.vim
@@ -442,7 +432,6 @@ let g:SignatureMap = {
 " =================================
 " = setting: (Plugin)vim-submode
 
-
 " windowサイズの変更
 call submode#enter_with('winsize', 'n', '', 'z>', '<C-w>>')
 call submode#enter_with('winsize', 'n', '', 'z<', '<C-w><')
@@ -475,7 +464,6 @@ call submode#enter_with('cnew-colder', 'n', '', 'g<C-k>', ':<C-u>copen<CR>:<C-u>
 call submode#enter_with('cnew-colder', 'n', '', 'g<C-j>', ':<C-u>copen<CR>:<C-u>cnewer<CR>')
 call submode#map('cnew-colder', 'n', '', '<C-k>', ':<C-u>colder<CR>')
 call submode#map('cnew-colder', 'n', '', '<C-j>', ':<C-u>cnewer<CR>')
-
 
 " " カーソル位置起点でのマークへのジャンプ
 " call submode#enter_with('jump-mark', 'n', '', 'mj', "]'")
@@ -714,17 +702,6 @@ let g:memolist_unite_option = "-start-insert"
 let g:memolist_unite_source = "file"
 
 " =================================
-" = setting: (Plugin)gist-vim
-
-" privateなGistもデフォルト(Gist -l)で表示
-" Post時にはSecretがデフォルト
-let g:gist_show_privates = 1
-let g:gist_post_private = 1
-
-" :w!でのみgistを更新:wでは更新しない
-let g:gist_update_on_write = 2
-
-" =================================
 " = setting: (Plugin)vim-sandwich
 
 let g:sandwich_no_default_key_mappings = 1
@@ -771,16 +748,28 @@ set incsearch
 set wrapscan
 
 " (見た目上の)折り返しをする
-if has('vim_starting')
-  set wrap
-endif
+set wrap
 
 " カーソル行ハイライト
 set cursorline
 
-" s : '下まで検索したので上に戻ります' と '上まで検索したので下に戻ります'を表示しない
+" f : "(file 3 of 5)" の代わりに "(3 of 5)" を表示。
+" i : "[最終行が不完全]" の代わりに "[noeol]" を表示。
+" l : "999 行, 888 文字" の代わりに "999L, 888C" を表示。
+" m : "[変更あり]" の代わりに "[+]" を表示。
+" n : "[新ファイル]" の代わりに "[新]" を表示。
+" r : "[読込専用]" の代わりに "[読専]" を表示。
+" w : 書き込みコマンドには "書込み" の代わりに "[w]" を、コマンド
+" s : "下まで検索したので上に戻ります" と "上まで検索したので下に戻ります" というメッセージを表示しない。
+" x : "[dosフォーマット]" の代わりに "[dos]"とか
+" t : ファイル間連のメッセージが長すぎてコマンドラインに収まらないときは、先頭を切り詰める。など
+" T : その他のメッセージが長すぎてコマンドラインに収まらないときは、中央を切り詰める。など
+" o : ファイルの書き込み時のメッセージを、その後のファイルの読み込み時のメッセージで上書きする
+" O : ファイルの読み込み時のメッセージや Quickfix 関係のメッセージ(例えば ":cn") がその前のメッセージを必ず上書きする。
+" I : Vimの開始時に挨拶メッセージを表示しない。
+"
 " (デフォルト: filnxtToO)
-" set shortmess=aToO
+set shortmess=filmnrwsxtToOI
 
 " ファイル名の表示
 " 常にステータス行を表示
@@ -791,7 +780,7 @@ set laststatus=2
 set cmdheight=2
 set showcmd
 
-" 行番号の表示
+" 行番号の表示(落ち着くから)
 " ルーラーを表示
 " 長い行を折り返して表示
 set number
@@ -868,8 +857,8 @@ set clipboard=unnamed
 set nojoinspaces
 
 " Also break at a multi-byte character(mM)
-" where it makes sense, remove a comment leader when joining lines(j)
-set formatoptions& formatoptions+=mMj
+" When joining lines, don't insert a space between two multi-byte characters(B)
+set formatoptions& formatoptions+=mBj
 
 " <EOF> at the end of file will be no restored if missing
 set nofixendofline
@@ -1009,7 +998,6 @@ highlight default TrailingSpaces guibg=darkgray
 " MyAutoCmdとMyAutoCmdFTの強調
 "   参考：http://pocke.hatenablog.com/entry/2014/06/21/101827
 "   参考：sytanx/vim.vim
-MyAutoCmdFT vim call s:my_hl_autocmd()
 MyAutoCmd BufWinEnter,ColorScheme _vimrc,.vimrc call s:my_hl_autocmd()
 function! s:my_hl_autocmd() abort
   syntax keyword myVimAutoCmd MyAutoCmd skipwhite nextgroup=vimAutoEventList
@@ -1089,19 +1077,18 @@ endif
 let g:mapleader = ','
 
 " 以下をNop
-" * 直前に挿入されたテキストをもう一度挿入し、挿入を終了(C-@)
-" * 保存して閉じる(ZZ)
-" * 保存せず閉じる(ZQ)
-" * Exモードに入る(Q, gQ)
-" * f, t, F, Tの繰り返し(';', ',', clever-f使うのでいらない)
+" * 直前に挿入されたテキストをもう一度挿入し、挿入を終了(C-@, 誤タイプ防止)
+" * 保存して閉じる(ZZ, 誤タイプ防止)
+" * 保存せず閉じる(ZQ, 誤タイプ防止)
+" * Exモードに入る(Q, gQ, 誤タイプ防止)
+" * f, t, F, Tの繰り返し(';' clever-f使うのでいらない)
 " * 後方検索(#, g#, vim-asteriskを使ってから#, g#を全く使わなくなった)
 inoremap <C-@> <Nop>
 nnoremap ZZ    <Nop>
 nnoremap ZQ    <Nop>
 nnoremap Q     <Nop>
 nnoremap gQ    <Nop>
-noremap ,      <NOP>
-noremap ;      <NOP>
+onoremap ;     <NOP>
 noremap #      <NOP>
 noremap g#     <NOP>
 
@@ -1241,17 +1228,17 @@ nnoremap <Space>ed :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand(
 nnoremap <Space>er :<C-u>VimFilerBufferDir -winwidth=60 -no-toggle -explorer -project<CR>
 
 " 多用
-nnoremap <Space>f  :<C-u>:UniteWithProjectDir -buffer-name=proj_file_mru neomru/file<CR>
+nnoremap <Space>f  :<C-u>Unite -buffer-name=proj_file_mru neomru/file<CR>
 nnoremap <Space>F  :<C-u>Unite -buffer-name=file_mru file_mru<CR>
 nnoremap <Space>bo :<C-u>Unite -buffer-name=bookmark bookmark<CR>
 nnoremap <Space>bu :<C-u>Unite -buffer-name=buffer buffer<CR>
 nnoremap <Space>R  :<C-u>UniteResume<CR>
-nnoremap <Space>w  :<C-u>Unite window:all<CR>
 
 " たまに使う
 nnoremap <Space>ol :<C-u>Unite -create -vertical -no-quit -winwidth=50 -direction=botright -no-start-insert outline<CR>
 nnoremap <Space>op :<C-u>Unite -buffer-name=output output:<CR>
 nnoremap <Space>hy :<C-u>Unite -buffer-name=history_yank history/yank<CR>
+nnoremap <Space>w  :<C-u>Unite window:all<CR>
 
 " ほぼ使わない(もう消してよさそう)
 nnoremap <Space>ql  :<C-u>UniteWithInput -buffer-name=with_input_line line<CR>
@@ -1314,8 +1301,8 @@ xmap iq <Plug>(textobj-multiblock-i)
 " =================================
 " = mapping: (Plugin)vim-jplus
 
-nmap J <Plug>(jplus)
-xmap J <Plug>(jplus)
+" nmap J <Plug>(jplus)
+" xmap J <Plug>(jplus)
 nmap <Leader>J <Plug>(jplus-input)
 xmap <Leader>J <Plug>(jplus-input)
 
@@ -1436,9 +1423,6 @@ nnoremap <silent> z]s :<C-u>split<CR>g<C-]>
 " nnoremap <silent> z/v :<C-u>vsplit<CR>/
 " nnoremap <silent> z/s :<C-u>split<CR>/
 
-" nnoremap <silent> <Tab> gt
-" nnoremap <silent> <S-Tab> gT
-
 " =================================
 " = mapping: cursor move
 
@@ -1455,7 +1439,7 @@ inoremap <expr> <C-e> pumvisible() ? '<C-e>' : '<End>'
 " inoremap <expr> <C-j> pumvisible() ? '<C-n>' : '<Down>'
 " inoremap <expr> <C-k> pumvisible() ? '<C-p>' : '<Up>'
 
-" カーソルを表示行で移動する。物理行移動は<C-n>,<C-p>
+" カーソルを表示行で移動する。
 nnoremap j gj
 xnoremap j gj
 nnoremap k gk
@@ -1469,8 +1453,8 @@ nnoremap <C-e> <C-e>j
 nnoremap <C-y> <C-y>k
 
 " カーソル位置起点でのマークへのジャンプ
-map mj ]'
-map mk ['
+noremap mj ]'
+noremap mk ['
 
 " =================================
 " = mapping: ctags & cscope
@@ -1512,11 +1496,15 @@ nnoremap gE :<C-u>!start explorer /select,<C-r>=my#get_root_dir(expand('%:p'))<C
 " insertの<S-CR>でカーソルが行途中にあっても改行ができるようにする。
 " leximaのendwiseも動いてほしく、lexima#expand()を呼び出す前にカーソル位置を移動させる必要があり、
 " 無理やりcursor()を呼び出している
-" NOTE: expr指定時にはcursor位置変えても自動(タイミング不明)で元の場所に戻る。。(ちゃんとヘルプに書いてあるのがすごい)
-inoremap <expr> <S-CR> '<C-r>=cursor(line("."), 10000)<CR><BS>' . lexima#expand('<LT>CR>', 'i')
+" NOTE: expr指定時にはcursor位置変えても自動(タイミング不明)でカーソルが元の場所に戻る。。(ちゃんとヘルプに書いてあるのがすごい)
+inoremap <silent><expr> <S-CR> '<C-r>=cursor(line("."), 10000)<CR><BS>' . lexima#expand("\<LT>CR>", 'i')
 
 " normalでもleximaを呼び出したいので、feedkeysを使用して実現
-nnoremap <silent> z<CR> :<C-u>call feedkeys("ia\<LT>BS>\<LT>End>\<LT>CR>", 't')<CR>
+" NOTE: nnoremap 123 :<C-u>call feedkeys("\<CR>")<CR> と書いた場合、123とタイプすると以下が実行される
+"       : call feedkeys("\
+"       ")
+"       ↑のように二行分のスクリプトが実行され123タイプでエラーとなってしまうので、\<CR>ではなく、\<LT>CR>と記載する必要がある。
+nnoremap <silent> z<CR> :<C-u>call feedkeys("A\<LT>CR>")<CR>
 
 " ^はあんまり使わない(_を使う)ので他に割り当て
 nnoremap ^ :<C-u>Cfp<CR>

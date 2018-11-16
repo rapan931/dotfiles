@@ -2,7 +2,7 @@ function! my#filetypes#setting(ftype) abort
   if !empty(a:ftype) && exists('*' . 'my#filetypes#' . a:ftype)
     execute 'call my#filetypes#' . a:ftype . '()'
   else
-    call s:set_indent(4, 0)
+    call s:set_indent(2, 0)
   endif
 endfunction
 
@@ -18,24 +18,8 @@ function! s:set_indent(tab_length, is_hard_tab)
   let &tabstop     = a:tab_length
 endfunction
 
-function! my#filetypes#vim() abort
-  call s:set_indent(2, 0)
-endfunction
-
-function! my#filetypes#txt() abort
-  call s:set_indent(2, 0)
-endfunction
-
-function! my#filetypes#ps1() abort
-  call s:set_indent(2, 0)
-endfunction
-
-function! my#filetypes#ruby() abort
-  call s:set_indent(2, 0)
-endfunction
-
-function! my#filetypes#markdown() abort
-  call s:set_indent(2, 0)
+function! my#filetypes#cpp() abort
+  call s:set_indent(4, 0)
 endfunction
 
 function! my#filetypes#gitconfig() abort
@@ -203,17 +187,3 @@ function! my#filetypes#go_comment_for_tour_of_go(search1, search1_flgs, search2,
 
   execute 'normal!' "Go\<Esc>p\<C-a>"
 endfunction
-
-
-function! s:set_indent(tab_length, is_hard_tab)
-  if a:is_hard_tab
-    setlocal noexpandtab
-  else
-    setlocal expandtab
-  endif
-
-  let &shiftwidth  = a:tab_length
-  let &softtabstop = a:tab_length
-  let &tabstop     = a:tab_length
-endfunction
-
