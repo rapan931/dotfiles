@@ -25,10 +25,14 @@ endfunction
 
 " toggle transparency
 function! my#toggle_transparency() abort
-  if &transparency == 255
-    set transparency=205
+  if exists('&transparency')
+    if &transparency == 255
+      set transparency=205
+    else
+      set transparency=255
+    endif
   else
-    set transparency=255
+    call my#error_msg('not exists transparency option!')
   endif
 endfunction
 
@@ -48,6 +52,26 @@ function! my#sleep(ms) abort
   let t = reltime()
   while !getchar(1) && a:ms - str2float(reltimestr(reltime(t))) * 1000.0 > 0
   endwhile
+endfunction
+
+" fizzbuzz
+function! my#fizzbuzz(count) abort
+  for s:num in range(a:count + 1)
+    if (s:num % 3) == 0 && (s:num % 5) == 0
+      echo 'FizzBuzz'
+    elseif (s:num % 3) == 0
+      echo 'Fizz'
+    elseif (s:num % 5) == 0
+      echo 'Buzz'
+    else
+      echo s:num
+    endif
+  endfor
+endfunction
+
+" https://teratail.com/questions/11046
+function! my#missionaries_and_cannibals_problem() abort
+  
 endfunction
 
 " get svn root path
@@ -142,7 +166,7 @@ endfunction
 
 " echo decimal and yank
 function! my#hex2decimal_and_yank(hex) abort
-  " echo printf("%d", type(a:hex) == v:t_number ? a:hex : str2nr(a:hex, 16))
+  let str = printf("%d", type(a:hex) == v:t_number ? a:hex : str2nr(a:hex, 16))
   call my#echo_and_yank(str)
 endfunction
 
@@ -174,9 +198,8 @@ function! my#flash_search_ward(ms) abort
 endfunction
 
 
-" H, Lを二回押した場合にはMとの中間点に移動
 " Move to the midpoint with M when L or H pressed twice
-" REF: haya14busa vimrc
+" REF: haya14busa vimrc(もう消されてそうでした)
 function! my#HL(motion, is_visual) abort
   let current_line = line('.')
   if &scrolloff == 0
@@ -196,7 +219,6 @@ function! my#HL(motion, is_visual) abort
   endif
 endfunction
 
-" _を二回押した場合には行頭に移動
 " Move to the first character of the line(similar to pressed 0) when underscore pressed twice
 function! my#underscore(motion, is_visual) abort
   if a:is_visual
@@ -205,7 +227,6 @@ function! my#underscore(motion, is_visual) abort
   let current_pos = col(".")
 
   let flag_pos = searchpos('\%' . line('.') . 'l^\s\+\zs\S', 'nc')[1]
-  echo flag_pos
 
   if current_pos == flag_pos && v:count == 0
     normal! 0

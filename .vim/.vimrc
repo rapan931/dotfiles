@@ -17,15 +17,15 @@ function! s:mkdir(dir_path)
 endfunction
 
 if has('vim_starting')
-  if has('win32')
-    if exists('$VIMFILES')
-      " REF: https://github.com/vim-jp/issues/issues/1189
-      let &runtimepath = expand('$VIMFILES') . ',' . &runtimepath
-    else
-      let $VIMFILES = $HOME . '/vimfiles'
-    endif
+  if exists('$VIMFILES')
+    " REF: https://github.com/vim-jp/issues/issues/1189
+    let &runtimepath = expand('$VIMFILES') . ',' . &runtimepath
   else
-    let $VIMFILES = $HOME . '/.vim'
+    if has('win32')
+      let $VIMFILES = $HOME . '/vimfiles'
+    else
+      let $VIMFILES = $HOME . '/.vim'
+    endif
   endif
 
   " @Shougo's ware use $XDG_CACHE_HOME, but windows not exist $XDG_CACHE_HOME, it set up.
@@ -142,7 +142,6 @@ call minpac#add('thinca/vim-textobj-between')
 call minpac#add('glts/vim-textobj-comment')
 call minpac#add('osyo-manga/vim-textobj-multiblock')
 call minpac#add('osyo-manga/vim-textobj-from_regexp')
-call minpac#add('osyo-manga/vim-textobj-from_regexp')
 call minpac#add('rhysd/vim-textobj-conflict')
 
 " operator
@@ -181,7 +180,6 @@ call minpac#add('tyru/open-browser.vim')
 call minpac#add('PProvost/vim-ps1')
 call minpac#add('cohama/lexima.vim', {'type': 'opt'})
 call minpac#add('kshenoy/vim-signature')
-call minpac#add('mattn/vim-vsopen')
 call minpac#add('t9md/vim-textmanip')
 call minpac#add('glidenote/memolist.vim')
 call minpac#add('haya14busa/vim-edgemotion')
@@ -249,7 +247,8 @@ function! s:outer_grep.func(candidate)
   try
     let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
     if pattern != ""
-      silent execute 'grep!' pattern a:candidate.action__path
+      " silent execute 'grep! "' . escape(pattern, '|') . '" ' . a:candidate.action__path
+      silent execute 'grep!' escape(pattern, '|') a:candidate.action__path
     else
       throw 'non-pattern'
     endif
@@ -265,7 +264,7 @@ function! s:outer_grep_add.func(candidate)
   try
     let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
     if pattern != ""
-      silent execute 'grepadd!' pattern a:candidate.action__path
+      silent execute 'grepadd!' escape(pattern, '|') a:candidate.action__path
     else
       throw 'non-pattern'
     endif
@@ -343,13 +342,11 @@ call vimfiler#custom#profile('default', 'context', {
 \   'columns' : 'type'
 \ })
 
-
 " =================================
 " = setting: (Plugin)vim-go
 
 " quickfixのみ使用
 let g:go_list_type = "quickfix"
-
 
 " =================================
 " = setting: (Plugin)incsearch.vim
@@ -361,11 +358,10 @@ let g:incsearch#do_not_save_error_message_history = 1
 " -> feedkeys(":\<C-u>call anzu#echohl_search_status()\<CR>", 'n')だと
 "    なぜか検索文字の後ろに\cがついてしまう??(しまう??)
 " -> call anzu#echohl_search_status()だとanzuのステータス情報が出ない
-" -> incsearch-stayしか使わなくなったので不要に
-" MyAutoCmd User IncSearchExecute AnzuUpdateSearchStatus |
-"\ if anzu#search_status() != '' |
-"\   call feedkeys(":\<C-u>AnzuUpdateSearchStatusOutput\<CR>", 'n') |
-"\ endif
+MyAutoCmd User IncSearchExecute AnzuUpdateSearchStatus |
+\ if anzu#search_status() != '' |
+\   call feedkeys(":\<C-u>AnzuUpdateSearchStatusOutput\<CR>", 'n') |
+\ endif
 
 " =================================
 " = setting: (Plugin)clever-f.vim
@@ -573,6 +569,7 @@ let g:clurin = {
 \     'def': [
 \       ['on', 'off'],
 \       ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+\       ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
 \       ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 \       ['True', 'False'],
 \       ['true', 'false'],
@@ -589,7 +586,6 @@ let g:clurin = {
 \       ['有り', '無し'],
 \       ['作成', '削除'],
 \       ['未着手', '着手', '完了'],
-\       ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
 \       ['&&', '||'],
 \       ['==', '!='],
 \       ['■', '□'],
@@ -667,7 +663,7 @@ packadd lexima.vim
 call lexima#set_default_rules()
 
 " ', '後の<CR>で末尾の空白を除去するよう設定
-" 参考: http://rhysd.hatenablog.com/entry/20121017/1350444269
+" REF: http://rhysd.hatenablog.com/entry/20121017/1350444269
 call lexima#add_rule({ "char" : '<CR>', "at" : ', \%#', "input" : '<BS><CR>'})
 
 " [ \%# ]の状態から']'の入力でleaveするようにする
@@ -679,10 +675,8 @@ call lexima#add_rule({'char': '<', 'at': '\\\%#', 'filetype': 'html'})
 call lexima#add_rule({'char': '>', 'at': '\%#>', 'leave': 1, 'filetype': 'html'})
 
 " String,  Commentでは"{}"の補完を無効に
-" syntaxがまだ効いていないところでも効かせる
 call lexima#add_rule({'char': '{', 'input': '{', 'syntax': 'String'})
 call lexima#add_rule({'char': '{', 'input': '{', 'syntax': 'Comment'})
-call lexima#add_rule({'char': '{', 'at': '"\%#$', 'input': '{', 'filetype': 'vim'})
 
 " call lexima#add_rule({'char': '<CR>', 'at': '```\s(\w\|\.)\+\%#```', 'input_after': '<CR>'})
 " call lexima#add_rule({'char': '<CR>', 'at': '```\%#$', 'input_after': '<CR>```', 'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1```'})
@@ -800,7 +794,7 @@ set list
 set listchars=tab:^\ 
 
 " autofmt: 日本語文章のフォーマット(折り返し)プラグイン.
-" 参考：kaoriya同梱のvimrc
+" REF: kaoriya同梱のvimrc
 set formatexpr=autofmt#japanese#formatexpr()
 
 " ウィンドウの最終行を頑張って表示
@@ -858,7 +852,8 @@ set nojoinspaces
 
 " Also break at a multi-byte character(mM)
 " When joining lines, don't insert a space between two multi-byte characters(B)
-set formatoptions& formatoptions+=mBj
+" set formatoptions& formatoptions+=mBj
+set formatoptions=tcroqmMj
 
 " <EOF> at the end of file will be no restored if missing
 set nofixendofline
@@ -887,7 +882,7 @@ set nomousehide
 
 " kaoriya版のencode_japan.vimが作成した&fileencodingsは以下だった
 " * guess,ucs-bom,ucs-2le,ucs-2,iso-2022-jp-3,utf-8,euc-jisx0213,euc-jp
-set fileencodings=utf-8,sjis,ucs-bom
+set fileencodings=ucs-bom,ucs-2le,ucs-2,iso-2022-jp-3,utf-8,euc-jisx0213,euc-jp
 set fileformats=unix,dos
 
 " undoファイルを一か所にまとめる
@@ -937,8 +932,10 @@ MyAutoCmd QuickfixCmdPost lgrep,lvimgrep, botright lopen
 " MyAutoCmd BufWritePre * if expand('<amatch>:t') == ']' | throw "oops!!!!!!!!!!" | endif
 cnoreabbrev w] w
 
-" printerの設定(win32とかの分岐は削除(windowでしか使わないので)
-set printfont=MS_Mincho:h12:cSHIFTJIS
+" printerの設定
+if has('win32')
+  set printfont=MS_Mincho:h12:cSHIFTJIS
+endif
 
 " jellybeanのコメントとかのitalic見づらいので、修正
 " CursorLineもわかりづらいので微調整
@@ -996,9 +993,9 @@ highlight default MyFlashy term=bold ctermbg=0 guibg=#13354A
 highlight default TrailingSpaces guibg=darkgray
 
 " MyAutoCmdとMyAutoCmdFTの強調
-"   参考：http://pocke.hatenablog.com/entry/2014/06/21/101827
-"   参考：sytanx/vim.vim
-MyAutoCmd BufWinEnter,ColorScheme _vimrc,.vimrc call s:my_hl_autocmd()
+"   REF: http://pocke.hatenablog.com/entry/2014/06/21/101827
+"   REF: sytanx/vim.vim
+MyAutoCmd BufWinEnter,ColorScheme _vimrc,.vimrc,my_job.vimrc call s:my_hl_autocmd()
 function! s:my_hl_autocmd() abort
   syntax keyword myVimAutoCmd MyAutoCmd skipwhite nextgroup=vimAutoEventList
   highlight link myVimAutoCmd vimAutoCmd
@@ -1009,6 +1006,7 @@ endfunction
 call s:my_hl_autocmd()
 
 " 末尾空白文字強調。vimfilerについてはしない
+" REF: https://teratail.com/questions/71693
 MyAutoCmd VimEnter,WinEnter,BufWinEnter * if &filetype ==# 'vimfiler' | match none | else | match TrailingSpaces /\s\+$/ | endif
 MyAutoCmdFT vimfiler match none
 
@@ -1020,29 +1018,31 @@ MyAutoCmd FocusGained * call my#flash_window(1000, 'MyFlashy')
 MyAutoCmd BufEnter ruby,vim silent execute 'lcd' my#get_root_dir()
 
 " diffの設定
-MyAutoCmd FilterWritePre * call s:my_diff_settings()
+" REF: https://github.com/vim-jp/issues/issues/1206
+" MyAutoCmd FilterWritePre * call s:my_diff_settings()
+MyAutoCmd OptionSet diff if v:option_old == 0 && v:option_new == 1 | call s:my_diff_settings() | endif
 function! s:my_diff_settings() abort
   if &diff
-    nnoremap <buffer> <C-j> ]c
-    nnoremap <buffer> <C-k> [c
+    setlocal nocursorline
     nnoremap <buffer> u     u:diffupdate<CR>
     nnoremap <buffer> <C-r> <C-r>:diffupdate<CR>
   endif
 endfunction
 
-" その他の各種設定の長めの設定
+" その他の各種設定
 MyAutoCmdFT * call my#filetypes#setting(expand('<amatch>'))
 
 " =================================
 " = command: define
 
+" 名前が分かりづらいので変えたい
 " - Copy file name
 " - Copy file full path
 " - Copy file relative path
 command! Cfn call my#echo_and_yank(expand('%:t'))
 command! Cfp call my#echo_and_yank(expand('%:p'))
 command! Crp call my#echo_and_yank(substitute(expand('%'), '^\', '', 'g'))
-command! CfpConvSeparator call my#echo_and_yank(substitute(expand('%:p'), '\' , '/', 'g'))
+command! CfpConvSeparator call my#echo_and_yank(substitute(expand('%:p'), '\', '/', 'g'))
 command! CrpConvSeparator call my#echo_and_yank(substitute(substitute(expand('%'), '^\', '', 'g'), '\' , '/', 'g'))
 command! Cn Cfn
 
@@ -1066,9 +1066,12 @@ endif
 command! MinpackUpdate call minpac#update('', {'do': 'call minpac#status()'})
 
 if has('win32')
-  MyAutoCmd TerminalOpen * call feedkeys("set LANG=ja_JP.UTF-8\<CR>")
-  command! TerminalCurrent  if !empty(bufname("%")) | cd %:p:h | endif | terminal
+  command! TCurrent if empty(bufname("%")) | throw 'no name!!' | endif | terminal ++close cmd /k cd /d "%:p:h" & set LANG=ja_JP.UTF-8
 endif
+
+" " REF: https://github.com/vim-jp/issues/issues/1204
+" command! TDotfiles :terminal ++close cmd /k cd /d "<C-r>=expand($HOME)<CR>/dotfiles" & set LANG=ja_JP.UTF-8
+command! TDotfiles execute 'terminal ++close cmd /k cd /d ' . expand($HOME) . '\dotfiles & set LANG=ja_JP.UTF-8'
 
 " =================================
 " = mapping: initialize
@@ -1096,7 +1099,7 @@ noremap g#     <NOP>
 " - ウィンドウ移動系の操作にs使ってたけど
 "   このvimrcがない環境だとs使って意図しない編集しまくりだったので、sは基本使わないようにする
 " - その次にtを使ってたけど
-"   Vim本来のtを結構使うようになったので、prefixにzを使う
+"   Vim本来のt(右方向への指定文字前ジャンプ)を結構使うようになったので、prefixにzを使う
 nnoremap z <Nop>
 xnoremap z <Nop>
 nnoremap s <Nop>
@@ -1114,6 +1117,64 @@ xmap <Space>m <Plug>(quickhl-manual-this)
 nmap <Space>M <Plug>(quickhl-manual-reset)
 xmap <Space>M <Plug>(quickhl-manual-reset)
 
+" let g:quickhl_manual_colors = [
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+"    \ "cterm=bold ctermfg=7  ctermbg=56  gui=bold guibg=#a0b0c0 guifg=black",
+"    \ ]
+
 " =================================
 " = mapping: (Plugin)clever-f.vim
 
@@ -1125,7 +1186,6 @@ xmap f <Plug>(clever-f-f)
 xmap F <Plug>(clever-f-F)
 xmap t <Plug>(clever-f-t)
 xmap T <Plug>(clever-f-T)
-" omapはeasymotion使う
 
 " =================================
 " = mapping: (Plugin)vim-clurin
@@ -1142,10 +1202,10 @@ xmap - <Plug>(clurin-prev)
 map <Leader>S <Plug>(easymotion-s2)
 
 " f,F,t,Tのオペレータ待機の時だけはclever-f使わないでeasymotion使う
-omap t <Plug>(easymotion-tl)
-omap T <Plug>(easymotion-Tl)
-omap f <Plug>(easymotion-fl)
-omap F <Plug>(easymotion-Fl)
+" omap t <Plug>(easymotion-tl)
+" omap T <Plug>(easymotion-Tl)
+" omap f <Plug>(easymotion-fl)
+" omap F <Plug>(easymotion-Fl)
 
 " =================================
 " = mapping: (Plugin)vim-operator-replace
@@ -1194,7 +1254,7 @@ nmap g/ /<C-u>\V<C-r>=join(map(getreg("+", 1, 1), {key, val -> escape(val, '\/')
 " = mapping: (Plugin)vim-anzu & vim-asterisk
 
 " ステータスラインに検索ヒット数を表示
-" incsearchのechoとanzuのechoでちらつくので、silentをはさんでから<Plug>(anzu-echo-search-status)を実施
+" 検索のechoとanzuのechoでちらつくので、silentをはさんでから<Plug>(anzu-echo-search-status)を実施
 " 9nとした場合には一番最後の検索結果にジャンプ
 " n,Nタイプ時にちらかないように(incsearchの"/xxxx"が表示されないよう)silent指定する
 nnoremap <silent> <Plug>(my-anzu-jump-n) :<C-u>silent execute 'normal' (v:count == 0 ? "\<Plug>(anzu-n)" : (v:count == 9 ? "G\<Plug>(anzu-N)" : v:count."\<Plug>(anzu-jump-n)"))<CR>
@@ -1209,10 +1269,8 @@ map *  <Plug>(asterisk-z*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-f
 map g* <Plug>(asterisk-gz*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
 
 " 行検索
-" nmap <Leader>*  :<C-u>normal! _<CR>v$h<Plug>(asterisk-z*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
-" nmap <Leader>g* :<C-u>normal! _<CR>v$h<Plug>(asterisk-gz*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
-nmap <Leader>*  :<C-u>normal! _<CR>v$h<Plug>(asterisk-z*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
-nmap <Leader>g* :<C-u>normal! _<CR>v$h<Plug>(asterisk-gz*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
+nmap <Leader>*  :<C-u>normal! g_<CR>v_<Plug>(asterisk-z*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
+nmap <Leader>g* :<C-u>normal! g_<CR>v_<Plug>(asterisk-gz*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
 
 " =================================
 " = mapping: (Plugin)unite.vim & vimfiler.vim
@@ -1238,14 +1296,8 @@ nnoremap <Space>R  :<C-u>UniteResume<CR>
 nnoremap <Space>ol :<C-u>Unite -create -vertical -no-quit -winwidth=50 -direction=botright -no-start-insert outline<CR>
 nnoremap <Space>op :<C-u>Unite -buffer-name=output output:<CR>
 nnoremap <Space>hy :<C-u>Unite -buffer-name=history_yank history/yank<CR>
-nnoremap <Space>w  :<C-u>Unite window:all<CR>
-
-" ほぼ使わない(もう消してよさそう)
-nnoremap <Space>ql  :<C-u>UniteWithInput -buffer-name=with_input_line line<CR>
-nnoremap <Space>qmm :<C-u>Unite menu:m<CR>
-nnoremap <Space>qmj :<C-u>Unite menu:job<CR>
-nnoremap <Space>q*  :<C-u>UniteWithCursorWord -buffer-name=with_cursor_word_line line<CR>
-nnoremap <Space>qr  :<C-u>Unite -buffer-name=register register<CR>
+nnoremap <Space>w  :<C-u>Unite -buffer-name=window window:all<CR>
+nnoremap <Space>qr :<C-u>Unite -buffer-name=register register<CR>
 
 nnoremap <Leader><Leader>f :<C-u>UniteWithBufferDir -buffer-name=buffer_dir_file file<CR>
 
@@ -1261,9 +1313,17 @@ xmap <Space>/ <Plug>(caw:hatpos:toggle)
 map <Leader>/ <Plug>(caw:hatpos:toggle:operator)
 
 " 行コピーしてペーストしてコメントアウト
-" 参考: http://d.hatena.ne.jp/osyo-manga/20120303/1330731434
+" REF: http://d.hatena.ne.jp/osyo-manga/20120303/1330731434
 nmap <Space>_ yy<Plug>(caw:hatpos:toggle)p
 xmap <Space>_ :yank<CR>gv<Plug>(caw:hatpos:toggle)`>p
+
+" =================================
+" = mapping: (Plugin)vim-textobj-from_regexp
+
+" REF: https://gist.githubusercontent.com/mattn/fecf0ce486192d83a95d93bdcd5def09/raw/9d0c0a19e4292ffdb1be21daf1ad3c5d8d06df01/textobj.vim
+
+omap <expr> i# textobj#from_regexp#mapexpr('#\zs.\{-}\ze#')
+xmap <expr> i# textobj#from_regexp#mapexpr('#\zs.\{-}\ze#')
 
 " =================================
 " = mapping: (Plugin)vim-textobj-parameter
@@ -1435,9 +1495,9 @@ inoremap <C-b> <Left>
 inoremap <C-f> <Right>
 
 " カーソル移動(補完用ポップアップ表示中じゃなければ)
+" どこかのサイトでpumvisibleじゃなくて、mode(?)を見ろみたいなことが書かれていたような。
+" 忘れた。。
 inoremap <expr> <C-e> pumvisible() ? '<C-e>' : '<End>'
-" inoremap <expr> <C-j> pumvisible() ? '<C-n>' : '<Down>'
-" inoremap <expr> <C-k> pumvisible() ? '<C-p>' : '<Up>'
 
 " カーソルを表示行で移動する。
 nnoremap j gj
@@ -1472,11 +1532,12 @@ nnoremap <Leader>csfc :<C-u>cscope find c <C-r>=expand('<cword>')<CR><CR>
 nnoremap <Leader>csfC :<C-u>cscope find c <C-r>=@+<CR><CR>
 nnoremap <Leader>csfs :<C-u>cscope find s <C-r>=expand('<cword>')<CR><CR>
 nnoremap <Leader>csfS :<C-u>cscope find s <C-r>=@+<CR><CR>
-" nnoremap <Leader>zff :<C-u>cscope find f <C-r>=expand('<cfile>')<CR><CR>
-" nnoremap <Leader>zfF :<C-u>cscope find f <C-r>=@+<CR><CR>
 
 " =================================
 " = mapping: other
+
+" save
+nnoremap <Leader>w :<C-u>w<CR>
 
 " :cnext, :cprev :cclose
 nnoremap gl :<C-u>cnext<CR>zz
@@ -1484,12 +1545,11 @@ nnoremap gh :<C-u>cprev<CR>zz
 nnoremap gk :<C-u>copen<CR>
 nnoremap gj :<C-u>cclose<CR>
 
-
 " 明示的に \ を付けて改行する
-imap <C-CR> <Plug>(back_slash_linefeed)
+imap <C-CR> <Plug>(my-back-slash-linefeed)
 
 " 開いているファイル or その上のフォルダを選択した状態でExplorerを開く
-" * ge, gE(後方移動)全く使っていないのでつぶしちゃう
+" NOTE: ge, gE(後方移動はbを使うから)全く使っていないのでつぶしちゃう
 nnoremap ge :<C-u>!start explorer /e,/select,%<CR>
 nnoremap gE :<C-u>!start explorer /select,<C-r>=my#get_root_dir(expand('%:p'))<CR><CR>
 
@@ -1497,6 +1557,7 @@ nnoremap gE :<C-u>!start explorer /select,<C-r>=my#get_root_dir(expand('%:p'))<C
 " leximaのendwiseも動いてほしく、lexima#expand()を呼び出す前にカーソル位置を移動させる必要があり、
 " 無理やりcursor()を呼び出している
 " NOTE: expr指定時にはcursor位置変えても自動(タイミング不明)でカーソルが元の場所に戻る。。(ちゃんとヘルプに書いてあるのがすごい)
+" inoremap <silent><expr> <S-CR> '<C-r>=cursor(line('.'), 10000)<CR><BS>' . lexima#expand("\<LT>CR>", 'i')
 inoremap <silent><expr> <S-CR> '<C-r>=cursor(line("."), 10000)<CR><BS>' . lexima#expand("\<LT>CR>", 'i')
 
 " normalでもleximaを呼び出したいので、feedkeysを使用して実現
@@ -1504,7 +1565,7 @@ inoremap <silent><expr> <S-CR> '<C-r>=cursor(line("."), 10000)<CR><BS>' . lexima
 "       : call feedkeys("\
 "       ")
 "       ↑のように二行分のスクリプトが実行され123タイプでエラーとなってしまうので、\<CR>ではなく、\<LT>CR>と記載する必要がある。
-nnoremap <silent> z<CR> :<C-u>call feedkeys("A\<LT>CR>")<CR>
+nnoremap <silent> <CR> :<C-u>call feedkeys("A\<LT>CR>")<CR>
 
 " ^はあんまり使わない(_を使う)ので他に割り当て
 nnoremap ^ :<C-u>Cfp<CR>
@@ -1629,12 +1690,15 @@ nnoremap <silent> <Leader>tcl :<C-u>execute '!start TortoiseProc.exe /command:lo
 
 " diff
 nnoremap <Leader>qw :<C-u>windo diffthis<CR>
-nnoremap <Leader>qo :<C-u>diffoff<CR>
+nnoremap <Leader>qo :<C-u>windo diffoff<CR>
+nnoremap <Leader>qO :<C-u>bufdo diffoff<CR>
 nnoremap <Leader>qu :<C-u>diffupdate<CR>
+nnoremap ]c ]czz
+nnoremap [c [czz
 " nnoremap <Leader>qh :<C-u>diffsplit <C-r>=substitute(expand('%:p'), 'V11L10_main_work', 'V11L10_6010_config_def', '')<CR><CR>
 
 " dk が dj と対象となるようにする
-" 参考: cohama.vimrc
+" REF: https://github.com/cohama/.vim/blob/72d1d536ad4422e29d339fcda7eae19ba56b309d/.vimrc#L1068-L1069
 nnoremap <expr> dk line('.') == line('$') ? 'dk' : 'dkk'
 
 " 短縮入力にユーザ定義補完を使う
@@ -1684,7 +1748,7 @@ endif
 " 改行コード変換
 "
 " Vimからtortoisesvn呼び出し
-" 参考： http://blog.blueblack.net/item_144
+" REF: http://blog.blueblack.net/item_144
 "
 " treeコマンド
 " !tree /F
@@ -1692,12 +1756,12 @@ endif
 " 最短一致 : \{-}
 "
 " ascii以外の文字検索/[^\t -~]
-" 参考: http://vimwiki.net/?RegexQA%2F2
+" REF: http://vimwiki.net/?RegexQA%2F2
 "
 " 否定後読み
 " \(foo\)\@<!bar    |  "foobar" 以外の "bar"
 " \(\/\/.*\)\@<!in  |  "//" の後ろ以外の "in"
-" 参考: :h \@<!
+" REF: :h \@<!
 "
 " :vimgrep で再帰的に検索
 " :vim /hoge/j .vim/**/*.vim
@@ -1720,7 +1784,9 @@ endif
 " GUIからfontを変更
 " :<C-u>set guifont=*<CR>
 "
-" diff > FilterWritePre
+" :caddbuffer "カレントバッファーを使ってquickfixを表示する
 "
+" let str = "おかえりなさい"
+" call map(reverse(split(str, '\ze')), {key, value -> execute("echo '". value . "'")})
 "
 " vim:set et ts=2 sts=2 sw=2 tw=0 ft=vim:

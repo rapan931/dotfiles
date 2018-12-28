@@ -18,6 +18,10 @@ function! s:set_indent(tab_length, is_hard_tab)
   let &tabstop     = a:tab_length
 endfunction
 
+function! my#filetypes#javascript() abort
+  call s:set_indent(4, 1)
+endfunction
+
 function! my#filetypes#cpp() abort
   call s:set_indent(4, 0)
 endfunction
