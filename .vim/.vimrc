@@ -303,12 +303,10 @@ let g:precious_enable_switch_CursorMoved_i = {'*': 0, 'markdown': 1}
 call altr#remove_all()
 
 " vim
-call altr#define('autoload/%.vim', 'doc/%.txt', 'plugin/%.vim')
-
 " go
-call altr#define('%.go', '%_test.go')
-
 " vim(opeartor-user and textobj-user based Vim plugins)
+call altr#define('autoload/%.vim', 'doc/%.txt', 'plugin/%.vim')
+call altr#define('%.go', '%_test.go')
 call altr#define('autoload/%/%.vim', 'doc/%-%.txt', 'plugin/%/%.vim')
 
 " =================================
@@ -1011,9 +1009,12 @@ MyAutoCmd VimEnter,WinEnter,BufWinEnter * if &filetype ==# 'vimfiler' | match no
 MyAutoCmdFT vimfiler match none
 
 " Windowを分割するマンなので、
-" どのウィンドウにカーソルがあるかわかるように、Vimにforcusが戻ったら対象ウィンドウをハイライトする。
+" どのウィンドウにカーソルがあるかわかるように、Vimにfocusが戻ったら対象ウィンドウをハイライトする。
+" MyAutoCmd FocusGained * call matchadd('Cursor', '\%#', 101)
+" MyAutoCmd FocusGained * call matchadd('Cursor', '\%#', 101)
 MyAutoCmd FocusGained * call my#flash_window(1000, 'MyFlashy')
-"
+
+
 " http://qiita.com/kentaro/items/6aa9f108df825b2a8b39
 MyAutoCmd BufEnter ruby,vim silent execute 'lcd' my#get_root_dir()
 
@@ -1066,7 +1067,7 @@ endif
 command! MinpackUpdate call minpac#update('', {'do': 'call minpac#status()'})
 
 if has('win32')
-  command! TCurrent if empty(bufname("%")) | throw 'no name!!' | endif | terminal ++close cmd /k cd /d "%:p:h" & set LANG=ja_JP.UTF-8
+  command! TCurrent if empty(bufname("%")) | throw 'Current buffer is [No Name]!!' | endif | terminal ++close cmd /k cd /d "%:p:h" & set LANG=ja_JP.UTF-8
 endif
 
 " " REF: https://github.com/vim-jp/issues/issues/1204
@@ -1402,8 +1403,8 @@ nmap <C-Up>    <Plug>(textmanip-duplicate-up)
 
 nnoremap <Leader>mn :<C-u>MemoNew<CR>task<CR>
 nnoremap <Leader>ml :<C-u>MemoList<CR>
-nnoremap <leader>mo :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.' . g:memolist_memo_suffix, 1, 10, 0)<CR>
-nnoremap <leader>mc :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.' . g:memolist_memo_suffix, 1, 10, 1)<CR>
+nnoremap <leader>mo :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.' . g:memolist_memo_suffix, 1, 12, 0)<CR>
+nnoremap <leader>mc :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.' . g:memolist_memo_suffix, 1, 12, 1)<CR>
 \ :1,3s/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d/\=strftime(g:memolist_memo_date)/g<CR>
 
 " =================================
@@ -1548,10 +1549,14 @@ nnoremap gj :<C-u>cclose<CR>
 " 明示的に \ を付けて改行する
 imap <C-CR> <Plug>(my-back-slash-linefeed)
 
-" 開いているファイル or その上のフォルダを選択した状態でExplorerを開く
-" NOTE: ge, gE(後方移動はbを使うから)全く使っていないのでつぶしちゃう
+" 開いているファイルを選択した状態でExplorerを開く
+" 開いているファイルのルートディレクトリを開く
+" (ge, gE全く使っていないのでつぶしちゃう)
 nnoremap ge :<C-u>!start explorer /e,/select,%<CR>
 nnoremap gE :<C-u>!start explorer /select,<C-r>=my#get_root_dir(expand('%:p'))<CR><CR>
+
+" カーソル下のファイルをstartで実行
+nnoremap gx :<C-u>!start <C-r>=substitute(expand('<cfile>'), '/', '\', 'g')<CR><CR>
 
 " insertの<S-CR>でカーソルが行途中にあっても改行ができるようにする。
 " leximaのendwiseも動いてほしく、lexima#expand()を呼び出す前にカーソル位置を移動させる必要があり、
@@ -1695,7 +1700,6 @@ nnoremap <Leader>qO :<C-u>bufdo diffoff<CR>
 nnoremap <Leader>qu :<C-u>diffupdate<CR>
 nnoremap ]c ]czz
 nnoremap [c [czz
-" nnoremap <Leader>qh :<C-u>diffsplit <C-r>=substitute(expand('%:p'), 'V11L10_main_work', 'V11L10_6010_config_def', '')<CR><CR>
 
 " dk が dj と対象となるようにする
 " REF: https://github.com/cohama/.vim/blob/72d1d536ad4422e29d339fcda7eae19ba56b309d/.vimrc#L1068-L1069
