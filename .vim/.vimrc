@@ -952,7 +952,6 @@ MyAutoCmdFT * call my#filetypes#setting(expand('<amatch>'))
 " =================================
 " = command: define
 
-" 名前が分かりづらいので変えたい
 " - Copy file name
 " - Copy file path
 " - Copy file relative path
@@ -966,7 +965,6 @@ command! Cdp call my#echo_and_yank(my#get_root_dir(expand('%:p')))
 command! CfpConvSeparator call my#echo_and_yank(substitute(expand('%:p'), '\', '/', 'g'))
 command! CfrConvSeparator call my#echo_and_yank(substitute(substitute(expand('%'), '^\', '', 'g'), '\' , '/', 'g'))
 command! CdpConvSeparator call my#echo_and_yank(substitute(my#get_root_dir(expand('%:p')), '\', '/', 'g'))
-command! Cn Cfn
 
 " 選択範囲内の数値の合計
 command! -range Sum      call my#sum(0)
@@ -1019,8 +1017,8 @@ nnoremap ZQ    <Nop>
 nnoremap Q     <Nop>
 nnoremap gQ    <Nop>
 onoremap ;     <NOP>
-noremap  #     <NOP>
-noremap  g#    <NOP>
+nnoremap #     <NOP>
+nnoremap g#    <NOP>
 noremap  ?     <NOP>
 
 " prefix keyとして z, <Space>を使用
