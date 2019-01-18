@@ -9,7 +9,7 @@ let g:skip_defaults_vim = 1
 
 " =================================
 " = setting: initialize
-function! s:mkdir(dir_path)
+function! s:mkdir(dir_path) abort
   if !isdirectory(a:dir_path)
     echomsg 'mkdir! ' . a:dir_path
     call mkdir(a:dir_path, "p")
@@ -28,7 +28,7 @@ if has('vim_starting')
     endif
   endif
 
-  " @Shougo's ware use $XDG_CACHE_HOME, but windows not exist $XDG_CACHE_HOME, it set up.
+  " @Shougo's ware use $XDG_CACHE_HOME, but Windows not exist $XDG_CACHE_HOME. It set up.
   if !exists('$XDG_CACHE_HOME')
     let $XDG_CACHE_HOME = $VIMFILES . '/.cache'
     call s:mkdir($XDG_CACHE_HOME)
@@ -109,7 +109,7 @@ set packpath=$VIMFILES
 call s:mkdir(&packpath . '/pack/m/opt')
 call s:mkdir(&packpath . '/pack/m/start')
 packadd minpac
-call minpac#init({'package_name': 'm', 'verbose': 3})
+call minpac#init({'package_name': 'm', 'verbose': 3, 'depth': 0})
 
 " minpac
 call minpac#add('k-takata/minpac', {'type': 'opt'})
@@ -186,6 +186,7 @@ call minpac#add('haya14busa/vim-edgemotion')
 call minpac#add('kana/vim-altr', {'type': 'opt'})
 call minpac#add('vim-jp/autofmt')
 call minpac#add('mopp/sky-color-clock.vim')
+call minpac#add('rapan931/vim-pgpuzzle')
 
 " doc
 call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
@@ -206,88 +207,9 @@ packadd vimdoc-ja
 packadd vim-go
 
 " =================================
-" = setting: (Plugin)unite.vim & unite_source
+" = setting: (Plugin)unite.vim & vimfiler.vim
 
-let g:unite_source_find_command = 'C:/Program Files/Git/usr/bin/find.exe'
-let g:unite_source_grep_command = $GOPATH . '/bin/jvgrep.exe'
-let g:unite_source_grep_default_opts = '-i --exclude ''\.(git|svn|hg|bzr)'''
-let g:unite_source_grep_recursive_opt = '-R'
-let g:unite_source_rec_async_command = ['files', '-A', '-a']
-
-" max number of yank history
-let g:neoyank#limit = 200
-
-" disable newmru validation(execute :NeoMRUReload when notice)
-" max number of neomru history
-let g:neomru#do_validate = 0
-let g:neomru#file_mru_limit = 1000
-
-" mru exclude server path(start '//' or '\\')
-call unite#custom#source('file_mru,neomru/file', 'ignore_pattern', '\~$\|\.\%(o\|exe\|dll\|bak\|sw[po]\)$\|\%(^\|/\)\.\%(git\|svn\)\%($\|/\)\|^\%(//\|\\\\\)')
-call unite#custom#source('directory_mru', 'ignore_pattern', '\%(^\|/\)\.\%(hg\|git\|bzr\|svn\)\%($\|/\)\|^\%(//\|\\\\\)')
-
-" neomru/file do project directory(file_mru is target all files)
-call unite#custom#source('neomru/file', 'matchers', ['matcher_project_files', 'matcher_default'])
-
-" start insert mode
-call unite#custom#profile('default', 'context', {'start_insert' : 1})
-
-" grepでもauto closeする
-call unite#custom#profile('source/grep', 'context', {'no-quit' : 1})
-
-" Unite bufferでフルパス表示は
-" call unite#custom#source('buffer', 'converters', ['converter_full_path', 'converter_word_abbr'])
-
-" Unite file/file_mruで編集中のファイルは表示しない
-" call unite#custom#source('file,file_mru', 'matchers', ['matcher_hide_current_file'])
-
-" outer_grep, outer_grep_add actionを追加
-let s:outer_grep = { 'description' : 'do outer grep' }
-function! s:outer_grep.func(candidate)
-  try
-    let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
-    if pattern != ""
-      " silent execute 'grep! "' . escape(pattern, '|') . '" ' . a:candidate.action__path
-      silent execute 'grep!' escape(pattern, '|') a:candidate.action__path
-    else
-      throw 'non-pattern'
-    endif
-  catch /^Vim:Interrupt$\|^non-pattern$/
-    echo 'Cancel'
-  endtry
-endfunction
-call unite#custom_action('directory,file', 'outer_grep', s:outer_grep)
-unlet s:outer_grep
-
-let s:outer_grep_add = { 'description' : 'do outer grep directory(add quickfix list)' }
-function! s:outer_grep_add.func(candidate)
-  try
-    let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
-    if pattern != ""
-      silent execute 'grepadd!' escape(pattern, '|') a:candidate.action__path
-    else
-      throw 'non-pattern'
-    endif
-  catch /^Vim:Interrupt$\|^non-pattern$/
-    echo 'Cancel'
-  endtry
-endfunction
-call unite#custom_action('directory,file', 'outer_grep_add', s:outer_grep_add)
-unlet s:outer_grep_add
-
-" Unite menu
-let g:unite_source_menu_menus = {}
-let g:unite_source_menu_menus.m = {'description': 'all menu'}
-let g:unite_source_menu_menus.m.map = function('my#unite_menu_map')
-if has('win32')
-  let g:unite_source_menu_menus.m.candidates = [
-  \   ['vimrc',            $MYVIMRC],
-  \   ['command prompt',   '!start cmd'],
-  \   ['explorer',         '!start rundll32 url.dll,FileProtocolHandler .'],
-  \   ['explorer pc',      '!start explorer /e,/root,::{20D04FE0-3AEA-1069-A2D8-08002B30309D}'],
-  \   ['control panel',    '!start control'],
-  \ ]
-endif
+call my#filetypes#unite_vimfiler_init()
 
 " =================================
 " = setting: (Plugin)vim-precious & context_filetype.vim
@@ -327,18 +249,6 @@ call altr#define('autoload/%/%.vim', 'doc/%-%.txt', 'plugin/%/%.vim')
 let g:neosnippet#snippets_directory = $VIMFILES . '/snippet'
 call s:mkdir(g:neosnippet#snippets_directory)
 let g:neosnippet#scope_aliases = {'cpp': 'c'}
-
-" =================================
-" = setting: (Plugin)vimfiler.vim
-
-" 全部表示(default:['^\.'])
-" vimfilerをデフォルトのファイラーに設定
-let g:vimfiler_ignore_pattern = ''
-let g:vimfiler_as_default_explorer = 1
-
-call vimfiler#custom#profile('default', 'context', {
-\   'columns' : 'type'
-\ })
 
 " =================================
 " = setting: (Plugin)vim-go
@@ -507,33 +417,33 @@ if !has('win32')
   let g:lightline.colorscheme = '16color'
 endif
 
-function! LightlineModified()
+function! LightlineModified() abort
   return &ft =~ 'help\|vimfiler' ? '' : &modified ? '+' : ''
 endfunction
 
-function! LightlineReadonly()
+function! LightlineReadonly() abort
   return &ft !~? 'help\|vimfiler' && &readonly ? 'RO' : ''
 endfunction
 
-function! LightlineFilename()
+function! LightlineFilename() abort
   return ('' != LightlineReadonly() ? LightlineReadonly() . ' ' : '') .
   \ (&ft == 'vimfiler' ? vimfiler#get_status_string() :
   \ '' != expand('%:t') ? expand('%:t') : '[No Name]')
 endfunction
 
-function! LightlineFileformat()
+function! LightlineFileformat() abort
   return winwidth(0) > 70 ? &fileformat : ''
 endfunction
 
-function! LightlineFiletype()
+function! LightlineFiletype() abort
   return winwidth(0) > 70 ? (&filetype !=# '' ? &filetype : 'no ft') : ''
 endfunction
 
-function! LightlineFileencoding()
+function! LightlineFileencoding() abort
   return winwidth(0) > 70 ? (&fenc !=# '' ? &fenc : &enc) : ''
 endfunction
 
-function! LightlineMode()
+function! LightlineMode() abort
   return winwidth(0) > 70 ? lightline#mode() : ''
 endfunction
 
@@ -618,6 +528,7 @@ let g:textobj_multiblock_no_default_key_mappings = 1
 let g:textobj_parameter_no_default_key_mappings  = 1
 let g:textobj_wiw_no_default_key_mappings        = 1
 let g:textobj_precious_no_default_key_mappings   = 1
+let g:textobj_conflict_no_default_key_mappings   = 1
 
 " =================================
 " = setting: (Plugin)vim-choosewin
@@ -716,6 +627,11 @@ call operator#sandwich#set('delete', 'all', 'hi_duration', 10)
 " = setting: (Plugin)previm
 
 let g:previm_enable_realtime = 1
+
+" =================================
+" = setting: (Plugin)vim-pgpuzzle
+
+let g:pgpuzzle_auto_load = 1
 
 " =================================
 " = setting: Vim
@@ -1038,13 +954,18 @@ MyAutoCmdFT * call my#filetypes#setting(expand('<amatch>'))
 
 " 名前が分かりづらいので変えたい
 " - Copy file name
-" - Copy file full path
+" - Copy file path
 " - Copy file relative path
+" - Copy root direcotory name
+" - Copy root direcotory path
 command! Cfn call my#echo_and_yank(expand('%:t'))
 command! Cfp call my#echo_and_yank(expand('%:p'))
-command! Crp call my#echo_and_yank(substitute(expand('%'), '^\', '', 'g'))
+command! Cfr call my#echo_and_yank(substitute(expand('%'), '^\', '', 'g'))
+command! Cdn call my#echo_and_yank(substitute(my#get_root_dir(expand('%:p')), '.*\\', '', 'g'))
+command! Cdp call my#echo_and_yank(my#get_root_dir(expand('%:p')))
 command! CfpConvSeparator call my#echo_and_yank(substitute(expand('%:p'), '\', '/', 'g'))
-command! CrpConvSeparator call my#echo_and_yank(substitute(substitute(expand('%'), '^\', '', 'g'), '\' , '/', 'g'))
+command! CfrConvSeparator call my#echo_and_yank(substitute(substitute(expand('%'), '^\', '', 'g'), '\' , '/', 'g'))
+command! CdpConvSeparator call my#echo_and_yank(substitute(my#get_root_dir(expand('%:p')), '\', '/', 'g'))
 command! Cn Cfn
 
 " 選択範囲内の数値の合計
@@ -1053,9 +974,10 @@ command! -range SumFloat call my#sum(1)
 
 " よく使うファイルとか
 command! EVimrc edit $MYVIMRC
+command! ERunVimrc edit $VIMFILES/run.vim
 command! EFiletypeSetting edit $VIMFILES/autoload/my/filetypes.vim
 command! ReflectVimrc source $MYVIMRC
-command! RunVimScript source $VIM/vim_script.vim
+command! RunVimScript source $VIMFILES/run.vim
 
 " 開いているファイルに移動(元: plugins/kaoriya/plugin/cmdex.vim)
 command! CdCurrent cd %:p:h
@@ -1064,7 +986,7 @@ if executable('touch')
   command! Touch if &modified | call my#error_msg('modified file!') | else | silent execute '!start touch' expand('%:p') | endif
 endif
 
-command! MinpackUpdate call minpac#update('', {'do': 'call minpac#status()'})
+command! MinpacUpdate call minpac#update('', {'do': 'call minpac#status()'})
 
 if has('win32')
   command! TCurrent if empty(bufname("%")) | throw 'Current buffer is [No Name]!!' | endif | terminal ++close cmd /k cd /d "%:p:h" & set LANG=ja_JP.UTF-8
@@ -1073,6 +995,9 @@ endif
 " " REF: https://github.com/vim-jp/issues/issues/1204
 " command! TDotfiles :terminal ++close cmd /k cd /d "<C-r>=expand($HOME)<CR>/dotfiles" & set LANG=ja_JP.UTF-8
 command! TDotfiles execute 'terminal ++close cmd /k cd /d ' . expand($HOME) . '\dotfiles & set LANG=ja_JP.UTF-8'
+
+" REF: http://secret-garden.hatenablog.com/entry/2018/02/05/190925
+command! -nargs=* Debug try | echomsg <q-args> ":" string(<args>) | catch | echomsg <q-args> | endtry
 
 " =================================
 " = mapping: initialize
@@ -1085,26 +1010,30 @@ let g:mapleader = ','
 " * 保存して閉じる(ZZ, 誤タイプ防止)
 " * 保存せず閉じる(ZQ, 誤タイプ防止)
 " * Exモードに入る(Q, gQ, 誤タイプ防止)
-" * f, t, F, Tの繰り返し(';' clever-f使うのでいらない)
-" * 後方検索(#, g#, vim-asteriskを使ってから#, g#を全く使わなくなった)
+" * f, t, F, Tの繰り返し(; clever-f使うのでいらない)
+" * 後方検索 (#, vim-asterisk使ってから全く使わなくなったから)
+" * 後方検索 (?, 何故か全く使わないから。incsearch-stay使っているからかも)
 inoremap <C-@> <Nop>
 nnoremap ZZ    <Nop>
 nnoremap ZQ    <Nop>
 nnoremap Q     <Nop>
 nnoremap gQ    <Nop>
 onoremap ;     <NOP>
-noremap #      <NOP>
-noremap g#     <NOP>
+noremap  #     <NOP>
+noremap  g#    <NOP>
+noremap  ?     <NOP>
 
 " prefix keyとして z, <Space>を使用
 " - ウィンドウ移動系の操作にs使ってたけど
 "   このvimrcがない環境だとs使って意図しない編集しまくりだったので、sは基本使わないようにする
 " - その次にtを使ってたけど
 "   Vim本来のt(右方向への指定文字前ジャンプ)を結構使うようになったので、prefixにzを使う
-nnoremap z <Nop>
-xnoremap z <Nop>
-nnoremap s <Nop>
-xnoremap s <Nop>
+nnoremap z       <Nop>
+xnoremap z       <Nop>
+nnoremap <SPACE> <Nop>
+xnoremap <SPACE> <Nop>
+nnoremap s       <Nop>
+xnoremap s       <Nop>
 
 " windowの生成, 移動のprefixにzを使っちゃったので、;にzを割り当て
 nnoremap ; z
@@ -1325,6 +1254,9 @@ xmap <Space>_ :yank<CR>gv<Plug>(caw:hatpos:toggle)`>p
 
 omap <expr> i# textobj#from_regexp#mapexpr('#\zs.\{-}\ze#')
 xmap <expr> i# textobj#from_regexp#mapexpr('#\zs.\{-}\ze#')
+
+omap <expr> i_ textobj#from_regexp#mapexpr('_\zs.\{-}\ze_')
+xmap <expr> i_ textobj#from_regexp#mapexpr('_\zs.\{-}\ze_')
 
 " =================================
 " = mapping: (Plugin)vim-textobj-parameter
@@ -1556,7 +1488,8 @@ nnoremap ge :<C-u>!start explorer /e,/select,%<CR>
 nnoremap gE :<C-u>!start explorer /select,<C-r>=my#get_root_dir(expand('%:p'))<CR><CR>
 
 " カーソル下のファイルをstartで実行
-nnoremap gx :<C-u>!start <C-r>=substitute(expand('<cfile>'), '/', '\', 'g')<CR><CR>
+" REF: https://github.com/vim-jp/issues/issues/1220
+nnoremap gx :<C-u>!start <C-r>=expand('<cfile>:p')<CR><CR>
 
 " insertの<S-CR>でカーソルが行途中にあっても改行ができるようにする。
 " leximaのendwiseも動いてほしく、lexima#expand()を呼び出す前にカーソル位置を移動させる必要があり、
@@ -1698,8 +1631,14 @@ nnoremap <Leader>qw :<C-u>windo diffthis<CR>
 nnoremap <Leader>qo :<C-u>windo diffoff<CR>
 nnoremap <Leader>qO :<C-u>bufdo diffoff<CR>
 nnoremap <Leader>qu :<C-u>diffupdate<CR>
+nnoremap <Leader>>  :<C-u>diffput<CR>
 nnoremap ]c ]czz
 nnoremap [c [czz
+
+" spell
+nnoremap ]s ]szz
+nnoremap [s [szz
+
 
 " dk が dj と対象となるようにする
 " REF: https://github.com/cohama/.vim/blob/72d1d536ad4422e29d339fcda7eae19ba56b309d/.vimrc#L1068-L1069
@@ -1762,9 +1701,12 @@ endif
 " ascii以外の文字検索/[^\t -~]
 " REF: http://vimwiki.net/?RegexQA%2F2
 "
+" 否定先読み
+" \s*function\(.*abort$\)\@!  |  後ろに "abort" がない "function"
+"
 " 否定後読み
-" \(foo\)\@<!bar    |  "foobar" 以外の "bar"
-" \(\/\/.*\)\@<!in  |  "//" の後ろ以外の "in"
+" \(foo\)\@<!bar    |  前に "foo" がない "bar"
+" \(\/\/.*\)\@<!in  |  前に "//" がない "in" (あってる？)
 " REF: :h \@<!
 "
 " :vimgrep で再帰的に検索

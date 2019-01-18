@@ -54,26 +54,6 @@ function! my#sleep(ms) abort
   endwhile
 endfunction
 
-" fizzbuzz
-function! my#fizzbuzz(count) abort
-  for s:num in range(a:count + 1)
-    if (s:num % 3) == 0 && (s:num % 5) == 0
-      echo 'FizzBuzz'
-    elseif (s:num % 3) == 0
-      echo 'Fizz'
-    elseif (s:num % 5) == 0
-      echo 'Buzz'
-    else
-      echo s:num
-    endif
-  endfor
-endfunction
-
-" https://teratail.com/questions/11046
-function! my#missionaries_and_cannibals_problem() abort
-  
-endfunction
-
 " get svn root path
 " if check vital source, can make more tightly
 function! my#get_root_dir(...) abort

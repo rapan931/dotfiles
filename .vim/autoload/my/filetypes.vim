@@ -6,7 +6,7 @@ function! my#filetypes#setting(ftype) abort
   endif
 endfunction
 
-function! s:set_indent(tab_length, is_hard_tab)
+function! s:set_indent(tab_length, is_hard_tab) abort
   if a:is_hard_tab
     setlocal noexpandtab
   else
@@ -35,6 +35,110 @@ function! my#filetypes#help() abort
   nnoremap <buffer> q ZZ
 endfunction
 
+function! my#filetypes#unite_vimfiler_init() abort
+  " =================================
+  " = setting: (Plugin)unite.vim
+  let g:unite_source_find_command = 'C:/Program Files/Git/usr/bin/find.exe'
+  let g:unite_source_grep_command = $GOPATH . '/bin/jvgrep.exe'
+  let g:unite_source_grep_default_opts = '-i --exclude ''\.(git|svn|hg|bzr)'''
+  let g:unite_source_grep_recursive_opt = '-R'
+  let g:unite_source_rec_async_command = ['files', '-A', '-a']
+
+  " max number of yank history
+  let g:neoyank#limit = 200
+
+  " disable newmru validation(execute :NeoMRUReload when notice)
+  " max number of neomru history
+  let g:neomru#do_validate = 0
+  let g:neomru#file_mru_limit = 1000
+
+  " mru exclude server path(start '//' or '\\')
+  call unite#custom#source('file_mru,neomru/file', 'ignore_pattern', '\~$\|\.\%(o\|exe\|dll\|bak\|sw[po]\)$\|\%(^\|/\)\.\%(git\|svn\)\%($\|/\)\|^\%(//\|\\\\\)')
+  call unite#custom#source('directory_mru', 'ignore_pattern', '\%(^\|/\)\.\%(hg\|git\|bzr\|svn\)\%($\|/\)\|^\%(//\|\\\\\)')
+
+  " neomru/file do project directory(file_mru is target all files)
+  call unite#custom#source('neomru/file', 'matchers', ['matcher_project_files', 'matcher_default'])
+
+  " start insert mode
+  call unite#custom#profile('default', 'context', {'start_insert' : 1})
+
+  " grepでもauto closeする
+  call unite#custom#profile('source/grep', 'context', {'no-quit' : 1})
+
+  " Unite bufferでフルパス表示は
+  " call unite#custom#source('buffer', 'converters', ['converter_full_path', 'converter_word_abbr'])
+
+  " Unite file/file_mruで編集中のファイルは表示しない
+  " call unite#custom#source('file,file_mru', 'matchers', ['matcher_hide_current_file'])
+
+  " " Unite menu
+  " let g:unite_source_menu_menus = {}
+  " let g:unite_source_menu_menus.m = {'description': 'all menu'}
+  " let g:unite_source_menu_menus.m.map = function('my#unite_menu_map')
+  " if has('win32')
+  "   let g:unite_source_menu_menus.m.candidates = [
+  "  \   ['vimrc',            $MYVIMRC],
+  "  \   ['command prompt',   '!start cmd'],
+  "  \   ['explorer',         '!start rundll32 url.dll,FileProtocolHandler .'],
+  "  \   ['explorer pc',      '!start explorer /e,/root,::{20D04FE0-3AEA-1069-A2D8-08002B30309D}'],
+  "  \   ['control panel',    '!start control'],
+  "  \ ]
+  " endif
+
+  " outer_grep, outer_grep_add actionを追加
+  let s:outer_grep = { 'description' : 'do outer grep' }
+  function! s:outer_grep.func(candidate) abort
+    try
+      let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
+      if pattern != ""
+        " silent execute 'grep! "' . escape(pattern, '|') . '" ' . a:candidate.action__path
+        silent execute 'grep!' escape(pattern, '|') a:candidate.action__path
+      else
+        throw 'non-pattern'
+      endif
+    catch /^Vim:Interrupt$\|^non-pattern$/
+      echo 'Cancel'
+    endtry
+  endfunction
+  call unite#custom_action('directory,file', 'outer_grep', s:outer_grep)
+  unlet s:outer_grep
+
+  let s:outer_grep_add = { 'description' : 'do outer grep directory(add quickfix list)' }
+  function! s:outer_grep_add.func(candidate) abort
+    try
+      let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
+      if pattern != ""
+        silent execute 'grepadd!' escape(pattern, '|') a:candidate.action__path
+      else
+        throw 'non-pattern'
+      endif
+    catch /^Vim:Interrupt$\|^non-pattern$/
+      echo 'Cancel'
+    endtry
+  endfunction
+  call unite#custom_action('directory,file', 'outer_grep_add', s:outer_grep_add)
+  unlet s:outer_grep_add
+
+  let s:tortoise_svn_log = { 'description' : 'do TortoiseProc.exe log' }
+  function! s:tortoise_svn_log.func(candidate) abort
+    silent execute '!start TortoiseProc.exe /command:log /path:"' . a:candidate.action__path . '" /strict'
+  endfunction
+  call unite#custom_action('directory,file', 'tortoise_svn_log', s:tortoise_svn_log)
+  unlet s:tortoise_svn_log
+
+  " =================================
+  " = setting: (Plugin)vimfiler.vim
+
+  " 全部表示(default:['^\.'])
+  " vimfilerをデフォルトのファイラーに設定
+  let g:vimfiler_ignore_pattern = ''
+  let g:vimfiler_as_default_explorer = 1
+
+  call vimfiler#custom#profile('default', 'context', {
+  \   'columns' : 'type'
+  \ })
+endfunction
+
 function! my#filetypes#unite() abort
   " 横幅のsyntaxハイライトが聞くようにする
   setlocal synmaxcol=0
@@ -56,6 +160,7 @@ function! my#filetypes#unite() abort
   nnoremap <silent><buffer><expr> <Leader><Leader>s unite#do_action('above')
   nnoremap <silent><buffer><expr> <Leader><Leader>g unite#do_action('outer_grep')
   nnoremap <silent><buffer><expr> <Leader><Leader>G unite#do_action('outer_grep_add')
+  nnoremap <silent><buffer><expr> <Leader>tl        unite#do_action('tortoise_svn_log')
 
   " <Leader><Leader>fでfile action
   nnoremap <silent><buffer><expr> <Leader><Leader>f unite#do_action('file')
@@ -141,14 +246,14 @@ function! my#filetypes#qf() abort
     return
   endif
 
-  function! s:undo_entry()
+  function! s:undo_entry() abort
     let history = get(w:, 'qf_history', [])
     if !empty(history)
       call setqflist(remove(history, -1), 'r')
     endif
   endfunction
 
-  function! s:del_entry() range
+  function! s:del_entry() range abort
     echo a:firstline
     let qf = getqflist()
     let history = get(w:, 'qf_history', [])
@@ -174,6 +279,7 @@ endfunction
 function! my#filetypes#go_comment_for_tour_of_go(search1, search1_flgs, search2, search2_flgs) abort
   if &runtimepath !~ 'caw.vim'
     my#error_msg('not found caw.vim!')
+    return
   endif
 
   let line1 = search(a:search1, a:search1_flgs)
@@ -181,6 +287,7 @@ function! my#filetypes#go_comment_for_tour_of_go(search1, search1_flgs, search2,
 
   if line1 == 0 || line2 == 0
     my#error_msg('not found specified strings!')
+    return
   endif
 
   execute line1 . 'y'
