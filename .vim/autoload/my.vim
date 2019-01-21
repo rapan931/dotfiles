@@ -360,3 +360,11 @@ function! my#comment_search_to_search(search1, search1_flgs, search2, search2_fl
   call setpos("'>", [bufnr('%'), line2, 0, 0])
   call caw#keymapping_stub('x', 'hatpos', 'comment')
 endfunction
+
+function! my#diff_settings() abort
+  if &diff
+    setlocal nocursorline
+    nnoremap <buffer> u     u:diffupdate<CR>
+    nnoremap <buffer> <C-r> <C-r>:diffupdate<CR>
+  endif
+endfunction

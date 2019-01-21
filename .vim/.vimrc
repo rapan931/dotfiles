@@ -930,21 +930,15 @@ MyAutoCmdFT vimfiler match none
 " MyAutoCmd FocusGained * call matchadd('Cursor', '\%#', 101)
 MyAutoCmd FocusGained * call my#flash_window(1000, 'MyFlashy')
 
-
 " http://qiita.com/kentaro/items/6aa9f108df825b2a8b39
 MyAutoCmd BufEnter ruby,vim silent execute 'lcd' my#get_root_dir()
 
 " diffの設定
 " REF: https://github.com/vim-jp/issues/issues/1206
+" REF: https://vim-jp.org/blog/2018/12/12/new-diffopts-value.html
 " MyAutoCmd FilterWritePre * call s:my_diff_settings()
-MyAutoCmd OptionSet diff if v:option_old == 0 && v:option_new == 1 | call s:my_diff_settings() | endif
-function! s:my_diff_settings() abort
-  if &diff
-    setlocal nocursorline
-    nnoremap <buffer> u     u:diffupdate<CR>
-    nnoremap <buffer> <C-r> <C-r>:diffupdate<CR>
-  endif
-endfunction
+" MyAutoCmd OptionSet diff if v:option_old == 0 && v:option_new == 1 | call s:my_diff_settings() | endif
+MyAutoCmd DiffUpdated * call my#diff_settings()
 
 " その他の各種設定
 MyAutoCmdFT * call my#filetypes#setting(expand('<amatch>'))
