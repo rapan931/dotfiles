@@ -122,6 +122,10 @@ call minpac#add('Shougo/unite-outline')
 call minpac#add('Shougo/vimfiler.vim', {'type': 'opt'})
 call minpac#add('Shougo/vimproc')
 
+" fzf
+call minpac#add('junegunn/fzf.vim')
+call minpac#add('junegunn/fzf')
+
 " complete
 " call minpac#add('Shougo/neocomplete.vim', {'type': 'opt'})
 call minpac#add('Shougo/neosnippet.vim')
@@ -177,6 +181,7 @@ call minpac#add('thinca/vim-quickrun')
 call minpac#add('thinca/vim-zenspace')
 call minpac#add('tyru/caw.vim')
 call minpac#add('tyru/open-browser.vim')
+call minpac#add('tyru/open-browser-github.vim')
 call minpac#add('PProvost/vim-ps1')
 call minpac#add('cohama/lexima.vim', {'type': 'opt'})
 call minpac#add('kshenoy/vim-signature')
@@ -187,6 +192,7 @@ call minpac#add('kana/vim-altr', {'type': 'opt'})
 call minpac#add('vim-jp/autofmt')
 call minpac#add('mopp/sky-color-clock.vim')
 call minpac#add('rapan931/vim-pgpuzzle')
+call minpac#add('rhysd/committia.vim')
 
 " doc
 call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
@@ -205,6 +211,14 @@ packadd unite.vim
 packadd vimfiler.vim
 packadd vimdoc-ja
 packadd vim-go
+
+" =================================
+" = setting: fzf.vim
+
+let g:fzf_layout = {'up': '~45%'}
+" let g:fzf_colors = {"prompt":  ["fg", "Ignore"]}
+let g:fzf_colors = {"prompt":  ["fg", "PreProc"]}
+let $FZF_DEFAULT_OPTS = '--exact --layout=reverse --inline-info --margin=0,2 --no-bold'
 
 " =================================
 " = setting: (Plugin)unite.vim & vimfiler.vim
@@ -634,6 +648,22 @@ let g:previm_enable_realtime = 1
 let g:pgpuzzle_auto_load = 1
 
 " =================================
+" = setting: (Plugin)vim-pgpuzzle
+
+let g:committia_use_singlecolumn = 'always'
+
+" =================================
+" = setting: (Plugin)open-browser.vim
+
+" open by Chrome.
+let g:openbrowser_browser_commands = [
+\   {
+\     'name': 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
+\     'args': ['{browser}', '{uri}']
+\   }
+\ ]
+
+" =================================
 " = setting: Vim
 
 if !has('win32')
@@ -743,9 +773,9 @@ set nrformats& nrformats-=octal
 set autoindent
 set nocindent
 set expandtab
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
+set tabstop=2
+set softtabstop=2
+set shiftwidth=2
 set textwidth=0
 set shiftround
 
@@ -927,7 +957,6 @@ MyAutoCmdFT vimfiler match none
 " Windowを分割するマンなので、
 " どのウィンドウにカーソルがあるかわかるように、Vimにfocusが戻ったら対象ウィンドウをハイライトする。
 " MyAutoCmd FocusGained * call matchadd('Cursor', '\%#', 101)
-" MyAutoCmd FocusGained * call matchadd('Cursor', '\%#', 101)
 MyAutoCmd FocusGained * call my#flash_window(1000, 'MyFlashy')
 
 " http://qiita.com/kentaro/items/6aa9f108df825b2a8b39
@@ -974,7 +1003,7 @@ command! RunVimScript source $VIMFILES/run.vim
 " 開いているファイルに移動(元: plugins/kaoriya/plugin/cmdex.vim)
 command! CdCurrent cd %:p:h
 
-if executable('touch')
+if has('win32') && executable('touch')
   command! Touch if &modified | call my#error_msg('modified file!') | else | silent execute '!start touch' expand('%:p') | endif
 endif
 
@@ -1039,63 +1068,63 @@ xmap <Space>m <Plug>(quickhl-manual-this)
 nmap <Space>M <Plug>(quickhl-manual-reset)
 xmap <Space>M <Plug>(quickhl-manual-reset)
 
-" let g:quickhl_manual_colors = [
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-"    \ "cterm=bold ctermfg=7  ctermbg=56  gui=bold guibg=#a0b0c0 guifg=black",
-"    \ ]
+let g:quickhl_manual_colors = [
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
+   \ "cterm=bold ctermfg=7  ctermbg=56  gui=bold guibg=#a0b0c0 guifg=black",
+   \ ]
 
 " =================================
 " = mapping: (Plugin)clever-f.vim
@@ -1473,15 +1502,18 @@ nnoremap gj :<C-u>cclose<CR>
 " 明示的に \ を付けて改行する
 imap <C-CR> <Plug>(my-back-slash-linefeed)
 
-" 開いているファイルを選択した状態でExplorerを開く
-" 開いているファイルのルートディレクトリを開く
-" (ge, gE全く使っていないのでつぶしちゃう)
-nnoremap ge :<C-u>!start explorer /e,/select,%<CR>
-nnoremap gE :<C-u>!start explorer /select,<C-r>=my#get_root_dir(expand('%:p'))<CR><CR>
+if has('win32')
+  " 開いているファイルを選択した状態でExplorerを開く
+  " 開いているファイルのルートディレクトリを開く
+  " (ge, gE全く使っていないのでつぶしちゃう)
+  nnoremap ge :<C-u>!start explorer /e,/select,%<CR>
+  nnoremap gE :<C-u>!start explorer /select,<C-r>=my#get_root_dir(expand('%:p'))<CR><CR>
 
-" カーソル下のファイルをstartで実行
-" REF: https://github.com/vim-jp/issues/issues/1220
-nnoremap gx :<C-u>!start <C-r>=expand('<cfile>:p')<CR><CR>
+  " カーソル下のファイルをstartで実行
+  " REF: https://github.com/vim-jp/issues/issues/1220
+  nnoremap gx :<C-u>!start <C-r>=expand('<cfile>:p')<CR><CR>
+endif
+
 
 " insertの<S-CR>でカーソルが行途中にあっても改行ができるようにする。
 " leximaのendwiseも動いてほしく、lexima#expand()を呼び出す前にカーソル位置を移動させる必要があり、
@@ -1610,13 +1642,15 @@ nnoremap <Space>. :<C-u>EVimrc<CR>
 nnoremap <C-]> g<C-]>
 nnoremap g<C-]> :<C-u>tjump <C-r>=@+<CR><CR>
 
-" Tortoise svn diff, log, blame, repobrowser
-nnoremap <silent> <Leader>td  :<C-u>execute '!start TortoiseProc.exe /command:diff /path:"' . expand("%:p") . '" /ignoreprops'<CR>
-nnoremap <silent> <Leader>tb  :<C-u>execute '!start TortoiseProc.exe /command:blame /path:"' . expand("%:p") . '" /line:' . line(".")<CR>
-nnoremap <silent> <Leader>tr  :<C-u>execute '!start TortoiseProc.exe /command:repobrowser'<CR>
-nnoremap <silent> <Leader>tf  :<C-u>execute '!start TortoiseProc.exe /command:repostatus /path:"' . my#get_root_dir(expand('%:p')) . '"'<CR>
-nnoremap <silent> <Leader>tl  :<C-u>execute '!start TortoiseProc.exe /command:log /path:"' . my#get_root_dir(expand('%:p')) . '" /strict'<CR>
-nnoremap <silent> <Leader>tcl :<C-u>execute '!start TortoiseProc.exe /command:log /path:"' . expand("%:p") . '" /strict'<CR>
+if has('win32')
+  " Tortoise svn diff, log, blame, repobrowser
+  nnoremap <silent> <Leader>td  :<C-u>execute '!start TortoiseProc.exe /command:diff /path:"' . expand("%:p") . '" /ignoreprops'<CR>
+  nnoremap <silent> <Leader>tb  :<C-u>execute '!start TortoiseProc.exe /command:blame /path:"' . expand("%:p") . '" /line:' . line(".")<CR>
+  nnoremap <silent> <Leader>tr  :<C-u>execute '!start TortoiseProc.exe /command:repobrowser'<CR>
+  nnoremap <silent> <Leader>tf  :<C-u>execute '!start TortoiseProc.exe /command:repostatus /path:"' . my#get_root_dir(expand('%:p')) . '"'<CR>
+  nnoremap <silent> <Leader>tl  :<C-u>execute '!start TortoiseProc.exe /command:log /path:"' . my#get_root_dir(expand('%:p')) . '" /strict'<CR>
+  nnoremap <silent> <Leader>tcl :<C-u>execute '!start TortoiseProc.exe /command:log /path:"' . expand("%:p") . '" /strict'<CR>
+endif
 
 " diff
 nnoremap <Leader>qw :<C-u>windo diffthis<CR>
@@ -1630,7 +1664,8 @@ nnoremap [c [czz
 " spell
 nnoremap ]s ]szz
 nnoremap [s [szz
-
+nnoremap zg zg
+nnoremap zG zG
 
 " dk が dj と対象となるようにする
 " REF: https://github.com/cohama/.vim/blob/72d1d536ad4422e29d339fcda7eae19ba56b309d/.vimrc#L1068-L1069
@@ -1661,6 +1696,17 @@ if filereadable($HOME . '/my_job.vimrc')
   else
     call altr#define('.vimrc', 'my_job.vimrc')
   endif
+endif
+
+
+" tekitou
+"
+if executable('golsp')
+  MyAutoCmd User lsp_setup call lsp#register_server({
+      \   'name': 'go-lang',
+      \   'cmd': {server_info->['golsp']},
+      \   'whitelist': ['go'],
+      \ })
 endif
 
 " ===========================

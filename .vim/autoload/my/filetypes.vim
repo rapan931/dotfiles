@@ -13,9 +13,9 @@ function! s:set_indent(tab_length, is_hard_tab) abort
     setlocal expandtab
   endif
 
-  let &shiftwidth  = a:tab_length
-  let &softtabstop = a:tab_length
-  let &tabstop     = a:tab_length
+  let &l:shiftwidth  = a:tab_length
+  let &l:softtabstop = a:tab_length
+  let &l:tabstop     = a:tab_length
 endfunction
 
 function! my#filetypes#javascript() abort
@@ -28,6 +28,10 @@ endfunction
 
 function! my#filetypes#gitconfig() abort
   call s:set_indent(4, 1)
+endfunction
+
+function! my#filetypes#gitcommit() abort
+  setlocal spell
 endfunction
 
 function! my#filetypes#help() abort
@@ -47,7 +51,7 @@ function! my#filetypes#unite_vimfiler_init() abort
   " max number of yank history
   let g:neoyank#limit = 200
 
-  " disable newmru validation(execute :NeoMRUReload when notice)
+  " disable neomru validation(execute :NeoMRUReload when notice)
   " max number of neomru history
   let g:neomru#do_validate = 0
   let g:neomru#file_mru_limit = 1000
@@ -91,7 +95,6 @@ function! my#filetypes#unite_vimfiler_init() abort
     try
       let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
       if pattern != ""
-        " silent execute 'grep! "' . escape(pattern, '|') . '" ' . a:candidate.action__path
         silent execute 'grep!' escape(pattern, '|') a:candidate.action__path
       else
         throw 'non-pattern'
@@ -103,7 +106,8 @@ function! my#filetypes#unite_vimfiler_init() abort
   call unite#custom_action('directory,file', 'outer_grep', s:outer_grep)
   unlet s:outer_grep
 
-  let s:outer_grep_add = { 'description' : 'do outer grep directory(add quickfix list)' }
+  " outer_grep_add actionを追加
+  let s:outer_grep_add = { 'description' : 'do outer grep, and add quickfix list)' }
   function! s:outer_grep_add.func(candidate) abort
     try
       let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
@@ -118,6 +122,18 @@ function! my#filetypes#unite_vimfiler_init() abort
   endfunction
   call unite#custom_action('directory,file', 'outer_grep_add', s:outer_grep_add)
   unlet s:outer_grep_add
+
+  " terminal actionを追加
+  let s:terminal = { 'description' : 'open terminal' }
+  function! s:terminal.func(candidate) abort
+    try
+      echo "terminal"
+    catch /^Vim:Interrupt$\|^non-pattern$/
+      echo 'Cancel'
+    endtry
+  endfunction
+  call unite#custom_action('directory', 'terminal', s:terminal)
+  unlet s:terminal
 
   let s:tortoise_svn_log = { 'description' : 'do TortoiseProc.exe log' }
   function! s:tortoise_svn_log.func(candidate) abort
@@ -168,7 +184,7 @@ endfunction
 
 function! my#filetypes#vimfiler() abort
 
-  " 横幅のsyntaxハイライトが効くようにする(columns=''に設定しているから意味ないけど)
+  " 横幅のsyntaxハイライトが効くようにする
   setlocal synmaxcol=0
 
   " copyとpasteよく使うので使いやすいやつにリマップ
@@ -215,6 +231,11 @@ endfunction
 function! my#filetypes#godoc() abort
   " qで閉じる
   nnoremap <buffer> q ZZ
+
+  if executable('golsp')
+    setlocal omnifunc=lsp#complete
+    nmap gd <plug>(lsp-definition)
+  endif
 endfunction
 
 " REF: http://thinca.hatenablog.com/entry/20130708/1373210009
@@ -278,7 +299,7 @@ endfunction
 
 function! my#filetypes#go_comment_for_tour_of_go(search1, search1_flgs, search2, search2_flgs) abort
   if &runtimepath !~ 'caw.vim'
-    my#error_msg('not found caw.vim!')
+    call my#error_msg('not found caw.vim!')
     return
   endif
 

@@ -32,7 +32,7 @@ function! my#toggle_transparency() abort
       set transparency=255
     endif
   else
-    call my#error_msg('not exists transparency option!')
+    call my#error_msg('Not exists transparency option!')
   endif
 endfunction
 
@@ -58,7 +58,7 @@ endfunction
 " if check vital source, can make more tightly
 function! my#get_root_dir(...) abort
   " 検索対象にvimも含む(vimを構成するファイルを開いた場合を考慮)
-  let search_dir_names = ['.svn', '.git', 'vim74', 'vim80']
+  let search_dir_names = ['.svn', '.git', 'vim', 'vim80', 'vim81']
 
   for dir_name in search_dir_names
     let ret_dir = finddir(dir_name, expand('%:p:h') . ';')
@@ -83,6 +83,11 @@ endfunction
 
 " do ctags
 function! my#do_ctags(do_all) abort
+  if !has('win32')
+    call my#error_msg('Not ready except windows..')
+    return
+  endif
+
   if isdirectory('.svn') || isdirectory('.git')
     if input('now: ' . getcwd() . "\nrun ctags? (y)es or (n)o : ") =~ '^y$\|^yes$'
       if a:do_all
@@ -92,18 +97,23 @@ function! my#do_ctags(do_all) abort
       endif
     endif
   else
-    call my#error_msg('check current dir!')
+    call my#error_msg('Check current dir!')
   endif
 endfunction
 
 " build cscope
 function! my#cscope_build() abort
+  if !has('win32')
+    call my#error_msg('Not ready except windows..')
+    return
+  endif
+
   if isdirectory('.svn') || isdirectory('.git')
-    if input('now: ' . getcwd() . "\nrun cscope -Rb? (y)es or (n)o : ") =~ '^y$\|^yes$'
+    if input('now: ' . getcwd() . "\nRun cscope -Rb? (y)es or (n)o : ") =~ '^y$\|^yes$'
       silent !start cscope -Rb
     endif
   else
-    call my#error_msg('check current dir!')
+    call my#error_msg('Check current dir!')
   endif
 endfunction
 
@@ -113,7 +123,7 @@ function! my#cscope_add() abort
     cscope add cscope.out
     echo "cscope add cscope.out!"
   else
-    call my#error_msg('check current dir!')
+    call my#error_msg('Check current dir!')
   endif
 endfunction
 
@@ -237,7 +247,7 @@ function! my#delete_if_zero() abort
   endwhile
   call uniq(sort(poss, 'n'))
   if len(poss) != 3 && len(poss) != 2 && expand('<cword>') != 'if'
-    call my#error_msg('check cursor position!')
+    call my#error_msg('Check cursor position!')
   endif
 
   if len(poss) == 3
@@ -246,7 +256,7 @@ function! my#delete_if_zero() abort
   endif
   silent execute poss[0] . ',' . poss[1] . 'delete'
 else
-  call my#error_msg('check cursor position!')
+  call my#error_msg('Check cursor position!')
 endif
 endfunction
 nnoremap <Leader>d0 :<C-u>call my#delete_if_zero()<CR>
@@ -262,10 +272,10 @@ function! my#copy_or_open_past_file(dir_path, prefix_format, suffix, range_start
         execute 'saveas' (a:dir_path . '/' . strftime(a:prefix_format) . a:suffix)
       endif
     else
-      call my#error_msg('not found')
+      call my#error_msg('Not found!')
     endif
   else
-    call my#error_msg('check dir path!')
+    call my#error_msg('Check dir path!')
   endif
 endfunction
 
@@ -346,14 +356,14 @@ function! my#comment_search_to_search(search1, search1_flgs, search2, search2_fl
   " let save_cursor = getcurpos()
 
   if &runtimepath !~ 'caw.vim'
-    my#error_msg('not found caw.vim!')
+    my#error_msg('Not found caw.vim!')
   endif
 
   let line1 = search(a:search1, a:search1_flgs)
   let line2 = search(a:search2, a:search2_flgs)
 
   if line1 == 0 && line2 == 0
-    my#error_msg('not found specified strings!')
+    my#error_msg('Not found specified strings!')
   endif
 
   call setpos("'<", [bufnr('%'), line1, 0, 0])
