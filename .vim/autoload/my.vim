@@ -61,7 +61,7 @@ function! my#get_root_dir(...) abort
   let search_dir_names = ['.svn', '.git', 'vim', 'vim80', 'vim81']
 
   for dir_name in search_dir_names
-    let ret_dir = finddir(dir_name, expand('%:p:h') . ';')
+    let ret_dir = finddir(dir_name, escape(expand('%:p:h'), ' ') . ';')
     if !empty(ret_dir)
       return substitute(fnamemodify(ret_dir, ':p:h'), '\(\\\|\/\)' . dir_name . '$', '', 'g')
     endif

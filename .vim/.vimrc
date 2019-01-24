@@ -960,7 +960,7 @@ MyAutoCmdFT vimfiler match none
 MyAutoCmd FocusGained * call my#flash_window(1000, 'MyFlashy')
 
 " http://qiita.com/kentaro/items/6aa9f108df825b2a8b39
-MyAutoCmd BufEnter ruby,vim silent execute 'lcd' my#get_root_dir()
+MyAutoCmdFT ruby,vim silent execute 'lcd' my#get_root_dir()
 
 " diffの設定
 " REF: https://github.com/vim-jp/issues/issues/1206
