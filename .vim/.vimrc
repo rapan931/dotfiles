@@ -1698,9 +1698,7 @@ if filereadable($HOME . '/my_job.vimrc')
   endif
 endif
 
-
-" tekitou
-"
+" vim-lsp
 if executable('golsp')
   MyAutoCmd User lsp_setup call lsp#register_server({
       \   'name': 'go-lang',
@@ -1715,8 +1713,6 @@ endif
 " Window内の数値を1000で除算した後に\d.\d\d\d\に変更
 " %s#\d\+#\=printf("%.3f",submatch(0) / 1000.0)#g
 
-" msbuild <slnのパス>
-"
 " 色設定のテスト
 " :runtime syntax/colortest.vim
 "
