@@ -18,7 +18,7 @@ endfunction
 let s:my_sum_cnt = 0
 function! my#sum(is_float) abort
   let convert_func = a:is_float ? 'str2float' : 'str2nr'
-  silent %s/\(\%V.*\%V.\)/\=execute('let s:my_sum_cnt = s:my_sum_cnt + ' . join(map(split(submatch(0), '\(\s\|,\)\+'), convert_func . '(v:val)'), ' + '))/n
+  silent %s/\(\%V.*\%V.\)/\=execute('let s:my_sum_cnt += ' . join(map(split(submatch(0), '\(\s\|,\)\+'), convert_func . '(v:val)'), ' + '))/n
   call my#echo_and_yank(s:my_sum_cnt)
   let s:my_sum_cnt = 0
 endfunction
@@ -54,16 +54,18 @@ function! my#sleep(ms) abort
   endwhile
 endfunction
 
-" get svn root path
+" get project root
 " if check vital source, can make more tightly
 function! my#get_root_dir(...) abort
-  " 検索対象にvimも含む(vimを構成するファイルを開いた場合を考慮)
+  " 検索対象にvimも追加
+  let target_dir = escape(expand('%:p:h'), ' ') . ';'
   let search_dir_names = ['.svn', '.git', 'vim', 'vim80', 'vim81']
 
   for dir_name in search_dir_names
-    let ret_dir = finddir(dir_name, escape(expand('%:p:h'), ' ') . ';')
+    let ret_dir = finddir(dir_name, target_dir)
     if !empty(ret_dir)
-      return substitute(fnamemodify(ret_dir, ':p:h'), '\(\\\|\/\)' . dir_name . '$', '', 'g')
+      " return substitute(fnamemodify(ret_dir, ':p:h'), '\(\\\|\/\)' . dir_name . '$', '', 'g')
+      return fnamemodify(ret_dir, ':p:h:h')
     endif
   endfor
 
@@ -344,7 +346,6 @@ function! my#add_back_slash(line, before_line)
   let prefix = substitute(a:before_line, '\(^\s*\).*', '\1', '')
   let s:prefix_count = len(prefix)
   if empty(a:line)
-    echom 1
     return prefix . '\ '
   else
     let line = substitute(a:line, '^\s*', '', '')

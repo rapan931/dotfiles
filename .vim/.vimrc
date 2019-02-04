@@ -960,14 +960,14 @@ MyAutoCmdFT vimfiler match none
 MyAutoCmd FocusGained * call my#flash_window(1000, 'MyFlashy')
 
 " http://qiita.com/kentaro/items/6aa9f108df825b2a8b39
-MyAutoCmdFT ruby,vim silent execute 'lcd' my#get_root_dir()
+MyAutoCmd BufEnter *.rb,*.vim execute 'lcd' my#get_root_dir()
 
 " diffの設定
-" REF: https://github.com/vim-jp/issues/issues/1206
 " REF: https://vim-jp.org/blog/2018/12/12/new-diffopts-value.html
+" REF: https://github.com/vim-jp/issues/issues/1206
 " MyAutoCmd FilterWritePre * call s:my_diff_settings()
-" MyAutoCmd OptionSet diff if v:option_old == 0 && v:option_new == 1 | call s:my_diff_settings() | endif
-MyAutoCmd DiffUpdated * call my#diff_settings()
+" MyAutoCmd DiffUpdated * call my#diff_settings()
+MyAutoCmd OptionSet diff if v:option_old == 0 && v:option_new == 1 | call my#diff_settings() | endif
 
 " その他の各種設定
 MyAutoCmdFT * call my#filetypes#setting(expand('<amatch>'))
@@ -983,11 +983,11 @@ MyAutoCmdFT * call my#filetypes#setting(expand('<amatch>'))
 command! Cfn call my#echo_and_yank(expand('%:t'))
 command! Cfp call my#echo_and_yank(expand('%:p'))
 command! Cfr call my#echo_and_yank(substitute(expand('%'), '^\', '', 'g'))
-command! Cdn call my#echo_and_yank(substitute(my#get_root_dir(expand('%:p')), '.*\\', '', 'g'))
-command! Cdp call my#echo_and_yank(my#get_root_dir(expand('%:p')))
+command! Cdn call my#echo_and_yank(substitute(my#get_root_dir(), '.*\\', '', 'g'))
+command! Cdp call my#echo_and_yank(my#get_root_dir())
 command! CfpConvSeparator call my#echo_and_yank(substitute(expand('%:p'), '\', '/', 'g'))
 command! CfrConvSeparator call my#echo_and_yank(substitute(substitute(expand('%'), '^\', '', 'g'), '\' , '/', 'g'))
-command! CdpConvSeparator call my#echo_and_yank(substitute(my#get_root_dir(expand('%:p')), '\', '/', 'g'))
+command! CdpConvSeparator call my#echo_and_yank(substitute(my#get_root_dir(), '\', '/', 'g'))
 
 " 選択範囲内の数値の合計
 command! -range Sum      call my#sum(0)
@@ -1507,7 +1507,7 @@ if has('win32')
   " 開いているファイルのルートディレクトリを開く
   " (ge, gE全く使っていないのでつぶしちゃう)
   nnoremap ge :<C-u>!start explorer /e,/select,%<CR>
-  nnoremap gE :<C-u>!start explorer /select,<C-r>=my#get_root_dir(expand('%:p'))<CR><CR>
+  nnoremap gE :<C-u>!start explorer /select,<C-r>=my#get_root_dir()<CR><CR>
 
   " カーソル下のファイルをstartで実行
   " REF: https://github.com/vim-jp/issues/issues/1220
@@ -1647,8 +1647,8 @@ if has('win32')
   nnoremap <silent> <Leader>td  :<C-u>execute '!start TortoiseProc.exe /command:diff /path:"' . expand("%:p") . '" /ignoreprops'<CR>
   nnoremap <silent> <Leader>tb  :<C-u>execute '!start TortoiseProc.exe /command:blame /path:"' . expand("%:p") . '" /line:' . line(".")<CR>
   nnoremap <silent> <Leader>tr  :<C-u>execute '!start TortoiseProc.exe /command:repobrowser'<CR>
-  nnoremap <silent> <Leader>tf  :<C-u>execute '!start TortoiseProc.exe /command:repostatus /path:"' . my#get_root_dir(expand('%:p')) . '"'<CR>
-  nnoremap <silent> <Leader>tl  :<C-u>execute '!start TortoiseProc.exe /command:log /path:"' . my#get_root_dir(expand('%:p')) . '" /strict'<CR>
+  nnoremap <silent> <Leader>tf  :<C-u>execute '!start TortoiseProc.exe /command:repostatus /path:"' . my#get_root_dir() . '"'<CR>
+  nnoremap <silent> <Leader>tl  :<C-u>execute '!start TortoiseProc.exe /command:log /path:"' . my#get_root_dir() . '" /strict'<CR>
   nnoremap <silent> <Leader>tcl :<C-u>execute '!start TortoiseProc.exe /command:log /path:"' . expand("%:p") . '" /strict'<CR>
 endif
 
