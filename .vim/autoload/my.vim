@@ -10,8 +10,18 @@ endfunction
 
 " yank and echo
 function! my#echo_and_yank(obj) abort
-  let @+ = type(a:obj) == v:t_float ? printf('%s', a:obj) : a:obj
+  let @* = type(a:obj) == v:t_float ? printf('%s', a:obj) : a:obj
   echo a:obj
+endfunction
+
+" REF: copied vim-go/autoload/go/util.vim go#util#snakecase()
+function! my#snakecase(word) abort
+  let w = substitute(a:word, '::', '/', 'g')
+  let w = substitute(w, '\(\u\+\)\(\u\l\)', '\1_\2', 'g')
+  let w = substitute(w, '\(\l\|\d\)\(\u\)', '\1_\2', 'g')
+  let w = substitute(w, '[.-]', '_', 'g')
+  let w = tolower(w)
+  return w
 endfunction
 
 " total number in selected range
@@ -47,7 +57,7 @@ function! my#toggle_fontsize() abort
 endfunction
 
 " sleep specified milliseconds.
-" REF: vim-operator-flashy.vim(original..)
+" REF: copied vim-operator-flashy.vim
 function! my#sleep(ms) abort
   let t = reltime()
   while !getchar(1) && a:ms - str2float(reltimestr(reltime(t))) * 1000.0 > 0
@@ -162,10 +172,15 @@ function! my#hex2decimal_and_yank(hex) abort
   call my#echo_and_yank(str)
 endfunction
 
+function! my#decimal2binary_and_yank(dec) abort
+  let str = printf("0b%08b", a:dec)
+  call my#echo_and_yank(str)
+endfunction
+
 " flash search words
-" NOTE: when specified offset for search, it not working
+" NOTE: when specified offset for search, it not working eg. /hoge/+1 , /hoge/1
 " REF: that wrote someone's vimrc. forget..
-function! my#flash_search_ward(ms) abort
+function! my#flash_search_word(ms) abort
   try
     if &runtimepath !~ 'vim-anzu' || empty(anzu#search_status())
       return

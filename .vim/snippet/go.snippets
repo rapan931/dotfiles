@@ -1,6 +1,5 @@
 snippet     start
 alias s
-abbr        package main\nimport fmt...
 options     head
   package main
 
@@ -25,19 +24,15 @@ alias pr
 options     word
   fmt.Print(${0:TARGET})
 
-snippet     func
-alias f
-options     head
-  func ${1} {
-    ${0}
-  }
+# vim-go/gosnippets/UltiSnips/go.snippets
+snippet     json
+options     word
+  \`json:"`my#snakecase(matchstr(getline("."), '\w\+'))`"\`${0}
 
 snippet     fl
-abbr        float
 options     word
     float
 
 snippet     fll
-abbr        float64
 options     word
     float64

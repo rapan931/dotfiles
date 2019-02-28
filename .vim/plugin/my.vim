@@ -18,7 +18,7 @@ xnoremap <silent> <Plug>(my-underscore) :<C-u>call my#underscore('_', 1)<CR>
 
 nnoremap <silent> <Plug>(my-flash-window) :<C-u>call my#flash_window(300, 'MyFlashy')<CR>
 nnoremap <silent> <Plug>(my-flash-window-and-yank-entire) :<C-u>%y<CR>:<C-u>call my#flash_window(500, 'MyFlashy')<CR>
-nnoremap <silent> <Plug>(my-flash-search-ward) :<C-u>call my#flash_search_ward(300)<CR>
+nnoremap <silent> <Plug>(my-flash-search-word) :<C-u>call my#flash_search_word(300)<CR>
 
 nnoremap <silent> <Plug>(my-toggle-fontsize) :<C-u>call my#toggle_fontsize()<CR>
 nnoremap <silent> <Plug>(my-toggle-transparency) :<C-u>call my#toggle_transparency()<CR>

@@ -38,9 +38,6 @@ if has('vim_starting')
   " set runtimepath-=$VIM/vimfiles
   " set runtimepath-=$VIM/vimfiles/after
 
-  " prepare dev go
-  " set runtimepath+=$GOROOT\misc\vim
-
   set viminfo& viminfo+='1000
 endif
 
@@ -72,15 +69,16 @@ let g:loaded_zipPlugin         = 1
 let g:loaded_netrw             = 1
 let g:loaded_netrwPlugin       = 1
 let g:loaded_2html_plugin      = 1
+let g:loaded_gzip              = 1
+let g:loaded_logiPat           = 1
 
 " do not register Autocmd related to file type
 " let g:did_load_filetypes = 1
 
 " do not load menu.vim
-" NOTE: have to setting M option before 'syntax on'
+" NOTE: have to setting M option before 'syntax on' also delete other guioptions and empty
 set guioptions-=M
 
-" also delete other guioptions and empty
 " * hide toolbar
 " * use non-GUI tab pages line
 " * hide scroll bar
@@ -95,9 +93,6 @@ set guioptions-=m guioptions-=t guioptions-=g
 function! s:sid() abort
   return matchstr(expand('<sfile>'), '\zs<SNR>\d\+_\zeSID$')
 endfunction
-
-" 先にimsearchを設定して、常にIMEオフ状態で/が始まるようにする(ダサいけど、echoつけてcmdlineきれいにする)
-MyAutoCmd CmdlineLeave / call feedkeys(":set imsearch=0 | :echo\<CR>")
 
 " =================================
 " = Plugin install (by minpac)
@@ -127,7 +122,12 @@ call minpac#add('junegunn/fzf.vim')
 call minpac#add('junegunn/fzf')
 
 " complete
-" call minpac#add('Shougo/neocomplete.vim', {'type': 'opt'})
+" call minpac#add('prabirshrestha/vim-lsp')
+" call minpac#add('prabirshrestha/async.vim')
+" call minpac#add('prabirshrestha/asyncomplete.vim')
+" call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
+
+" snippet
 call minpac#add('Shougo/neosnippet.vim')
 call minpac#add('Shougo/neosnippet-snippets')
 
@@ -193,6 +193,7 @@ call minpac#add('vim-jp/autofmt')
 call minpac#add('mopp/sky-color-clock.vim')
 call minpac#add('rapan931/vim-pgpuzzle')
 call minpac#add('rhysd/committia.vim')
+call minpac#add('rapan931/vim-fungo')
 
 " doc
 call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
@@ -226,6 +227,22 @@ let $FZF_DEFAULT_OPTS = '--exact --layout=reverse --inline-info --margin=0,2 --n
 call my#filetypes#unite_vimfiler_init()
 
 " =================================
+" = setting: (Plugin)lsp
+
+" let g:lsp_async_completion = 1
+
+" if executable('gopls')
+"   MyAutoCmd User lsp_setup call lsp#register_server({
+"\ 'name': 'gopls',
+"\ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
+"\ 'whitelist': ['go'],
+"\ })
+" endif
+
+" let g:lsp_log_verbose = 1
+" let g:lsp_log_file = expand('$VIMFILES/log/vim-lsp.log')
+
+" =================================
 " = setting: (Plugin)vim-precious & context_filetype.vim
 
 " markdownでのみ機能するよう修正
@@ -239,11 +256,11 @@ let g:precious_enable_switch_CursorMoved_i = {'*': 0, 'markdown': 1}
 call altr#remove_all()
 
 " vim
-" go
 " vim(opeartor-user and textobj-user based Vim plugins)
+" go
 call altr#define('autoload/%.vim', 'doc/%.txt', 'plugin/%.vim')
-call altr#define('%.go', '%_test.go')
 call altr#define('autoload/%/%.vim', 'doc/%-%.txt', 'plugin/%/%.vim')
+call altr#define('%.go', '%_test.go')
 
 " =================================
 " = setting: (Plugin)neocomplete.vim
@@ -260,8 +277,11 @@ call altr#define('autoload/%/%.vim', 'doc/%-%.txt', 'plugin/%/%.vim')
 " =================================
 " = setting: (Plugin)neosnippet.vim
 
+" 定義ファイルの配置場所指定
 let g:neosnippet#snippets_directory = $VIMFILES . '/snippet'
 call s:mkdir(g:neosnippet#snippets_directory)
+
+" cppでもcのsnippetを読み込む
 let g:neosnippet#scope_aliases = {'cpp': 'c'}
 
 " =================================
@@ -269,6 +289,9 @@ let g:neosnippet#scope_aliases = {'cpp': 'c'}
 
 " quickfixのみ使用
 let g:go_list_type = "quickfix"
+
+" default mappingを設定しない
+let g:go_def_mapping_enabled = 0
 
 " =================================
 " = setting: (Plugin)incsearch.vim
@@ -508,14 +531,15 @@ let g:clurin = {
 \       ['有り', '無し'],
 \       ['作成', '削除'],
 \       ['未着手', '着手', '完了'],
+\       ['可', '不可'],
 \       ['&&', '||'],
 \       ['==', '!='],
 \       ['■', '□'],
 \       ['×', '○'],
-\       ['月' ,'火' ,'水' ,'木' ,'金' ,'土' ,'日'],
+\       ['月', '火', '水', '木', '金', '土', '日'],
 \       [
-\         '①' ,'②' ,'③' ,'④' ,'⑤' ,'⑥' ,'⑦' ,'⑧' ,'⑨' ,'⑩' ,
-\         '⑪' ,'⑫' ,'⑬' ,'⑭' ,'⑮' ,'⑯' ,'⑰' ,'⑱' ,'⑲' ,'⑳'
+\         '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩',
+\         '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'
 \       ],
 \     ],
 \     'nomatch': function('ClurinCtrlAX'),
@@ -529,8 +553,8 @@ let g:clurin = {
 " echoに表示されるメッセージに末尾から先頭or先頭から末尾への移動時のメッセージを追加
 let g:anzu_status_format = "%p(%i/%l) %#ErrorMsg#%w"
 
-MyAutoCmd CmdlineLeave / if !empty(getcmdline()) |
-\   call feedkeys(":AnzuUpdateSearchStatus | if anzu#search_status() != '' | AnzuUpdateSearchStatusOutput | endif\<CR>", 'n') |
+MyAutoCmd CmdlineLeave / if !empty(getcmdline()) && mode() == 'c' |
+\   call feedkeys(":\<C-u>AnzuUpdateSearchStatus | if anzu#search_status() != '' | AnzuUpdateSearchStatusOutput | endif\<CR>", 'n') |
 \ endif
 
 " =================================
@@ -562,15 +586,15 @@ let g:choosewin_label_padding = 5
 let g:quickrun_no_default_key_mappings = 1
 let g:quickrun_config = {
 \   '_': {
-\     "hook/close_quickfix/enable_hook_loaded": 1,
-\     "hook/close_quickfix/enable_success":     1,
-\     "hook/close_buffer/enable_failure":       1,
-\     "hook/close_buffer/enable_empty_data":    1,
-\     "hook/inu/enable":                        1,
-\     "hook/inu/wait":                          20,
-\     "outputter":                              "multi:buffer:quickfix",
-\     "outputter/buffer/split":                 ":botright 8",
-\     "runner":                                 "job",
+\     'hook/close_quickfix/enable_hook_loaded': 1,
+\     'hook/close_quickfix/enable_success':     1,
+\     'hook/close_buffer/enable_failure':       1,
+\     'hook/close_buffer/enable_empty_data':    1,
+\     'hook/inu/enable':                        1,
+\     'hook/inu/wait':                          20,
+\     'outputter':                              'multi:buffer:quickfix',
+\     'outputter/buffer/split':                 ':botright 8',
+\     'runner':                                 'job',
 \   },
 \ }
 
@@ -613,10 +637,10 @@ call lexima#add_rule({'char': '{', 'input': '{', 'syntax': 'Comment'})
 " let g:memolist_path = expand('$VIM') . '\.vim\memo'
 let g:memolist_path = $VIMFILES . '/memo'
 let g:memolist_memo_date = '%Y-%m-%d %H:%M:%S'
-let g:memolist_memo_suffix = "md"
+let g:memolist_memo_suffix = 'md'
 let g:memolist_unite = 1
-let g:memolist_unite_option = "-start-insert"
-let g:memolist_unite_source = "file"
+let g:memolist_unite_option = '-start-insert'
+let g:memolist_unite_source = 'file'
 
 " =================================
 " = setting: (Plugin)vim-sandwich
@@ -908,6 +932,7 @@ highlight CursorIM guibg=Purple guifg=NONE
 set iminsert=0
 set imsearch=0
 inoremap <silent> <Esc> <Esc>:set iminsert=0<CR>
+nnoremap / :<C-u>set imsearch=0<cr>/
 
 if has('vim_starting')
   " ウインドウの幅、高さ
@@ -1010,15 +1035,17 @@ endif
 command! MinpacUpdate call minpac#update('', {'do': 'call minpac#status()'})
 
 if has('win32')
-  command! TCurrent if empty(bufname("%")) | throw 'Current buffer is [No Name]!!' | endif | terminal ++close cmd /k cd /d "%:p:h" & set LANG=ja_JP.UTF-8
+  command! TCurrent if empty(bufname('%')) | throw 'Current buffer is [No Name]!!' | endif | terminal ++close cmd /k cd /d "%:p:h" & set LANG=ja_JP.UTF-8
 endif
 
 " " REF: https://github.com/vim-jp/issues/issues/1204
 " command! TDotfiles :terminal ++close cmd /k cd /d "<C-r>=expand($HOME)<CR>/dotfiles" & set LANG=ja_JP.UTF-8
+" command! TDotfiles :terminal ++close cmd /k cd /d $HOME/dotfiles<Tab> & set LANG=ja_JP.UTF-8
 command! TDotfiles execute 'terminal ++close cmd /k cd /d ' . expand($HOME) . '\dotfiles & set LANG=ja_JP.UTF-8'
+command! TVimruntime execute 'terminal ++close cmd /k cd /d ' . expand($VIMRUNTIME) . ' & set LANG=ja_JP.UTF-8'
 
 " REF: http://secret-garden.hatenablog.com/entry/2018/02/05/190925
-command! -nargs=* Debug try | echomsg <q-args> ":" string(<args>) | catch | echomsg <q-args> | endtry
+command! -nargs=1 Debug try | echomsg <q-args> ':' string(<args>) | catch | echomsg <q-args> | endtry
 
 " =================================
 " = mapping: initialize
@@ -1068,64 +1095,6 @@ xmap <Space>m <Plug>(quickhl-manual-this)
 nmap <Space>M <Plug>(quickhl-manual-reset)
 xmap <Space>M <Plug>(quickhl-manual-reset)
 
-let g:quickhl_manual_colors = [
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=50  gui=bold guibg=#1060a0 guifg=#ffffff",
-   \ "cterm=bold ctermfg=7  ctermbg=56  gui=bold guibg=#a0b0c0 guifg=black",
-   \ ]
-
 " =================================
 " = mapping: (Plugin)clever-f.vim
 
@@ -1171,7 +1140,7 @@ vmap <Leader>r <Plug>(operator-replace)
 xmap sd <Plug>(operator-sandwich-delete)
 xmap sr <Plug>(operator-sandwich-replace)
 nmap sa <Plug>(operator-sandwich-add)iw
-nmap sA <Plug>(operator-sandwich-add)iW
+nmap sA <Plug>(operator-sandwich-add)
 xmap sa <Plug>(operator-sandwich-add)
 
 " REF: vim-sandwich/plugin/sandwich.vim
@@ -1198,8 +1167,8 @@ endif
 map z/ <Plug>(incsearch-stay)
 
 " クリップボードから検索(改行に対応)
-" nmap g/ /<C-u>\V<C-r>=escape(@+, '\/')<CR><CR>
-nmap g/ /<C-u>\V<C-r>=join(map(getreg("+", 1, 1), {key, val -> escape(val, '\/')}), "\\n")<CR><CR>
+" nmap g/ /<C-u>\V<C-r>=escape(@*, '\/')<CR><CR>
+nmap g/ :<C-u>set imsearch=0<CR>/<C-u>\V<C-r>=join(map(getreg("+", 1, 1), {key, val -> escape(val, '\/')}), "\\n")<CR><CR>
 
 " =================================
 " = mapping: (Plugin)vim-anzu & vim-asterisk
@@ -1211,17 +1180,17 @@ nmap g/ /<C-u>\V<C-r>=join(map(getreg("+", 1, 1), {key, val -> escape(val, '\/')
 nnoremap <silent> <Plug>(my-anzu-jump-n) :<C-u>silent execute 'normal' (v:count == 0 ? "\<Plug>(anzu-n)" : (v:count == 9 ? "G\<Plug>(anzu-N)" : v:count."\<Plug>(anzu-jump-n)"))<CR>
 nnoremap <silent> <Plug>(my-anzu-N) :<C-u>silent execute 'normal' "\<Plug>(anzu-N)"<CR>
 
-nmap n <Plug>(my-anzu-jump-n)<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-ward)
-nmap N <Plug>(my-anzu-N)<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-ward)
-nmap <C-n> <Plug>(my-anzu-jump-n);z<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-ward)
-nmap <C-p> <Plug>(my-anzu-N);z<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-ward)
+nmap n <Plug>(my-anzu-jump-n)<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-word)
+nmap N <Plug>(my-anzu-N)<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-word)
+nmap <C-n> <Plug>(my-anzu-jump-n);z<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-word)
+nmap <C-p> <Plug>(my-anzu-N);z<Plug>(anzu-echo-search-status)<Plug>(my-flash-search-word)
 
-map *  <Plug>(asterisk-z*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
-map g* <Plug>(asterisk-gz*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
+map *  <Plug>(asterisk-z*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-word)
+map g* <Plug>(asterisk-gz*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-word)
 
 " 行検索
-nmap <Leader>*  :<C-u>normal! g_<CR>v_<Plug>(asterisk-z*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
-nmap <Leader>g* :<C-u>normal! g_<CR>v_<Plug>(asterisk-gz*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-ward)
+nmap <Leader>*  g_v_<Plug>(asterisk-z*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-word)
+nmap <Leader>g* g_v_<Plug>(asterisk-gz*)<Plug>(anzu-update-search-status-with-echo)<Plug>(my-flash-search-word)
 
 " =================================
 " = mapping: (Plugin)unite.vim & vimfiler.vim
@@ -1234,6 +1203,7 @@ nnoremap <Space>ep :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand(
 nnoremap <Space>ev :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($VIM)<CR><CR>
 nnoremap <Space>eh :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($HOME)<CR><CR>
 nnoremap <Space>ed :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($HOME)<CR>/dotfiles<CR>
+nnoremap <Space>eg :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($GOPATH)<CR><CR>
 nnoremap <Space>er :<C-u>VimFilerBufferDir -winwidth=60 -no-toggle -explorer -project<CR>
 
 " 多用
@@ -1370,8 +1340,9 @@ map <C-k> <Plug>(edgemotion-k)
 " = mapping: (Plugin)neosnippet.vim, neocomplete.vim
 " = mapping: (vim-edgemotion)
 
-imap <expr> <C-k> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<C-k>"
-smap <expr> <C-k> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<Plug>(edgemotion-k)"
+imap <expr> <C-s> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<C-k>"
+smap <expr> <C-s> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<Plug>(edgemotion-k)"
+xmap        <C-s>  <Plug>(neosnippet_expand_target)
 " imap <expr> <C-l> neocomplete#start_manual_complete('neosnippet')
 
 " =================================
@@ -1483,9 +1454,9 @@ nmap <Leader>csa <Plug>(my-cscope-add)
 nnoremap <Leader>css :<C-u>cscope show<CR>
 nnoremap <Leader>csk :<C-u>cscope kill -1<CR>
 nnoremap <Leader>csfc :<C-u>cscope find c <C-r>=expand('<cword>')<CR><CR>
-nnoremap <Leader>csfC :<C-u>cscope find c <C-r>=@+<CR><CR>
+nnoremap <Leader>csfC :<C-u>cscope find c <C-r>=@*<CR><CR>
 nnoremap <Leader>csfs :<C-u>cscope find s <C-r>=expand('<cword>')<CR><CR>
-nnoremap <Leader>csfS :<C-u>cscope find s <C-r>=@+<CR><CR>
+nnoremap <Leader>csfS :<C-u>cscope find s <C-r>=@*<CR><CR>
 
 " =================================
 " = mapping: other
@@ -1512,6 +1483,7 @@ if has('win32')
   " カーソル下のファイルをstartで実行
   " REF: https://github.com/vim-jp/issues/issues/1220
   nnoremap gx :<C-u>!start <C-r>=expand('<cfile>:p')<CR><CR>
+  xnoremap gx :<C-u>!start <C-r>=my#selected_text()<CR><CR>
 endif
 
 
@@ -1544,7 +1516,7 @@ xmap _ <Plug>(my-underscore)
 
 " カーソルを動かさずに全体をコピー、削除
 nmap yie <Plug>(my-flash-window-and-yank-entire)
-nnoremap die :<C-u>%d<CR>
+nnoremap die :<C-u>%delete _<CR>
 xnoremap ie  <Esc>ggVG
 
 " " :h ins-completion
@@ -1559,18 +1531,8 @@ xnoremap ie  <Esc>ggVG
 " <C-x><C-d> : 定義もしくはマクロ
 " <C-x><C-v> : Vimのコマンドライン
 " <C-x><C-o> : オムニ補完
-"
-" " 設定したけど全然使わなかった
-" inoremap jjl <C-x><C-l>
-" inoremap jjn <C-x><C-n>
-" inoremap jjk <C-x><C-k>
-" inoremap jjt <C-x><C-t>
-" inoremap jji <C-x><C-i>
-" inoremap jj] <C-x><C-]>
-" inoremap jjf <C-x><C-f>
-" inoremap jjd <C-x><C-d>
-" inoremap jjv <C-x><C-v>
-" inoremap jjo <C-x><C-o>
+
+inoremap <C-Space> <C-x><C-o>
 
 " <C-x><C-u> : ユーザー定義補完
 " <C-x><C-s> : スペリング補完
@@ -1640,7 +1602,7 @@ nnoremap <Space>. :<C-u>EVimrc<CR>
 
 " タグジャンプ時に複数候補表示
 nnoremap <C-]> g<C-]>
-nnoremap g<C-]> :<C-u>tjump <C-r>=@+<CR><CR>
+nnoremap g<C-]> :<C-u>tjump <C-r>=@*<CR><CR>
 
 if has('win32')
   " Tortoise svn diff, log, blame, repobrowser
@@ -1655,7 +1617,7 @@ endif
 " diff
 nnoremap <Leader>qw :<C-u>windo diffthis<CR>
 nnoremap <Leader>qo :<C-u>windo diffoff<CR>
-nnoremap <Leader>qO :<C-u>bufdo diffoff<CR>
+nnoremap <Leader>qO :<C-u>sp<CR>:<C-u>bufdo diffoff<CR>:<C-u>q<CR>
 nnoremap <Leader>qu :<C-u>diffupdate<CR>
 nnoremap <Leader>>  :<C-u>diffput<CR>
 nnoremap ]c ]czz
@@ -1698,15 +1660,6 @@ if filereadable($HOME . '/my_job.vimrc')
   endif
 endif
 
-" vim-lsp
-if executable('golsp')
-  MyAutoCmd User lsp_setup call lsp#register_server({
-      \   'name': 'go-lang',
-      \   'cmd': {server_info->['golsp']},
-      \   'whitelist': ['go'],
-      \ })
-endif
-
 " ===========================
 " NOTE: vim とか cmd.exeとか
 
@@ -1721,8 +1674,6 @@ endif
 "
 " 文字コード変換
 " :e ++enc=sjis
-"
-" 改行コード変換
 "
 " Vimからtortoisesvn呼び出し
 " REF: http://blog.blueblack.net/item_144
@@ -1745,7 +1696,6 @@ endif
 "
 " :vimgrep で再帰的に検索
 " :vim /hoge/j .vim/**/*.vim
-" :vim /hoge/j *.vim .vim/**/* (↑と一緒？) # => 違う。(:vimgrepは検索場所を複数指定できる。)
 "
 " cmd.exe /K"title=hello"
 "

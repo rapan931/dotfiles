@@ -232,10 +232,6 @@ function! my#filetypes#godoc() abort
   " qで閉じる
   nnoremap <buffer> q ZZ
 
-  if executable('golsp')
-    setlocal omnifunc=lsp#complete
-    nmap gd <plug>(lsp-definition)
-  endif
 endfunction
 
 " REF: http://thinca.hatenablog.com/entry/20130708/1373210009
@@ -287,11 +283,21 @@ function! my#filetypes#qf() abort
 endfunction
 
 function! my#filetypes#go() abort
+  " if executable('gopls')
+  "   setlocal omnifunc=lsp#complete
+  "   nmap gd <plug>(lsp-definition)
+  " endif
+
   call s:set_indent(4, 1)
 
   nnoremap <buffer> <Leader><Leader>r :<C-u>!go build -o %:r.exe %<CR>
   nnoremap <buffer> <Leader><Leader>R :<C-u>!go build -o %:r.exe % && %:r.exe<CR>
   xnoremap <buffer> <Leader>R :<C-u>echo 'no map'<CR>
+
+  " vim-go/ftplugin/go.vim
+  nnoremap <buffer> <silent> gd :GoDef<cr>
+  nnoremap <buffer> <silent> <C-]> :GoDef<cr>
+  nnoremap <buffer> <silent> <C-t> :<C-U>call go#def#StackPop(v:count1)<cr>
 
   " for Tour of Go
   nnoremap <buffer> <Space><Space> :<C-u>call my#filetypes#go_comment_for_tour_of_go('\_.*\_^\s*\/\/\zs', 'n', '\%' . line('$') . 'l', 'n')<CR>
