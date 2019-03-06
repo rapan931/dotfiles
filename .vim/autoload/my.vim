@@ -390,7 +390,7 @@ endfunction
 function! my#diff_settings() abort
   if &diff
     setlocal nocursorline
-    nnoremap <buffer> u     u:diffupdate<CR>
-    nnoremap <buffer> <C-r> <C-r>:diffupdate<CR>
+    nnoremap <silent><buffer> u     u:diffupdate<CR>
+    nnoremap <silent><buffer> <C-r> <C-r>:diffupdate<CR>
   endif
 endfunction
