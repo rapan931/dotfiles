@@ -187,8 +187,9 @@ function! my#flash_search_word(ms) abort
     endif
 
     let cursor_col = col('.')
-    let matchlen = strlen(matchstr(strpart(getline('.'), (cursor_col - 1)), @/))
-    let match_pattern_id = matchadd('CursorIM', '\c\%#\(' . @/ . '\)', 100)
+    let match_last_en = matchstr(@/, '\\\+$')
+    let end = empty(match_last_en) == 1 || len(match_last_en) % 2 == 0 ? '\)' : ')'
+    let match_pattern_id = matchadd('CursorIM', '\c\%#\(' . @/ . end, 100)
     let match_cursor_id = matchadd('Cursor', '\%#', 101)
     redraw
 

@@ -1028,6 +1028,9 @@ command! RunVimScript source $VIMFILES/run.vim
 " 開いているファイルに移動(元: plugins/kaoriya/plugin/cmdex.vim)
 command! CdCurrent cd %:p:h
 
+" 開いているファイルのロード
+command! SCurrent source %
+
 if has('win32') && executable('touch')
   command! Touch if &modified | call my#error_msg('modified file!') | else | silent execute '!start touch' expand('%:p') | endif
 endif
@@ -1340,8 +1343,8 @@ map <C-k> <Plug>(edgemotion-k)
 " = mapping: (Plugin)neosnippet.vim, neocomplete.vim
 " = mapping: (vim-edgemotion)
 
-imap <expr> <C-s> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<C-k>"
-smap <expr> <C-s> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<Plug>(edgemotion-k)"
+imap <expr> <C-k> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<C-k>"
+smap <expr> <C-k> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<Plug>(edgemotion-k)"
 xmap        <C-s>  <Plug>(neosnippet_expand_target)
 " imap <expr> <C-l> neocomplete#start_manual_complete('neosnippet')
 
@@ -1718,5 +1721,12 @@ endif
 "
 " let str = "おかえりなさい"
 " call map(reverse(split(str, '\ze')), {key, value -> execute("echo '". value . "'")})
+"
+" TODO: あとで追加すべき不足している機能を記す
+" FIXME: 修正すべき壊れたコードを記す
+" OPTIMIZE: パフォーマンスに影響を与える最適化すべき箇所を記す
+" HACK: リファクタリングすべきコードの臭いのする箇所を記す
+" REVIEW: レビューすべき箇所を記す
+" NB: 特に注意せよ
 "
 " vim:set et ts=2 sts=2 sw=2 tw=0 ft=vim:
