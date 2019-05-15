@@ -68,7 +68,7 @@ endfunction
 " if check vital source, can make more tightly
 function! my#get_root_dir(...) abort
   " 検索対象にvimも追加
-  let target_dir = escape(expand('%:p:h'), ' ') . ';'
+  let target_dir = escape(get(a:000, 1, expand('%:p:h')) . ';', ' ')
   let search_dir_names = ['.svn', '.git', 'vim', 'vim80', 'vim81']
 
   for dir_name in search_dir_names
@@ -162,18 +162,24 @@ endfunction
 
 " echo hex and yank
 function! my#decimal2hex_and_yank(dec) abort
-  let str = printf("0x%04x", a:dec)
+  let str = printf('0x%04x', a:dec)
   call my#echo_and_yank(str)
 endfunction
 
 " echo decimal and yank
 function! my#hex2decimal_and_yank(hex) abort
-  let str = printf("%d", type(a:hex) == v:t_number ? a:hex : str2nr(a:hex, 16))
+  let str = printf('%d', type(a:hex) == v:t_number ? a:hex : str2nr(a:hex, 16))
   call my#echo_and_yank(str)
 endfunction
 
-function! my#decimal2binary_and_yank(dec) abort
-  let str = printf("0b%08b", a:dec)
+function! my#hex2binary_and_yank(hex) abort
+  let str = printf('0b%08b', type(a:hex) == v:t_number ? a:hex : str2nr(a:hex, 16))
+  call my#echo_and_yank(str)
+endfunction
+
+function! my#decimal2binary_and_yank(dec, ...) abort
+  let n = get(a:000, 0, 8)
+  let str = printf('0b%0' .  n . 'b', a:dec)
   call my#echo_and_yank(str)
 endfunction
 

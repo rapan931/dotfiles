@@ -38,7 +38,7 @@ if has('vim_starting')
   " set runtimepath-=$VIM/vimfiles
   " set runtimepath-=$VIM/vimfiles/after
 
-  set viminfo& viminfo+='1000
+  set viminfo& viminfo+='1000,<50,s10,h,rA:,rB:
 endif
 
 " opening ruby file is very slow, so adjust the color of 'end'
@@ -69,8 +69,8 @@ let g:loaded_zipPlugin         = 1
 let g:loaded_netrw             = 1
 let g:loaded_netrwPlugin       = 1
 let g:loaded_2html_plugin      = 1
-let g:loaded_gzip              = 1
 let g:loaded_logiPat           = 1
+let g:loaded_gzip              = 1
 
 " do not register Autocmd related to file type
 " let g:did_load_filetypes = 1
@@ -164,8 +164,8 @@ call minpac#add('fatih/vim-go', {'type': 'opt'})
 
 " markdown
 call minpac#add('kannokanno/previm')
-call minpac#add('Shougo/context_filetype.vim')
-call minpac#add('osyo-manga/vim-precious')
+" call minpac#add('Shougo/context_filetype.vim')
+" call minpac#add('osyo-manga/vim-precious')
 
 " other
 call minpac#add('itchyny/lightline.vim')
@@ -185,21 +185,24 @@ call minpac#add('tyru/open-browser-github.vim')
 call minpac#add('PProvost/vim-ps1')
 call minpac#add('cohama/lexima.vim', {'type': 'opt'})
 call minpac#add('kshenoy/vim-signature')
-call minpac#add('t9md/vim-textmanip')
 call minpac#add('glidenote/memolist.vim')
 call minpac#add('haya14busa/vim-edgemotion')
 call minpac#add('kana/vim-altr', {'type': 'opt'})
 call minpac#add('vim-jp/autofmt')
 call minpac#add('mopp/sky-color-clock.vim')
-call minpac#add('rapan931/vim-pgpuzzle')
 call minpac#add('rhysd/committia.vim')
+call minpac#add('itchyny/vim-qfedit')
+
+" other
 call minpac#add('rapan931/vim-fungo')
+call minpac#add('rapan931/vim-pgpuzzle')
 
 " doc
 call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
 
 " view only
 call minpac#add('vim-jp/vital.vim', {'type': 'opt'})
+call minpac#add('itchyny/lightline-powerful', {'type': 'opt'})
 
 filetype plugin indent on
 syntax enable
@@ -448,11 +451,33 @@ let g:lightline = {
 \     'filetype': 'LightlineFiletype',
 \     'fileencoding': 'LightlineFileencoding',
 \   },
+\   'tab_component_function': {
+\     'filename': 'LightlineTabFilename'
+\   }
 \ }
 
 if !has('win32')
   let g:lightline.colorscheme = '16color'
 endif
+
+function! LightlineTabFilename(n) abort
+  let buflist = tabpagebuflist(a:n)
+  let winnr = tabpagewinnr(a:n)
+  let _ = expand('#'.buflist[winnr - 1].':t')
+  return _ !=# '' ? _ : '[No Name]'
+endfunction
+
+" function! LightlineTabFilename(n) abort
+"   let buflist = tabpagebuflist(a:n)
+"   let winnr = tabpagewinnr(a:n)
+"   let _ = expand('#'.buflist[winnr - 1].':p')
+"   if _ == ''
+"     return '[No Root]'
+"   else
+"     let root_dir = my#get_root_dir(_)
+"     return rootdir == '' ? '[No Root]' : root_dir
+"   endif
+" endfunction
 
 function! LightlineModified() abort
   return &ft =~ 'help\|vimfiler' ? '' : &modified ? '+' : ''
@@ -465,6 +490,8 @@ endfunction
 function! LightlineFilename() abort
   return ('' != LightlineReadonly() ? LightlineReadonly() . ' ' : '') .
   \ (&ft == 'vimfiler' ? vimfiler#get_status_string() :
+  \ &ft == 'qf' ? getqflist({'title': 0}).title :
+  \ &buftype == 'terminal' ? 'T' :
   \ '' != expand('%:t') ? expand('%:t') : '[No Name]')
 endfunction
 
@@ -554,7 +581,7 @@ let g:clurin = {
 let g:anzu_status_format = "%p(%i/%l) %#ErrorMsg#%w"
 
 MyAutoCmd CmdlineLeave / if !empty(getcmdline()) && mode() == 'c' |
-\   call feedkeys(":\<C-u>AnzuUpdateSearchStatus | if anzu#search_status() != '' | AnzuUpdateSearchStatusOutput | endif\<CR>", 'n') |
+\   call feedkeys(":\<C-u>AnzuUpdateSearchStatus | if anzu#search_status() != '' | echo anzu#search_status() | endif\<CR>", 'n') |
 \ endif
 
 " =================================
@@ -679,13 +706,13 @@ let g:committia_use_singlecolumn = 'always'
 " =================================
 " = setting: (Plugin)open-browser.vim
 
-" open by Chrome.
-let g:openbrowser_browser_commands = [
-\   {
-\     'name': 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
-\     'args': ['{browser}', '{uri}']
-\   }
-\ ]
+" open by Chrome.(?)
+" let g:openbrowser_browser_commands = [
+"\   {
+"\     'name': 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
+"\     'args': ['!start', '{browser}', '{uri}']
+"\   }
+"\ ]
 
 " =================================
 " = setting: Vim
@@ -893,14 +920,14 @@ endif
 " 自動的にQuickFixを開く
 " vimgrep使用時にはjオプションを付けること(着けないと勝手にジャンプしちゃうから
 " TODO:helpgrepとかもジャンプしたくないけど、よく分からない
-MyAutoCmd QuickfixCmdPost grep,vimgrep,helpgrep botright copen
-MyAutoCmd QuickfixCmdPost lgrep,lvimgrep, botright lopen
+MyAutoCmd QuickfixCmdPost grep,vimgrep,helpgrep nested botright copen
+MyAutoCmd QuickfixCmdPost lgrep,lvimgrep nested botright lopen
 
 " ']'というファイルを無駄に作成しないようにする(:w]というコマンドをよく実行しちゃっているっぽい)
 " MyAutoCmd BufWritePre * if expand('<amatch>:t') == ']' | throw "oops!!!!!!!!!!" | endif
 cnoreabbrev w] w
 
-" printerの設定
+" printerの設定(hardcopy使ったことないから多分無意味)
 if has('win32')
   set printfont=MS_Mincho:h12:cSHIFTJIS
 endif
@@ -1028,9 +1055,6 @@ command! RunVimScript source $VIMFILES/run.vim
 " 開いているファイルに移動(元: plugins/kaoriya/plugin/cmdex.vim)
 command! CdCurrent cd %:p:h
 
-" 開いているファイルのロード
-command! SCurrent source %
-
 if has('win32') && executable('touch')
   command! Touch if &modified | call my#error_msg('modified file!') | else | silent execute '!start touch' expand('%:p') | endif
 endif
@@ -1043,7 +1067,6 @@ endif
 
 " " REF: https://github.com/vim-jp/issues/issues/1204
 " command! TDotfiles :terminal ++close cmd /k cd /d "<C-r>=expand($HOME)<CR>/dotfiles" & set LANG=ja_JP.UTF-8
-" command! TDotfiles :terminal ++close cmd /k cd /d $HOME/dotfiles<Tab> & set LANG=ja_JP.UTF-8
 command! TDotfiles execute 'terminal ++close cmd /k cd /d ' . expand($HOME) . '\dotfiles & set LANG=ja_JP.UTF-8'
 command! TVimruntime execute 'terminal ++close cmd /k cd /d ' . expand($VIMRUNTIME) . ' & set LANG=ja_JP.UTF-8'
 
@@ -1075,7 +1098,7 @@ nnoremap g#    <NOP>
 noremap  ?     <NOP>
 
 " prefix keyとして z, <Space>を使用
-" - ウィンドウ移動系の操作にs使ってたけど
+" - ウィンドウ移動系の操作用prefix keyにs使ってたけど
 "   このvimrcがない環境だとs使って意図しない編集しまくりだったので、sは基本使わないようにする
 " - その次にtを使ってたけど
 "   Vim本来のt(右方向への指定文字前ジャンプ)を結構使うようになったので、prefixにzを使う
@@ -1134,7 +1157,6 @@ map <Leader>S <Plug>(easymotion-s2)
 " = mapping: (Plugin)vim-operator-replace
 
 nmap <Leader>r <Plug>(operator-replace)
-
 " 個人的なシュミでselect modeのマッピングはしたくないけど、neosnippet用にsmapでも動作するようにしておく
 vmap <Leader>r <Plug>(operator-replace)
 
@@ -1170,8 +1192,7 @@ endif
 map z/ <Plug>(incsearch-stay)
 
 " クリップボードから検索(改行に対応)
-" nmap g/ /<C-u>\V<C-r>=escape(@*, '\/')<CR><CR>
-nmap g/ :<C-u>set imsearch=0<CR>/<C-u>\V<C-r>=join(map(getreg("+", 1, 1), {key, val -> escape(val, '\/')}), "\\n")<CR><CR>
+nnoremap g/ :<C-u>set imsearch=0<CR>/<C-u>\V<C-r>=join(map(getreg("+", 1, 1), {key, val -> escape(val, '\/')}), "\\n")<CR><CR>
 
 " =================================
 " = mapping: (Plugin)vim-anzu & vim-asterisk
@@ -1236,6 +1257,12 @@ nmap <Space>/ <Plug>(caw:hatpos:toggle)
 xmap <Space>/ <Plug>(caw:hatpos:toggle)
 map <Leader>/ <Plug>(caw:hatpos:toggle:operator)
 
+" vip<Space>/をよく使うので、マッピングしておく
+" - dot repeat使うためにはexprにしないといけない？
+"   よく分からないけど<expr>なしだとdot repeatできなかったので、付けとく。
+" nmap <Space>? <Plug>(caw:hatpos:toggle:operator)ip
+nmap <expr> <Space>? '<Plug>(caw:hatpos:toggle:operator)ip'
+
 " 行コピーしてペーストしてコメントアウト
 " REF: http://d.hatena.ne.jp/osyo-manga/20120303/1330731434
 nmap <Space>_ yy<Plug>(caw:hatpos:toggle)p
@@ -1251,6 +1278,9 @@ xmap <expr> i# textobj#from_regexp#mapexpr('#\zs.\{-}\ze#')
 
 omap <expr> i_ textobj#from_regexp#mapexpr('_\zs.\{-}\ze_')
 xmap <expr> i_ textobj#from_regexp#mapexpr('_\zs.\{-}\ze_')
+
+omap <expr> i/ textobj#from_regexp#mapexpr('/\zs.\{-}\ze/')
+xmap <expr> i/ textobj#from_regexp#mapexpr('/\zs.\{-}\ze/')
 
 " =================================
 " = mapping: (Plugin)vim-textobj-parameter
@@ -1311,15 +1341,15 @@ xnoremap <Leader>og :<C-u>OpenBrowser https://github.com/<C-r>=my#selected_text(
 " =================================
 " = mapping: (Plugin)vim-textmanip
 
-xmap <Down>  <Plug>(textmanip-move-down-r)
-xmap <Up>    <Plug>(textmanip-move-up-r)
-xmap <Left>  <Plug>(textmanip-move-left-r)
-xmap <Right> <Plug>(textmanip-move-right-r)
-
-xmap <C-Down>  <Plug>(textmanip-duplicate-down)
-xmap <C-Up>    <Plug>(textmanip-duplicate-up)
-nmap <C-Down>  <Plug>(textmanip-duplicate-down)
-nmap <C-Up>    <Plug>(textmanip-duplicate-up)
+" xmap <Down>  <Plug>(textmanip-move-down-r)
+" xmap <Up>    <Plug>(textmanip-move-up-r)
+" xmap <Left>  <Plug>(textmanip-move-left-r)
+" xmap <Right> <Plug>(textmanip-move-right-r)
+"
+" xmap <C-Down>  <Plug>(textmanip-duplicate-down)
+" xmap <C-Up>    <Plug>(textmanip-duplicate-up)
+" nmap <C-Down>  <Plug>(textmanip-duplicate-down)
+" nmap <C-Up>    <Plug>(textmanip-duplicate-up)
 
 " nmap <F10>   <Plug>(textmanip-toggle-mode)
 " xmap <F10>   <Plug>(textmanip-toggle-mode)
@@ -1340,12 +1370,17 @@ map <C-j> <Plug>(edgemotion-j)
 map <C-k> <Plug>(edgemotion-k)
 
 " =================================
+" = mapping: (Plugin)vim-altr
+
+nmap <Leader>a <Plug>(altr-forward)
+
+" =================================
 " = mapping: (Plugin)neosnippet.vim, neocomplete.vim
 " = mapping: (vim-edgemotion)
 
 imap <expr> <C-k> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<C-k>"
 smap <expr> <C-k> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<Plug>(edgemotion-k)"
-xmap        <C-s>  <Plug>(neosnippet_expand_target)
+xmap        <C-s> <Plug>(neosnippet_expand_target)
 " imap <expr> <C-l> neocomplete#start_manual_complete('neosnippet')
 
 " =================================
@@ -1485,8 +1520,8 @@ if has('win32')
 
   " カーソル下のファイルをstartで実行
   " REF: https://github.com/vim-jp/issues/issues/1220
-  nnoremap gx :<C-u>!start <C-r>=expand('<cfile>:p')<CR><CR>
-  xnoremap gx :<C-u>!start <C-r>=my#selected_text()<CR><CR>
+  nnoremap gx :<C-u>!start <C-r>=shellescape(expand('<cfile>:p'))<CR><CR>
+  xnoremap gx :<C-u>!start <C-r>=shellescape(my#selected_text())<CR><CR>
 endif
 
 
@@ -1501,7 +1536,7 @@ inoremap <silent><expr> <S-CR> '<C-r>=cursor(line("."), 10000)<CR><BS>' . lexima
 " NOTE: nnoremap 123 :<C-u>call feedkeys("\<CR>")<CR> と書いた場合、123とタイプすると以下が実行される
 "       : call feedkeys("\
 "       ")
-"       ↑のように二行分のスクリプトが実行され123タイプでエラーとなってしまうので、\<CR>ではなく、\<LT>CR>と記載する必要がある。
+"       ↑のように2行分のスクリプトが実行され123タイプでエラーとなってしまうので、\<CR>ではなく、\<LT>CR>と記載する必要がある。
 nnoremap <silent> <CR> :<C-u>call feedkeys("A\<LT>CR>")<CR>
 
 " ^はあんまり使わない(_を使う)ので他に割り当て
@@ -1646,6 +1681,7 @@ nnoremap <expr> dk line('.') == line('$') ? 'dk' : 'dkk'
 " <F12>でフォントサイズを9 <-> 16に変更
 nnoremap <F1> :<C-u>set paste!<CR>
 nnoremap <F4> :<C-u>set wrap!<CR>
+nnoremap <S-F4> :<C-u>windo set nowrap<CR>
 nmap <F9> <Plug>(my-toggle-transparency)
 nmap <F12> <Plug>(my-toggle-fontsize)
 " nnoremap <F12> :<C-u>set guifont=*<CR>
@@ -1721,12 +1757,5 @@ endif
 "
 " let str = "おかえりなさい"
 " call map(reverse(split(str, '\ze')), {key, value -> execute("echo '". value . "'")})
-"
-" TODO: あとで追加すべき不足している機能を記す
-" FIXME: 修正すべき壊れたコードを記す
-" OPTIMIZE: パフォーマンスに影響を与える最適化すべき箇所を記す
-" HACK: リファクタリングすべきコードの臭いのする箇所を記す
-" REVIEW: レビューすべき箇所を記す
-" NB: 特に注意せよ
 "
 " vim:set et ts=2 sts=2 sw=2 tw=0 ft=vim:

@@ -252,34 +252,35 @@ function! my#filetypes#qf() abort
   nnoremap <buffer> <C-k> k<CR>zrzz<C-w>p
   nnoremap <buffer> <C-j> j<CR>zrzz<C-w>p
 
-  " 不要な項目の削除、削除した項目のundo
-  nnoremap <silent><buffer> dd :call <SID>del_entry()<CR>
-  xnoremap <silent><buffer> d :call <SID>del_entry()<CR>
-
-  " 削除した項目のundo
-  nnoremap <silent><buffer> u :<C-u>call <SID>undo_entry()<CR>
-
-  if exists('*s:undo_entry')
-    return
-  endif
-
-  function! s:undo_entry() abort
-    let history = get(w:, 'qf_history', [])
-    if !empty(history)
-      call setqflist(remove(history, -1), 'r')
-    endif
-  endfunction
-
-  function! s:del_entry() range abort
-    echo a:firstline
-    let qf = getqflist()
-    let history = get(w:, 'qf_history', [])
-    call add(history, copy(qf))
-    let w:qf_history = history
-    unlet! qf[a:firstline - 1 : a:lastline - 1]
-    call setqflist(qf, 'r')
-    execute a:firstline
-  endfunction
+  " " vim-qfedit導入したので、一旦コメントアウト
+  " " 不要な項目の削除、削除した項目のundo
+  " nnoremap <silent><buffer> dd :call <SID>del_entry()<CR>
+  " xnoremap <silent><buffer> d :call <SID>del_entry()<CR>
+  "
+  " " 削除した項目のundo
+  " nnoremap <silent><buffer> u :<C-u>call <SID>undo_entry()<CR>
+  "
+  " if exists('*s:undo_entry')
+  "   return
+  " endif
+  "
+  " function! s:undo_entry() abort
+  "   let history = get(w:, 'qf_history', [])
+  "   if !empty(history)
+  "     call setqflist(remove(history, -1), 'r')
+  "   endif
+  " endfunction
+  "
+  " function! s:del_entry() range abort
+  "   echo a:firstline
+  "   let qf = getqflist()
+  "   let history = get(w:, 'qf_history', [])
+  "   call add(history, copy(qf))
+  "   let w:qf_history = history
+  "   unlet! qf[a:firstline - 1 : a:lastline - 1]
+  "   call setqflist(qf, 'r')
+  "   execute a:firstline
+  " endfunction
 endfunction
 
 function! my#filetypes#go() abort
