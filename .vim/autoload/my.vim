@@ -1,4 +1,5 @@
 " echo message highlighted by ErrorMsg
+let g:my#message = 'hoge'
 function! my#error_msg(msg) abort
   echohl ErrorMsg | echo a:msg | echohl none
 endfunction
@@ -10,21 +11,16 @@ endfunction
 
 " yank and echo
 function! my#echo_and_yank(obj) abort
-  let @* = type(a:obj) == v:t_float ? printf('%s', a:obj) : a:obj
+  call setreg(v:register, (type(a:obj) == v:t_float ? printf('%s', a:obj) : a:obj))
   echo a:obj
 endfunction
 
-" REF: copied vim-go/autoload/go/util.vim go#util#snakecase()
 function! my#snakecase(word) abort
-  let w = substitute(a:word, '::', '/', 'g')
-  let w = substitute(w, '\(\u\+\)\(\u\l\)', '\1_\2', 'g')
-  let w = substitute(w, '\(\l\|\d\)\(\u\)', '\1_\2', 'g')
-  let w = substitute(w, '[.-]', '_', 'g')
-  let w = tolower(w)
-  return w
+  return go#util#snakecase(w)
 endfunction
 
 " total number in selected range
+" 文字列を',', ' 'でsplitして分割し、それをstr2float or str2nrで変換して計算
 let s:my_sum_cnt = 0
 function! my#sum(is_float) abort
   let convert_func = a:is_float ? 'str2float' : 'str2nr'
@@ -68,7 +64,7 @@ endfunction
 " if check vital source, can make more tightly
 function! my#get_root_dir(...) abort
   " 検索対象にvimも追加
-  let target_dir = escape(get(a:000, 1, expand('%:p:h')) . ';', ' ')
+  let target_dir = escape(get(a:000, 0, expand('%:p:h')) . ';', ' ')
   let search_dir_names = ['.svn', '.git', 'vim', 'vim80', 'vim81']
 
   for dir_name in search_dir_names
@@ -84,6 +80,7 @@ function! my#get_root_dir(...) abort
 endfunction
 
 " judge versioning directory
+" not use..
 function! my#is_versioning_dir(...) abort
   for dir_name in get(a:000, 1, ['.svn'])
     if !empty(finddir(dir_name, get(a:000, 0, getcwd())))
@@ -101,7 +98,7 @@ function! my#do_ctags(do_all) abort
   endif
 
   if isdirectory('.svn') || isdirectory('.git')
-    if input('now: ' . getcwd() . "\nrun ctags? (y)es or (n)o : ") =~ '^y$\|^yes$'
+    if input('now: ' . getcwd() . "\nrun ctags? (y)es or (n)o : ") =~# '^y$\|^yes$'
       if a:do_all
         silent !start ctags -R
       else
@@ -121,7 +118,7 @@ function! my#cscope_build() abort
   endif
 
   if isdirectory('.svn') || isdirectory('.git')
-    if input('now: ' . getcwd() . "\nRun cscope -Rb? (y)es or (n)o : ") =~ '^y$\|^yes$'
+    if input('now: ' . getcwd() . "\nRun cscope -Rb? (y)es or (n)o : ") =~# '^y$\|^yes$'
       silent !start cscope -Rb
     endif
   else
@@ -160,23 +157,25 @@ function! my#flash_window(ms, flash_hi_group) abort
   endtry
 endfunction
 
-" echo hex and yank
+" convert decimal -> hex and yank
 function! my#decimal2hex_and_yank(dec) abort
   let str = printf('0x%04x', a:dec)
   call my#echo_and_yank(str)
 endfunction
 
-" echo decimal and yank
+" convert hex -> decimal and yank
 function! my#hex2decimal_and_yank(hex) abort
   let str = printf('%d', type(a:hex) == v:t_number ? a:hex : str2nr(a:hex, 16))
   call my#echo_and_yank(str)
 endfunction
 
+" convert hex -> binary and yank
 function! my#hex2binary_and_yank(hex) abort
   let str = printf('0b%08b', type(a:hex) == v:t_number ? a:hex : str2nr(a:hex, 16))
   call my#echo_and_yank(str)
 endfunction
 
+" convert decimal -> binary and yank
 function! my#decimal2binary_and_yank(dec, ...) abort
   let n = get(a:000, 0, 8)
   let str = printf('0b%0' .  n . 'b', a:dec)
@@ -188,7 +187,7 @@ endfunction
 " REF: that wrote someone's vimrc. forget..
 function! my#flash_search_word(ms) abort
   try
-    if &runtimepath !~ 'vim-anzu' || empty(anzu#search_status())
+    if &runtimepath !~# 'vim-anzu' || empty(anzu#search_status())
       return
     endif
 
@@ -211,15 +210,14 @@ function! my#flash_search_word(ms) abort
   endtry
 endfunction
 
-
 " Move to the midpoint with M when L or H pressed twice
 " REF: haya14busa vimrc(もう消されてそうでした)
 function! my#HL(motion, is_visual) abort
   let current_line = line('.')
   if &scrolloff == 0
-    let flag_line =  a:motion == 'H' ? line('w0') : line('w$')
+    let flag_line =  a:motion ==# 'H' ? line('w0') : line('w$')
   else
-    let flag_line =  a:motion == 'H' ? line('w0') + &scrolloff : line('w$') - &scrolloff
+    let flag_line =  a:motion ==# 'H' ? line('w0') + &scrolloff : line('w$') - &scrolloff
   endif
 
   if a:is_visual
@@ -249,28 +247,43 @@ function! my#underscore(motion, is_visual) abort
   endif
 endfunction
 
+function! my#gf() abort
+  let target = expand('<cfile>')
+  if target ==# ''
+    call my#error_msg('Not found file path!')
+    return
+  endif
+
+  let not_vim_extension = ['xls', 'ptt']
+  if index(not_vim_extension, fnamemodify(target, ':e')) ==# -1
+    vertical botright wincmd F
+    normal! zz
+  else
+    execute '!start' shellescape(target)
+  endif
+endfunction
+
 " clear register
 function! my#clear_registers(ignore_chars) abort
-  let clear_registers = substitute('abcdefghijklmnopqrstuvwxyz', join(split(a:ignore_chars, '\zs'), '\|'), '', 'g')
-  for s:value in split(clear_registers, '\zs')
-    execute 'let @' . s:value . ' = ""'
+  let clear_registers = my#s('abcdefghijklmnopqrstuvwxyz', join(split(a:ignore_chars, '\zs'), '\|'), '')
+  for char in split(clear_registers, '\zs')
+    execute 'let @' . char . ' = ""'
   endfor
-  unlet! s:value
 endfunction
 
 " delete between if0 and endif
 " in case of exists if0, else, endif. delete lines except between else and endif
 function! my#delete_if_zero() abort
-  if expand('<cword>') == 'if'
+  if expand('<cword>') ==# 'if'
   endif
   let poss = []
-  " if0 - end,  if0 - else - endでも
+  " if0 - end,  if0 - else - endでも動作するように最小公倍数分だけ回す
   while 6 > len(poss)
     call add(poss, line('.'))
     normal! %
   endwhile
   call uniq(sort(poss, 'n'))
-  if len(poss) != 3 && len(poss) != 2 && expand('<cword>') != 'if'
+  if len(poss) != 3 && len(poss) != 2 && expand('<cword>') !=# 'if'
     call my#error_msg('Check cursor position!')
   endif
 
@@ -283,7 +296,7 @@ else
   call my#error_msg('Check cursor position!')
 endif
 endfunction
-nnoremap <Leader>d0 :<C-u>call my#delete_if_zero()<CR>
+" nnoremap <Leader>d0 :<C-u>call my#delete_if_zero()<CR>
 
 " copy past memo
 let s:ONE_DAY = 60 * 60 * 24
@@ -358,19 +371,18 @@ function! my#unite_menu_map(key, value) abort
   endif
 endfunction
 
-
 " REF: http://d.hatena.ne.jp/osyo-manga/20130202/1359735271
 function! my#back_slash_linefeed()
   call setline(line("."), my#add_back_slash(getline(line(".")), getline(line(".") - 1)))
   return ""
 endfunction
 function! my#add_back_slash(line, before_line)
-  let prefix = substitute(a:before_line, '\(^\s*\).*', '\1', '')
+  let prefix = my#s(a:before_line, '\(^\s*\).*', '\1', '')
   let s:prefix_count = len(prefix)
   if empty(a:line)
     return prefix . '\ '
   else
-    let line = substitute(a:line, '^\s*', '', '')
+    let line = my#s(a:line, '^\s*', '', '')
     return prefix . '\ ' . line
   endif
 endfunction
@@ -401,3 +413,8 @@ function! my#diff_settings() abort
     nnoremap <silent><buffer> <C-r> <C-r>:diffupdate<CR>
   endif
 endfunction
+
+function! my#s(expr, pat, sub, ...) abort
+  return substitute(a:expr, a:pat, a:sub, get(a:000, 0, 'g'))
+endfunction
+

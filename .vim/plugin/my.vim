@@ -29,7 +29,9 @@ nnoremap <silent> <Plug>(my-do-ctags-all) :<C-u>call my#do_ctags(1)<CR>
 nnoremap <silent> <Plug>(my-cscope-build) :<C-u>call my#cscope_build()<CR>
 nnoremap <silent> <Plug>(my-cscope-add) :<C-u>call my#cscope_add()<CR>
 
-inoremap <silent> <Plug>(my-back-slash-linefeed) <CR><C-r>=my#back_slash_linefeed()<CR><Right><Right>
+inoremap <silent> <Plug>(my-back-slash-linefeed) <CR><C-r>=my#back_slash_linefeed()<CR><End>
+
+nnoremap <silent> <Plug>(my-gf) :<C-u>call my#gf()<CR>
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
