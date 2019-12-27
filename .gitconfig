@@ -1,6 +1,6 @@
 [core]
 	autoCRLF = false
-	editor = 'C:\\path\\to\\gvim.exe' -c 'set fenc=utf-8'
+	editor = 'D:\\app\\prog\\vim\\gvim.exe' -c 'set fenc=utf-8'
 
 [user]
 	name = rapan931

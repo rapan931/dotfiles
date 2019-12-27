@@ -21,6 +21,11 @@ function! s:mkdir(dir_path) abort
 endfunction
 
 if has('vim_starting')
+  if has('win32')
+    " Git用
+    let $PATH = $PATH . ';C:\Git\bin'
+  endif
+
   if exists('$VIMFILES')
     " REF: https://github.com/vim-jp/issues/issues/1189
     let &runtimepath = expand('$VIMFILES') . ',' . &runtimepath
@@ -140,15 +145,15 @@ call minpac#add('junegunn/fzf.vim')
 call minpac#add('junegunn/fzf')
 
 " complete
-" call minpac#add('prabirshrestha/vim-lsp')
-" call minpac#add('prabirshrestha/async.vim')
-" call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
+call minpac#add('prabirshrestha/vim-lsp')
+call minpac#add('prabirshrestha/async.vim')
+call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
 "
-call minpac#add('prabirshrestha/asyncomplete.vim')
-call minpac#add('prabirshrestha/asyncomplete-neosnippet.vim')
-call minpac#add('prabirshrestha/asyncomplete-necovim.vim')
-call minpac#add('prabirshrestha/asyncomplete-buffer.vim')
-call minpac#add('Shougo/neco-vim')
+" call minpac#add('prabirshrestha/asyncomplete.vim')
+" call minpac#add('prabirshrestha/asyncomplete-neosnippet.vim')
+" call minpac#add('prabirshrestha/asyncomplete-necovim.vim')
+" call minpac#add('prabirshrestha/asyncomplete-buffer.vim')
+" call minpac#add('Shougo/neco-vim')
 
 " snippet
 call minpac#add('Shougo/neosnippet.vim')
@@ -283,7 +288,7 @@ call my#plug#unite_vimfiler#init()
 " =================================
 " = setting: (Plugin)lsp
 
-" let g:lsp_async_completion = 1
+let g:lsp_async_completion = 1
 
 " if executable('gopls')
 "   MyAutoCmd User lsp_setup call lsp#register_server({
@@ -293,8 +298,8 @@ call my#plug#unite_vimfiler#init()
 "\ })
 " endif
 
-" let g:lsp_log_verbose = 1
-" let g:lsp_log_file = expand('$VIMFILES/log/vim-lsp.log')
+let g:lsp_log_verbose = 1
+let g:lsp_log_file = expand('$VIMFILES/log/vim-lsp.log')
 
 MyAutoCmd User asyncomplete_setup call my#plug#asyncomplete#init()
 
@@ -317,18 +322,6 @@ call altr#remove_all()
 call altr#define('autoload/%.vim', 'doc/%.txt', 'plugin/%.vim')
 call altr#define('autoload/%/%.vim', 'doc/%-%.txt', 'plugin/%/%.vim')
 call altr#define('%.go', '%_test.go')
-
-" =================================
-" = setting: (Plugin)neocomplete.vim
-
-" いつも使う
-" smartcaseで楽々
-" 自動補完無効
-" vimproc使ってのキャッシュ作成無効
-" let g:neocomplete#enable_at_startup = 1
-" let g:neocomplete#enable_smart_case = 1
-" let g:neocomplete#disable_auto_complete = 1
-" let g:neocomplete#use_vimproc = 0
 
 " =================================
 " = setting: (Plugin)neosnippet.vim
@@ -463,10 +456,10 @@ call submode#enter_with('tag', 'n', '', 'g<C-t>', ':<C-u>tag<CR>')
 call submode#map('tag', 'n', '', 't', ':<C-u>tag<CR>')
 
 " :colder, cnewerの実行(事前にbotright copen)
-call submode#enter_with('cnew-colder', 'n', '', 'g<C-k>', ':<C-u>copen<CR>:<C-u>colder<CR>')
-call submode#enter_with('cnew-colder', 'n', '', 'g<C-j>', ':<C-u>copen<CR>:<C-u>cnewer<CR>')
-call submode#map('cnew-colder', 'n', '', '<C-k>', ':<C-u>colder<CR>')
-call submode#map('cnew-colder', 'n', '', '<C-j>', ':<C-u>cnewer<CR>')
+call submode#enter_with('cnew-cold', 'n', '', 'g<C-k>', ':<C-u>copen<CR>:<C-u>colder<CR>')
+call submode#enter_with('cnew-cold', 'n', '', 'g<C-j>', ':<C-u>copen<CR>:<C-u>cnewer<CR>')
+call submode#map('cnew-cold', 'n', '', '<C-k>', ':<C-u>colder<CR>')
+call submode#map('cnew-cold', 'n', '', '<C-j>', ':<C-u>cnewer<CR>')
 
 " " カーソル位置起点でのマークへのジャンプ
 " call submode#enter_with('jump-mark', 'n', '', 'mj', "]'")
@@ -634,7 +627,11 @@ call lexima#add_rule({'char': '{', 'input': '{', 'syntax': 'Comment'})
 " ファイル保存時の拡張子
 " uniteの設定
 " let g:memolist_path = expand('$VIM') . '\.vim\memo'
-let g:memolist_path = $VIMFILES . '/memo'
+if exists('$DHOME')
+  let g:memolist_path = $DHOME . '/memo'
+else
+  let g:memolist_path = $VIMFILES . '/memo'
+endif
 let g:memolist_memo_date = '%Y-%m-%d %H:%M:%S'
 let g:memolist_memo_suffix = 'md'
 let g:memolist_unite = 1
@@ -679,16 +676,24 @@ let g:committia_use_singlecolumn = 'always'
 " = setting: (Plugin)open-browser.vim
 
 " open by Chrome.(?)
+" let g:openbrowser_use_vimproc = 0
 " let g:openbrowser_browser_commands = [
 "\   {
 "\     'name': 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
-"\     'args': ['!start', '{browser}', '{uri}']
+"\     'args': ['!start', '{browser}', '{uri_noesc}']
 "\   }
 "\ ]
 
 " =================================
 " = setting: (Plugin)calendar.vim
 let g:calendar_views = [ 'year', 'month', 'day_3', 'clock' ]
+
+
+" =================================
+" = setting: (Plugin)emmet-vim
+
+let g:user_emmet_leader_key = '<C-s>'
+let g:user_emmet_mode = 'i'
 
 " =================================
 " = setting: Vim
@@ -996,7 +1001,7 @@ MyAutoCmd VimEnter,WinEnter,BufWinEnter *
 MyAutoCmd FocusGained * call my#flash_window(1000, 'MyFlashy')
 
 " http://qiita.com/kentaro/items/6aa9f108df825b2a8b39
-MyAutoCmd BufEnter *.rb,*.vim execute 'lcd' my#get_root_dir()
+MyAutoCmd BufEnter *.rb,*.vim,*.html,*.css execute 'lcd' my#get_root_dir()
 
 " コマンドラインモードの時だけカーソルの移動を無効化
 " (:%s/<pattern>//gの<pattern>入力中にカーソルが動くのが嫌だから)
@@ -1044,8 +1049,8 @@ command! RunVimScript source $VIMFILES/run.vim
 " 開いているファイルに移動(元: plugins/kaoriya/plugin/cmdex.vim)
 command! CdCurrent cd %:p:h
 
-if has('win32') && executable('touch')
-  command! Touch if &modified | call my#error_msg('modified file!') | else | silent execute '!start touch' expand('%:p') | endif
+if has('win32') && executable('C:/msys64/usr/bin/touch.exe')
+  command! Touch if &modified | call my#error_msg('modified file!') | else | silent execute '!start C:/msys64/usr/bin/touch.exe' expand('%:p') | endif
 endif
 
 command! MinpacUpdate call minpac#update('', {'do': 'call minpac#status()'})
@@ -1064,6 +1069,9 @@ command! -nargs=1 Debug try | echomsg <q-args> ':' string(<args>) | catch | echo
 
 " REF: h :DiffOrig
 command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis | wincmd p | diffthis
+
+command! OpenBrowserCurrent execute "OpenBrowser" "file:///" . expand('%:p:gs?\\?/?')
+nnoremap <F1> :<C-u>OpenBrowserCurrent<CR>
 
 " =================================
 " = mapping: initialize
@@ -1636,6 +1644,7 @@ nmap gF <Plug>(my-gf)
 
 " insertモード,commandモードのC-yでクリップボードからペースト
 cnoremap <C-y> <C-r>+
+" inoremap <expr> <C-y> pumvisible() ? '<C-y>' : '<C-g>u<C-r>+'
 inoremap <expr> <C-y> pumvisible() ? '<C-y><C-r>=asyncomplete#close_popup()<CR>' : '<C-g>u<C-r>+'
 
 " <Up><Down>を割り当て
@@ -1773,5 +1782,11 @@ endif
 "
 " barを使える or 使えないコマンドは以下ヘルプ参照
 " :h :bar
+"
+" ディレクトリを再帰的に削除
+" * rmdir /S target_dir_name
+"
+" ディレクトリを再帰的にコピー(/Eで再帰的にコピー、/Hで隠しファイルも。とイメージしてよい)
+" * xcopy /E /H src_dir dst_dir
 "
 " vim:set et ts=2 sts=2 sw=2 tw=0 ft=vim:

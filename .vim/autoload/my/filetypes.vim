@@ -20,16 +20,24 @@ function! s:set_indent(tab_length, is_hard_tab) abort
   let &l:tabstop     = a:tab_length
 endfunction
 
+function! my#filetypes#css() abort
+  call s:set_indent(4, 0)
+endfunction
+
+function! my#filetypes#html() abort
+  call s:set_indent(4, 0)
+endfunction
+
 function! my#filetypes#markdown() abort
-  call asyncomplete#disable_for_buffer()
+  " call asyncomplete#disable_for_buffer()
 endfunction
 
 function! my#filetypes#txt() abort
-  call asyncomplete#disable_for_buffer()
+  " call asyncomplete#disable_for_buffer()
 endfunction
 
 function! my#filetypes#javascript() abort
-  call s:set_indent(4, 1)
+  call s:set_indent(4, 0)
 endfunction
 
 function! my#filetypes#cpp() abort
