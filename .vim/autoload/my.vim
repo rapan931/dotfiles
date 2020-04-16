@@ -183,7 +183,7 @@ function! my#decimal2binary_and_yank(dec, ...) abort
 endfunction
 
 " flash search words
-" NOTE: when specified offset for search, it not working eg. /hoge/+1 , /hoge/1
+" NOTE: when specified offset for search, it not working eg. /hoge/1
 " REF: that wrote someone's vimrc. forget..
 function! my#flash_search_word(ms) abort
   try
@@ -231,7 +231,8 @@ function! my#HL(motion, is_visual) abort
   endif
 endfunction
 
-" Move to the first character of the line(similar to pressed 0) when underscore pressed twice
+" Move to the first column of the line(similar to pressed 0) when underscore pressed twice
+" TODO: expr使えばgv使わなくても楽にできそうとのこと
 function! my#underscore(motion, is_visual) abort
   if a:is_visual
     normal! gv
@@ -254,7 +255,8 @@ function! my#gf() abort
     return
   endif
 
-  let not_vim_extension = ['xls', 'ptt']
+  " let not_vim_extension = ['xls', 'ptt']
+  let not_vim_extension = ['ptt']
   if index(not_vim_extension, fnamemodify(target, ':e')) ==# -1
     vertical botright wincmd F
     normal! zz
@@ -409,12 +411,13 @@ endfunction
 function! my#diff_settings() abort
   if &diff
     setlocal nocursorline
-    nnoremap <silent><buffer> u     u:diffupdate<CR>
-    nnoremap <silent><buffer> <C-r> <C-r>:diffupdate<CR>
+    nnoremap <silent><buffer> u         u:diffupdate<CR>
+    nnoremap <silent><buffer> <C-r>     <C-r>:diffupdate<CR>
+    nnoremap <silent><buffer> <Leader>> :<C-u>diffput<CR>
+    nnoremap <silent><buffer> <Leader>< :<C-u>diffget<CR>
   endif
 endfunction
 
 function! my#s(expr, pat, sub, ...) abort
   return substitute(a:expr, a:pat, a:sub, get(a:000, 0, 'g'))
 endfunction
-

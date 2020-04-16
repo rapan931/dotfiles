@@ -44,6 +44,10 @@ function! my#filetypes#cpp() abort
   call s:set_indent(4, 0)
 endfunction
 
+function! my#filetypes#c() abort
+  call my#filetypes#cpp()
+endfunction
+
 function! my#filetypes#gitconfig() abort
   call s:set_indent(4, 1)
 endfunction
@@ -106,8 +110,8 @@ function! my#filetypes#qf() abort
   nnoremap <buffer> <C-k> k<CR>zrzz<C-w>p
   nnoremap <buffer> <C-j> j<CR>zrzz<C-w>p
 
-  " vim-qfedit入れて編集できるようになったので、
-  " よく使っちゃう編集用コマンドをnopにする
+  " vim-qfedit入れて編集できるようになったけど、
+  " 空業追加とか一文字の編集とかしないように気づいたマップはNOPに
   nnoremap <buffer> a <NOP>
   nnoremap <buffer> A <NOP>
   nnoremap <buffer> i <NOP>
@@ -116,7 +120,8 @@ function! my#filetypes#qf() abort
   nnoremap <buffer> R <NOP>
   nnoremap <buffer> gR <NOP>
   nnoremap <buffer> x <NOP>
-
+  nnoremap <buffer> o <NOP>
+  nnoremap <buffer> O <NOP>
   noremap  <buffer> c <NOP>
   noremap  <buffer> C <NOP>
   noremap  <buffer> > <NOP>
@@ -126,35 +131,6 @@ function! my#filetypes#qf() abort
   noremap  <buffer> + <NOP>
   noremap  <buffer> - <NOP>
 
-  " " vim-qfedit導入したので、一旦コメントアウト
-  " " 不要な項目の削除、削除した項目のundo
-  " nnoremap <silent><buffer> dd :call <SID>del_entry()<CR>
-  " xnoremap <silent><buffer> d :call <SID>del_entry()<CR>
-  "
-  " " 削除した項目のundo
-  " nnoremap <silent><buffer> u :<C-u>call <SID>undo_entry()<CR>
-  "
-  " if exists('*s:undo_entry')
-  "   return
-  " endif
-  "
-  " function! s:undo_entry() abort
-  "   let history = get(w:, 'qf_history', [])
-  "   if !empty(history)
-  "     call setqflist(remove(history, -1), 'r')
-  "   endif
-  " endfunction
-  "
-  " function! s:del_entry() range abort
-  "   echo a:firstline
-  "   let qf = getqflist()
-  "   let history = get(w:, 'qf_history', [])
-  "   call add(history, copy(qf))
-  "   let w:qf_history = history
-  "   unlet! qf[a:firstline - 1 : a:lastline - 1]
-  "   call setqflist(qf, 'r')
-  "   execute a:firstline
-  " endfunction
 endfunction
 
 function! my#filetypes#go() abort

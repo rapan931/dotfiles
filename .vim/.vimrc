@@ -169,7 +169,6 @@ call minpac#add('osyo-manga/vim-anzu')
 call minpac#add('kana/vim-textobj-user')
 call minpac#add('kana/vim-textobj-line')
 call minpac#add('kana/vim-textobj-indent')
-call minpac#add('sgur/vim-textobj-parameter')
 call minpac#add('thinca/vim-textobj-between')
 call minpac#add('glts/vim-textobj-comment')
 call minpac#add('osyo-manga/vim-textobj-multiblock')
@@ -219,18 +218,16 @@ call minpac#add('t9md/vim-choosewin')
 call minpac#add('t9md/vim-quickhl')
 call minpac#add('thinca/vim-quickrun')
 call minpac#add('thinca/vim-zenspace')
+call minpac#add('lambdalisue/fern.vim')
 call minpac#add('tyru/caw.vim')
 call minpac#add('tyru/open-browser-github.vim')
 call minpac#add('tyru/open-browser.vim')
 call minpac#add('vim-jp/autofmt')
-let g:winfix_resize = 0
-let g:winfix_tabfocus = 0
-let g:winfix_enable = 0
+call minpac#add('chrisbra/csv.vim')
 
 " other
 call minpac#add('rapan931/vim-fungo')
 call minpac#add('rapan931/vim-pgpuzzle')
-call minpac#add('rapan931/vim-manage-book', {'frozen': 1})
 
 " doc
 call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
@@ -450,6 +447,11 @@ call submode#enter_with('change-list', 'n', '', 'g,', 'g,')
 call submode#map('change-list', 'n', '', ';', 'g;')
 call submode#map('change-list', 'n', '', ',', 'g,')
 
+call submode#enter_with('hl-scroll', 'n', '', ';l', 'zl')
+call submode#enter_with('hl-scroll', 'n', '', ';h', 'zh')
+call submode#map('hl-scroll', 'n', '', 'l', 'zl')
+call submode#map('hl-scroll', 'n', '', 'h', 'zh')
+
 " :tagの実行(<C-t>(:pop)の逆)
 call submode#enter_with('tag', 'n', '', 'g<C-t>', ':<C-u>tag<CR>')
 call submode#map('tag', 'n', '', 't', ':<C-u>tag<CR>')
@@ -553,7 +555,6 @@ MyAutoCmd CmdlineLeave / if !empty(getcmdline()) && mode() ==# 'c' |
 " デフォルトのキーマッピングを使わない
 let g:textobj_indent_no_default_key_mappings     = 1
 let g:textobj_multiblock_no_default_key_mappings = 1
-let g:textobj_parameter_no_default_key_mappings  = 1
 let g:textobj_wiw_no_default_key_mappings        = 1
 let g:textobj_precious_no_default_key_mappings   = 1
 let g:textobj_conflict_no_default_key_mappings   = 1
@@ -587,7 +588,16 @@ let g:quickrun_config =
       \     'outputter/buffer/split':                 ':botright 8',
       \     'runner':                                 'job',
       \   },
+      \   'asciidoc': {
+      \     'runner': 'shell',
+      \     'outputter': 'null',
+      \     'command': ':PrevimOpen',
+      \     'exec': '%c',
+      \   }
       \ }
+
+" 拡張子とファイルタイプの関連付け
+autocmd BufNewFile,BufRead *.{asciidoc,adoc,asc} set filetype=asciidoc
 
 " =================================
 " = setting: (Plugin)lexima.vim
@@ -632,7 +642,7 @@ else
   let g:memolist_path = $VIMFILES . '/memo'
 endif
 let g:memolist_memo_date = '%Y-%m-%d %H:%M:%S'
-let g:memolist_memo_suffix = 'md'
+let g:memolist_memo_suffix = 'txt'
 let g:memolist_unite = 1
 let g:memolist_unite_option = '-start-insert'
 let g:memolist_unite_source = 'file'
@@ -778,7 +788,8 @@ set formatexpr=autofmt#japanese#formatexpr()
 " set display=lastline
 
 " syntaxが効く範囲を狭める(デフォルト3000)
-set synmaxcol=200
+" set synmaxcol=200
+set synmaxcol=1000
 
 " 横移動の幅を3に変更
 set sidescroll=3
@@ -1165,7 +1176,7 @@ xmap sd <Plug>(operator-sandwich-delete)
 xmap sr <Plug>(operator-sandwich-replace)
 nmap sa <Plug>(operator-sandwich-add)iw
 xmap sa <Plug>(operator-sandwich-add)
-nmap sA <Plug>(operator-sandwich-add)
+map sA <Plug>(operator-sandwich-add)
 
 " REF: vim-sandwich/plugin/sandwich.vim
 nmap sd <Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-auto-a)
@@ -1193,9 +1204,6 @@ xmap <CR> <Plug>(EasyAlign)
 " =================================
 " = mapping: (Plugin)incsearch.vim
 
-if v:version < 801
-  map / <plug>(incsearch-forward)
-endif
 map z/ <Plug>(incsearch-stay)
 
 " クリップボードから検索(改行に対応)
@@ -1290,7 +1298,7 @@ omap <expr> i/ textobj#from_regexp#mapexpr('\/\zs.\{-}\ze\/')
 xmap <expr> i/ textobj#from_regexp#mapexpr('\/\zs.\{-}\ze\/')
 
 " =================================
-" = mapping: (Plugin)vim-textobj-parameter -> vim-swap
+" = mapping: (Plugin) vim-swap
 
 omap io <Plug>(swap-textobject-i)
 xmap io <Plug>(swap-textobject-i)
@@ -1676,9 +1684,7 @@ endif
 " diff
 nnoremap <Leader>qw :<C-u>windo diffthis<CR>
 nnoremap <Leader>qo :<C-u>windo diffoff<CR>
-nnoremap <Leader>qO :<C-u>sp<CR>:<C-u>bufdo diffoff<CR>:<C-u>q<CR>
 nnoremap <Leader>qu :<C-u>diffupdate<CR>
-nnoremap <Leader>>  :<C-u>diffput<CR>
 nnoremap ]c ]czz
 nnoremap [c [czz
 
@@ -1764,7 +1770,7 @@ endif
 " :%!xxd
 " :%!xxd -r (16進数表記部分の更新が反映されるやつ)
 "
-" 文字コードでの文字の入力
+" 文字コードでの文字入力
 " <C-v>x41 -> A
 " <C-v>uxxxxでUnicodeでの入力もいける
 "

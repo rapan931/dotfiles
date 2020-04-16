@@ -109,14 +109,28 @@ function! my#plug#unite_vimfiler#init() abort
   call unite#custom_action('directory,file', 'tortoise_svn_log', s:untie_action)
   unlet s:untie_action
 
-  " TortoiseSVN commit branch
-  let s:untie_action = { 'description' : 'TortoiseProc.exe commit branch' }
+  " TortoiseSVN update branch
+  let s:untie_action = { 'description' : 'TortoiseProc.exe update branch' }
   function! s:untie_action.func(candidates) abort
-    if empty(my#get_root_dir(a:candidates.action__path))
+    let path = my#get_root_dir(a:candidates.action__path)
+    if empty(path)
       call my#error_msg('check dir!')
       return
     endif
-    silent execute '!start TortoiseProc.exe /command:commit /path:"' . my#get_root_dir(a:candidates.action__path) . '" /strict'
+    silent execute '!start TortoiseProc.exe /command:update /path:"' . path . '" /strict'
+  endfunction
+  call unite#custom_action('directory,file', 'tortoise_svn_update_branch', s:untie_action)
+  unlet s:untie_action
+
+  " TortoiseSVN commit branch
+  let s:untie_action = { 'description' : 'TortoiseProc.exe commit branch' }
+  function! s:untie_action.func(candidates) abort
+    let path = my#get_root_dir(a:candidates.action__path)
+    if empty(path)
+      call my#error_msg('check dir!')
+      return
+    endif
+    silent execute '!start TortoiseProc.exe /command:commit /path:"' . path . '" /strict'
   endfunction
   call unite#custom_action('directory,file', 'tortoise_svn_commit_branch', s:untie_action)
   unlet s:untie_action
