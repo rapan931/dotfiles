@@ -1,8 +1,8 @@
 " REF: that wrote someone's vimrc. forget..
-function! my#filetypes#setting(ftype) abort
+function! my#filetype#setting(ftype) abort
   let ftype = my#s(a:ftype, '-', '_')
-  if !empty(ftype) && exists('*' . 'my#filetypes#' . ftype)
-    execute 'call my#filetypes#' . ftype . '()'
+  if !empty(ftype) && exists('*' . 'my#filetype#' . ftype)
+    execute 'call my#filetype#' . ftype . '()'
   else
     call s:set_indent(2, 0)
   endif
@@ -14,86 +14,112 @@ function! s:set_indent(tab_length, is_hard_tab) abort
   else
     setlocal expandtab
   endif
-
   let &l:shiftwidth  = a:tab_length
   let &l:softtabstop = a:tab_length
   let &l:tabstop     = a:tab_length
 endfunction
 
-function! my#filetypes#css() abort
-  call s:set_indent(4, 0)
+function! my#filetype#xxd() abort
+  setlocal binary
+  %!xxd -g 4
 endfunction
 
-function! my#filetypes#html() abort
+function! my#filetype#css() abort
   call s:set_indent(4, 0)
+
+  " 末尾にセミコロンを入力して次の行に移る
+  imap <buffer> <C-CR> <C-e>;<CR>
 endfunction
 
-function! my#filetypes#markdown() abort
+function! my#filetype#vim() abort
+  " 明示的に \ を付けて改行する
+  imap <C-CR> <Plug>(my-back-slash-linefeed)
+endfunction
+
+function! my#filetype#html() abort
+  call s:set_indent(4, 0)
+  call s:emmet_mapping()
+endfunction
+
+function! my#filetype#markdown() abort
   " call asyncomplete#disable_for_buffer()
 endfunction
 
-function! my#filetypes#txt() abort
+function! my#filetype#txt() abort
   " call asyncomplete#disable_for_buffer()
 endfunction
 
-function! my#filetypes#javascript() abort
+function! my#filetype#javascript() abort
+  call s:set_indent(4, 0)
+  " 末尾にセミコロンを入力して次の行に移る
+  inoremap <buffer> <C-CR> <End>;<CR>
+  inoremap <buffer> jk <End>;
+  " nnoremap <buffer> Q A;
+endfunction
+
+function! my#filetype#cpp() abort
   call s:set_indent(4, 0)
 endfunction
 
-function! my#filetypes#cpp() abort
-  call s:set_indent(4, 0)
+function! my#filetype#c() abort
+  call my#filetype#cpp()
 endfunction
 
-function! my#filetypes#c() abort
-  call my#filetypes#cpp()
-endfunction
-
-function! my#filetypes#gitconfig() abort
+function! my#filetype#gitconfig() abort
   call s:set_indent(4, 1)
 endfunction
 
-function! my#filetypes#gitcommit() abort
+function! my#filetype#gitcommit() abort
   setlocal spell
 endfunction
 
-function! my#filetypes#help() abort
+function! my#filetype#help() abort
   " qで閉じる
   nnoremap <buffer> q ZZ
 endfunction
 
-function! my#filetypes#unite() abort
+function! my#filetype#unite() abort
   call my#plug#unite_vimfiler#unite_mapping()
 endfunction
 
-function! my#filetypes#vimfiler() abort
+function! my#filetype#vimfiler() abort
   call my#plug#unite_vimfiler#vimfiler_mapping()
 endfunction
 
-function! my#filetypes#denite() abort
-  nnoremap <buffer><expr> <CR> denite#do_map('do_action')
-  nnoremap <buffer><expr> d denite#do_map('do_action', 'delete')
-  nnoremap <buffer><expr> p denite#do_map('do_action', 'preview')
-  nnoremap <buffer><expr> q denite#do_map('quit')
-  nnoremap <buffer><expr> i denite#do_map('open_filter_buffer')
-  nnoremap <buffer><expr> a denite#do_map('open_filter_buffer')
-  nnoremap <buffer><expr> <Space> denite#do_map('toggle_select').'j'
+function! my#filetype#fern() abort
+  " nmap <silent><buffer> h
+  nmap <silent><buffer> <CR> <Plug>(fern-action-open:select)
+  nmap <silent><buffer> l    <Plug>(fern-action-expand)
+  nmap <silent><buffer> h    <Plug>(fern-action-collapse)
+  " nmap <buffer><nowait> x <Plug>(fern-action-open:system)
+  " nmap ..... <Plug>(fern-action-terminal:select)
 endfunction
 
-function! my#filetypes#denite_filter() abort
-  inoremap <silent><buffer><expr> <CR> denite#do_map('do_action')
-  inoremap <silent><buffer><expr> <C-j> denite#do_map('do_action')
+" function! my#filetype#denite() abort
+"   nnoremap <buffer><expr> <CR> denite#do_map('do_action')
+"   nnoremap <buffer><expr> d denite#do_map('do_action', 'delete')
+"   nnoremap <buffer><expr> p denite#do_map('do_action', 'preview')
+"   nnoremap <buffer><expr> q denite#do_map('quit')
+"   nnoremap <buffer><expr> i denite#do_map('open_filter_buffer')
+"   nnoremap <buffer><expr> a denite#do_map('open_filter_buffer')
+"   nnoremap <buffer><expr> <Space> denite#do_map('toggle_select').'j'
+" endfunction
+"
+" function! my#filetype#denite_filter() abort
+"   inoremap <silent><buffer><expr> <CR> denite#do_map('do_action')
+"   inoremap <silent><buffer><expr> <C-j> denite#do_map('do_action')
+"
+"   imap     <silent><buffer> <Esc> <Plug>(denite_filter_quit)
+" endfunction
 
-  imap     <silent><buffer> <Esc> <Plug>(denite_filter_quit)
-endfunction
-
-function! my#filetypes#godoc() abort
+function! my#filetype#godoc() abort
   " qで閉じる
   nnoremap <buffer> q ZZ
 
 endfunction
 
 " REF: http://thinca.hatenablog.com/entry/20130708/1373210009
-function! my#filetypes#qf() abort
+function! my#filetype#qf() abort
   setlocal nocursorline
 
   " 一番下に表示
@@ -130,10 +156,9 @@ function! my#filetypes#qf() abort
   noremap  <buffer> <C-a> <NOP>
   noremap  <buffer> + <NOP>
   noremap  <buffer> - <NOP>
-
 endfunction
 
-function! my#filetypes#go() abort
+function! my#filetype#go() abort
   " if executable('gopls')
   "   setlocal omnifunc=lsp#complete
   "   nmap gd <plug>(lsp-definition)
@@ -151,14 +176,14 @@ function! my#filetypes#go() abort
   nnoremap <buffer> <silent> <C-t> :<C-U>call go#def#StackPop(v:count1)<cr>
 
   " for Tour of Go
-  nnoremap <buffer> <Space><Space> :<C-u>call my#filetypes#go_comment_for_tour_of_go('\_.*\_^\s*\/\/\zs', 'n', '\%' . line('$') . 'l', 'n')<CR>
+  nnoremap <buffer> <Space><Space> :<C-u>call my#filetype#go_comment_for_tour_of_go('\_.*\_^\s*\/\/\zs', 'n', '\%' . line('$') . 'l', 'n')<CR>
 endfunction
 
-function! my#filetypes#calendar() abort
+function! my#filetype#calendar() abort
   setlocal synmaxcol&
 endfunction
 
-function! my#filetypes#go_comment_for_tour_of_go(search1, search1_flgs, search2, search2_flgs) abort
+function! my#filetype#go_comment_for_tour_of_go(search1, search1_flgs, search2, search2_flgs) abort
   if &runtimepath !~ 'caw.vim'
     call my#error_msg('not found caw.vim!')
     return
@@ -179,4 +204,14 @@ function! my#filetypes#go_comment_for_tour_of_go(search1, search1_flgs, search2,
   call caw#keymapping_stub('x', 'hatpos', 'comment')
 
   execute 'normal!' "Go\<Esc>p\<C-a>"
+endfunction
+
+function s:emmet_mapping() abort
+  imap <silent><buffer> <C-j>,  <Plug>(emmet-expand-abbr)
+
+  " REF: https://github.com/mattn/emmet-vim/issues/506
+  call submode#enter_with('emmet-n', 'i', 'rb', '<C-j>n', '<Plug>(emmet-move-next)')
+  call submode#enter_with('emmet-n', 'i', 'rb', '<C-j>N', '<Plug>(emmet-move-prev)')
+  call submode#map('emmet-n', 'i', 'r', 'n', '<Plug>(emmet-move-next)')
+  call submode#map('emmet-n', 'i', 'r', 'N', '<Left><Plug>(emmet-move-prev)')
 endfunction

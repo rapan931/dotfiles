@@ -1,12 +1,19 @@
 function! my#plug#asyncomplete#init() abort
   if executable('css-languageserver')
-      au User lsp_setup call lsp#register_server({
+    autocmd User lsp_setup call lsp#register_server({
           \ 'name': 'css-languageserver',
           \ 'cmd': {server_info->[&shell, &shellcmdflag, 'css-languageserver --stdio']},
-          \ 'whitelist': ['css', 'less', 'sass'],
+          \ 'allowlist': ['css', 'less', 'sass'],
           \ })
   endif
 
+  if executable('html-languageserver')
+    autocmd User lsp_setup call lsp#register_server({
+          \ 'name': 'html-languageserver',
+          \ 'cmd': {server_info->[&shell, &shellcmdflag, 'html-languageserver --stdio']},
+          \ 'allowlist': ['html'],
+          \ })
+  endif
 
   " let s:always_black_list = ['unite', 'txt', '']
   " call asyncomplete#register_source(asyncomplete#sources#necovim#get_source_options({

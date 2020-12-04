@@ -54,7 +54,14 @@ function! my#plug#unite_vimfiler#init() abort
     try
       let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
       if pattern != ""
-        silent execute 'grep!' escape(pattern, '|') a:candidates.action__path
+        let project_encoding =  get(g:, 'my_project_encoding', 'utf-8')
+        if project_encoding != 'utf-8'
+          setlocal makeencoding=utf-8
+          silent execute 'grep!' escape(pattern, '|') a:candidates.action__path
+          execute 'setlocal makeencoding=' . project_encoding
+        else
+          silent execute 'grep!' escape(pattern, '|') a:candidates.action__path
+        endif
       else
         throw 'non-pattern'
       endif
@@ -71,6 +78,15 @@ function! my#plug#unite_vimfiler#init() abort
     try
       let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
       if pattern != ""
+
+        if project_encoding != 'utf-8'
+          setlocal makeencoding=utf-8
+          silent execute 'grepadd!' escape(pattern, '|') a:candidates.action__path
+          execute 'setlocal makeencoding=' . project_encoding
+        else
+          silent execute 'grepadd!' escape(pattern, '|') a:candidates.action__path
+        endif
+
         silent execute 'grepadd!' escape(pattern, '|') a:candidates.action__path
       else
         throw 'non-pattern'
