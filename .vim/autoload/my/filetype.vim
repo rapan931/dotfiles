@@ -19,6 +19,14 @@ function! s:set_indent(tab_length, is_hard_tab) abort
   let &l:tabstop     = a:tab_length
 endfunction
 
+function! my#filetype#java() abort
+  call s:set_indent(4, 1)
+
+  " 末尾にセミコロンを入力して次の行に移る
+  inoremap <buffer> <C-CR> <End>;<CR>
+  inoremap <buffer> jk <End>;
+endfunction
+
 function! my#filetype#xxd() abort
   setlocal binary
   %!xxd -g 4
@@ -42,11 +50,11 @@ function! my#filetype#html() abort
 endfunction
 
 function! my#filetype#markdown() abort
-  " call asyncomplete#disable_for_buffer()
+  call asyncomplete#disable_for_buffer()
 endfunction
 
 function! my#filetype#txt() abort
-  " call asyncomplete#disable_for_buffer()
+  call asyncomplete#disable_for_buffer()
 endfunction
 
 function! my#filetype#javascript() abort
@@ -93,6 +101,9 @@ function! my#filetype#fern() abort
   nmap <silent><buffer> h    <Plug>(fern-action-collapse)
   " nmap <buffer><nowait> x <Plug>(fern-action-open:system)
   " nmap ..... <Plug>(fern-action-terminal:select)
+
+  " " もう1つ上の階層に移動
+  " <Plug>(fern-action-leave)
 endfunction
 
 " function! my#filetype#denite() abort

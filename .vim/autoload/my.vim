@@ -192,12 +192,12 @@ function! my#flash_search_word(ms) abort
     endif
 
     " " このコメント部は何のために入れたのか覚えていない..
-    " let cursor_col = col('.')
-    " let match_last_en = matchstr(@/, '\\\+$')
-    " let end = empty(match_last_en) == 1 || len(match_last_en) % 2 == 0 ? '\)' : ')'
-    " let match_pattern_id = matchadd('CursorIM', '\c\%#\(' . @/ . end, 100)
-    let match_pattern_id = matchadd('CursorIM', '\c\%#' . @/ , 100)
-    let match_cursor_id = matchadd('Cursor', '\%#', 101)
+    let cursor_col = col('.')
+    let match_last_en = matchstr(@/, '\\\+$')
+    let end = empty(match_last_en) == 1 || len(match_last_en) % 2 == 0 ? '\)' : ')'
+    let match_pattern_id = matchadd('CursorIM', '\c\%#\(' . @/ . end, 100)
+    " let match_pattern_id = matchadd('CursorIM', '\c\%#' . @/ , 100)
+    " let match_cursor_id = matchadd('Cursor', '\%#', 101)
     redraw
 
     call my#sleep(a:ms)

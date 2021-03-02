@@ -1,0 +1,11 @@
+snippet main
+    public class `expand('%:p:t:r')` {
+        public static void main(String args[]) {
+            ${0:#:body}
+        }
+    }
+
+snippet println
+alias sout
+options word
+    System.out.println(${1});

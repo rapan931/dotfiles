@@ -11,7 +11,6 @@ scriptencoding utf-8
 "   finish
 " endif
 
-
 " =================================
 " = setting: initialize
 function! s:mkdir(dir_path) abort
@@ -20,6 +19,8 @@ function! s:mkdir(dir_path) abort
     call mkdir(a:dir_path, 'p')
   endif
 endfunction
+
+let $PATH = $PATH . ';' . $HOME . "/bin;"
 
 if has('vim_starting')
   if has('win32')
@@ -151,13 +152,14 @@ call minpac#add('mattn/vim-lsp-settings')
 call minpac#add('prabirshrestha/asyncomplete.vim', {'type': 'opt'})
 call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
 call minpac#add('prabirshrestha/asyncomplete-neosnippet.vim', {'type': 'opt'})
+call minpac#add('prabirshrestha/asyncomplete-buffer.vim',     {'type': 'opt'})
 
 " snippet
 call minpac#add('Shougo/neosnippet.vim')
 call minpac#add('Shougo/neosnippet-snippets')
 
 " search
-call minpac#add('easymotion/vim-easymotion')
+" call minpac#add('easymotion/vim-easymotion')
 call minpac#add('haya14busa/incsearch.vim')
 call minpac#add('haya14busa/vim-asterisk')
 call minpac#add('osyo-manga/vim-anzu')
@@ -192,6 +194,7 @@ call minpac#add('kannokanno/previm')
 " call minpac#add('osyo-manga/vim-precious')
 
 " other
+call minpac#add('machakann/vim-highlightedyank')
 call minpac#add('PProvost/vim-ps1')
 call minpac#add('cohama/lexima.vim', {'type': 'opt'})
 call minpac#add('glidenote/memolist.vim')
@@ -220,9 +223,12 @@ call minpac#add('tyru/caw.vim')
 call minpac#add('tyru/open-browser-github.vim')
 call minpac#add('tyru/open-browser.vim')
 call minpac#add('vim-jp/autofmt')
-call minpac#add('chrisbra/csv.vim')
+call minpac#add('aklt/plantuml-syntax')
+" call minpac#add('chrisbra/csv.vim')
+call minpac#add('cohama/agit.vim')
+call minpac#add('vim-ruby/vim-ruby', {'type': 'opt'})
 
-" other
+" mine
 call minpac#add('rapan931/vim-fungo')
 call minpac#add('rapan931/vim-pgpuzzle')
 
@@ -290,19 +296,51 @@ call my#plug#unite_vimfiler#init()
 " = setting: (Plugin)asyncomplete-neosnippet.vim
 
 let g:lsp_settings = {
-      \   'vim-language-server': {
-      \     'disabled': 1
-      \   }
-      \ }
+    \   'vim-language-server': {
+    \     'disabled': 1
+    \   },
+    \   'html-languageserver': {
+    \     'disabled': 1
+    \   }
+    \ }
+
+" let g:lsp_log_verbose = 1
+" let g:lsp_log_file = expand('$VIMFILES/log/vim-lsp.log')
+
+let g:asyncomplete_popup_delay = 50
+let g:asyncomplete_matchfuzzy = 0
 
 packadd asyncomplete.vim
 packadd asyncomplete-neosnippet.vim
+packadd asyncomplete-buffer.vim
 call asyncomplete#register_source(asyncomplete#sources#neosnippet#get_source_options({
-      \   'name': 'neosnippet',
-      \   'allowlist': ['*'],
-      \   'blacklist': ['unite', 'vimfiler', 'txt', ''],
-      \   'completor': function('asyncomplete#sources#neosnippet#completor'),
-      \ }))
+     \   'name': 'neosnippet',
+     \   'allowlist': ['*'],
+     \   'blacklist': ['unite', 'vimfiler', 'txt', ''],
+     \   'completor': function('asyncomplete#sources#neosnippet#completor'),
+     \ }))
+
+call asyncomplete#register_source(asyncomplete#sources#buffer#get_source_options({
+   \ 'name': 'buffer',
+   \ 'allowlist': ['plantuml', 'vim'],
+   \ 'completor': function('asyncomplete#sources#buffer#completor'),
+   \ 'config': {
+   \    'max_buffer_size': 4000000,
+   \  },
+   \ }))
+
+function! s:on_lsp_buffer_enabled() abort
+    setlocal omnifunc=lsp#complete
+    setlocal signcolumn=yes
+    " nmap <buffer> gd <plug>(lsp-declaration)
+    nmap <buffer> K <Plug>(lsp-hover)
+
+    " https://github.com/prabirshrestha/vim-lsp/pull/776
+    " nmap <buffer> <C-]> <Plug>(lsp-definition)
+    nnoremap <buffer> <C-]> :<C-u>LspDefinition<CR>
+endfunction
+
+MyAutoCmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
 
 " =================================
 " = setting: (Plugin)lsp
@@ -316,9 +354,6 @@ call asyncomplete#register_source(asyncomplete#sources#neosnippet#get_source_opt
       "\ 'whitelist': ['go'],
       "\ })
 " endif
-
-" let g:lsp_log_verbose = 1
-" let g:lsp_log_file = expand('$VIMFILES/log/vim-lsp.log')
 
 " =================================
 " = setting: (Plugin)vim-precious & context_filetype.vim
@@ -391,10 +426,10 @@ let g:clever_f_show_prompt = 1
 " =================================
 " = setting: (Plugin)vim-easymotion
 
-" プラグインのデフォルトキーマップを適用しない
-" easymotion用のキーもvimfilerに合わせる
-let g:EasyMotion_do_mapping = 0
-let g:EasyMotion_keys = 'sdfghjkl;qwertyuiopzcvbnm'
+" " プラグインのデフォルトキーマップを適用しない
+" " easymotion用のキーもvimfilerに合わせる
+" let g:EasyMotion_do_mapping = 0
+" let g:EasyMotion_keys = 'sdfghjkl;qwertyuiopzcvbnm'
 
 " =================================
 " = setting: (Plugin)vim-operator-flashy
@@ -488,7 +523,6 @@ call submode#map('cnew-cold', 'n', '', '<C-j>', ':<C-u>cnewer<CR>')
 " call submode#enter_with('jump-mark', 'n', '', 'mk', "['")
 " call submode#map('jump-mark', 'n', '', 'j', "]'")
 " call submode#map('jump-mark', 'n', '', 'k', "['")
-
 
 " =================================
 " = setting: (Plugin)lightline.vim
@@ -625,6 +659,15 @@ let g:quickrun_config =
       \     'tempfile': '%{tempname()}.ts',
       \     'exec': '%c %o %s',
       \   },
+      \   'ruby.spec': {
+      \     'command': 'rspec',
+      \     'outputter/quickfix/errorformat': "\%f:%l:\ %tarning:\ %m,\%E%.%#:in\ `load':\ %f:%l:%m,\%E%f:%l:in\ `%*[^']':\ %m,\%-Z\ \ \ \ \ %\\+\#\ %f:%l:%.%#,\%E\ \ \ \ \ Failure/Error:\ %m,\%E\ \ \ \ \ Failure/Error:,\%C\ \ \ \ \ %m,\%C%\\s%#,\%-G%.%#",
+      \     'exec': 'bundle exec %c %a %s'
+      \   },
+      \   'java': {
+      \     'exec': ['javac -J-Dfile.encoding=UTF8 %o -d %s:p:h %s', '%c -Dfile.encoding=UTF8 -cp %s:p:h %s:t:r %a'],
+      \     'hook/sweep/files': '%S:p:r.class',
+      \   },
       \   'typescript/tsc': {
       \     'command': 'tsc',
       \     'exec': ['%c --target es5 --module commonjs %o %s', 'node %s:r.js'],
@@ -635,6 +678,7 @@ let g:quickrun_config =
 
 " 拡張子とファイルタイプの関連付け
 autocmd BufNewFile,BufRead *.{asciidoc,adoc,asc} set filetype=asciidoc
+autocmd BufNewFile,BufRead *spec.rb set filetype=ruby.spec
 
 " =================================
 " = setting: (Plugin)lexima.vim
@@ -692,7 +736,7 @@ else
   let g:memolist_path = $VIMFILES . '/memo'
 endif
 let g:memolist_memo_date = '%Y-%m-%d %H:%M:%S'
-let g:memolist_memo_suffix = 'txt'
+let g:memolist_memo_suffix = 'md'
 let g:memolist_unite = 1
 let g:memolist_unite_option = '-start-insert'
 let g:memolist_unite_source = 'file'
@@ -720,6 +764,7 @@ call operator#sandwich#set('delete', 'all', 'hi_duration', 10)
 " = setting: (Plugin)previm
 
 let g:previm_enable_realtime = 1
+let g:previm_plantuml_imageprefix = 'http://localhost:8888/png/'
 
 " =================================
 " = setting: (Plugin)vim-pgpuzzle
@@ -990,6 +1035,7 @@ let g:jellybeans_overrides = {
 if has('vim_starting')
   if has('win32')
     colorscheme jellybeans
+    " colorscheme desert
   else
     colorscheme desert
   endif
@@ -1033,7 +1079,7 @@ highlight default TrailingSpaces guibg=darkgray
 " MyAutoCmdとMyAutoCmdFTの強調
 "   REF: http://pocke.hatenablog.com/entry/2014/06/21/101827
 "   REF: sytanx/vim.vim
-MyAutoCmd BufWinEnter,ColorScheme _vimrc,.vimrc,my_job.vimrc call s:my_hl_autocmd()
+MyAutoCmd BufWinEnter,ColorScheme _vimrc,.vimrc,*my_job*.vimrc call s:my_hl_autocmd()
 function! s:my_hl_autocmd() abort
   syntax keyword myVimAutoCmd MyAutoCmd skipwhite nextgroup=vimAutoEventList
   highlight link myVimAutoCmd vimAutoCmd
@@ -1079,21 +1125,29 @@ MyAutoCmd BufNewFile,BufRead *.bin setl ft=xxd
 " その他の各種設定
 MyAutoCmdFT * call my#filetype#setting(expand('<amatch>'))
 
+function! s:lcd_root_dir() abort
+  let root_dir = my#get_root_dir()
+  if match(root_dir, '^\\\\\|//') == -1 && !empty(root_dir)
+    silent execute 'set path=.,,' . my#s(root_dir, ' ', '\\\ ') . '\\**'
+    silent execute 'lcd' root_dir
+  endif
+endfunction
+MyAutoCmd BufEnter * call s:lcd_root_dir()
 " =================================
 " = command: define
 
 " - Copy file name
-" - Copy file path
-" - Copy file relative path
+" - Copy full path
+" - Copy relative path
 " - Copy root direcotory name
 " - Copy root direcotory path
-command! Cfn call my#echo_and_yank(expand('%:t'))
+command! Cn call my#echo_and_yank(expand('%:t'))
 command! Cfp call my#echo_and_yank(expand('%:p'))
-command! Cfr call my#echo_and_yank(my#s(expand('%'), '^\', ''))
+command! Crp call my#echo_and_yank(my#s(expand('%'), '^\', ''))
 command! Cdn call my#echo_and_yank(my#s(my#get_root_dir(), '.*\\', ''))
 command! Cdp call my#echo_and_yank(my#get_root_dir())
 command! CfpConvSeparator call my#echo_and_yank(my#s(expand('%:p'), '\', '/'))
-command! CfrConvSeparator call my#echo_and_yank(my#s(my#s(expand('%'), '^\', ''), '\' , '/'))
+command! CrpConvSeparator call my#echo_and_yank(my#s(my#s(expand('%'), '^\', ''), '\' , '/'))
 command! CdpConvSeparator call my#echo_and_yank(my#s(my#get_root_dir(), '\', '/'))
 
 " 選択範囲内の数値の合計
@@ -1117,7 +1171,8 @@ endif
 command! MinpacUpdate call minpac#update('', {'do': 'call minpac#status()'})
 
 if has('win32')
-  command! TCurrent if empty(bufname('%')) | throw 'Current buffer is [No Name]!!' | endif | terminal ++close cmd /k cd /d "%:p:h" & set LANG=ja_JP.UTF-8
+  command! TCurrent if !filereadable(expand('%:p')) | throw 'Current buffer is not file!!' | endif | terminal ++close cmd /k cd /d "%:p:h" & set LANG=ja_JP.UTF-8
+  command! TUtf     terminal ++close cmd /k set LANG=ja_JP.UTF-8
 endif
 
 " " REF: https://github.com/vim-jp/issues/issues/1204
@@ -1205,8 +1260,8 @@ xmap - <Plug>(clurin-prev)
 " =================================
 " = mapping: (Plugin)vim-easymotion
 
-" 2-key Find Motion
-map <Leader>S <Plug>(easymotion-s2)
+" " 2-key Find Motion
+" map <Leader>S <Plug>(easymotion-s2)
 
 " f,F,t,Tのオペレータ待機の時だけはclever-f使わないでeasymotion使う
 " omap t <Plug>(easymotion-tl)
@@ -1244,8 +1299,23 @@ nmap g> <Plug>(swap-next)
 " =================================
 " = mapping: (Plugin)vim-operator-flashy
 
-map y <Plug>(operator-flashy)
-nmap Y <Plug>(operator-flashy)$
+" map y <Plug>(operator-flashy)
+" nmap Y <Plug>(operator-flashy)$
+
+function! Hogehoge() abort
+  autocmd CursorMoved <buffer> ++once call highlightedyank#obsolete#highlight#cancel()
+  return ""
+endfunction
+nmap <expr><silent> <Plug>(my-highlightedyank-cancel) Hogehoge()
+xmap <expr><silent> <Plug>(my-highlightedyank-cancel) Hogehoge()
+omap <expr><silent> <Plug>(my-highlightedyank-cancel) Hogehoge()
+" nmap y <Plug>(highlightedyank)<Plug>(my-highlightedyank-cancel)
+" xmap y <Plug>(highlightedyank)<Plug>(my-highlightedyank-cancel)
+" omap y <Plug>(highlightedyank)<Plug>(my-highlightedyank-cancel)
+nmap y <Plug>(highlightedyank)
+xmap y <Plug>(highlightedyank)
+omap y <Plug>(highlightedyank)
+nmap Y <Plug>(highlightedyank)$<Plug>(my-highlightedyank-cancel)
 
 " =================================
 " = mapping: (Plugin)vim-easy-align
@@ -1258,7 +1328,7 @@ xmap <CR> <Plug>(EasyAlign)
 map z/ <Plug>(incsearch-stay)
 
 " クリップボードから検索(改行に対応)
-nnoremap g/ :<C-u>set imsearch=0<CR>/\V<C-r>=join(map(getreg('',1,1),{k,v->escape(v,'\/')}),'\n')<CR><CR>
+nnoremap g/ :<C-u>set imsearch=0<CR>/\V<C-r>=join(map(getreg(v:register,1,1),{k,v->escape(v,'\/')}),'\n')<CR><CR>
 
 " =================================
 " = mapping: (Plugin)vim-anzu & vim-asterisk
@@ -1453,7 +1523,7 @@ xmap        <C-s> <Plug>(neosnippet_expand_target)
 " =================================
 " = mapping: (Plugin)calendar.vim
 
-nmap <Leader>cav :<C-u>Calendar -view=year -split=vertical -position=left -width=27
+nnoremap <Leader>cav :<C-u>Calendar -view=year -split=vertical -position=left -width=27
 
 " =================================
 " = mapping: window operation
