@@ -6,16 +6,39 @@
 	name = rapan931
 	email = 24415677+rapan931@users.noreply.github.com
 
+[color "status"]
+	added = green
+	changed = red
+	untracked = cyan
+	unmerged = yellow
+
 [alias]
-	st = status
-	l = log
-	lp = log -p
-	co = checkout
-	b = branch
-	cp = cherry-pick
 	ad = add
 	addd = add
+
+	b = branch
+
+	co = checkout
+
+	cp = cherry-pick
+
+	cbr = switch -c
+
 	d = diff
 	dc = diff --cached
+	dg = !git d | nkf -s | gvim -
 	dn = diff --name-only
 
+	l = log
+	ln = log --name-only
+	lp = log -p
+	ltree = log --graph --oneline --date=iso                   --pretty=format:'%C(yellow)%h%C(reset) %C(magenta)[%ad]%C(reset)%C(auto)%d%C(reset) %C(cyan)@%an%C(reset) %s'
+	lone  = log --oneline --date=short --date=iso --date-order --pretty=format:'%C(yellow)%h%C(reset) %C(magenta)[%ad]%C(reset)%C(auto)%d%C(reset) %C(cyan)@%an%C(reset) %s'
+
+	st = status --short --branch
+	stig = status --ignored
+
+	windiff = difftool -y -d -t WinMerge
+	winmerge = difftool -y -d -t WinMerge
+
+	it = !git init && git add . && git commit -m \"Init\"
