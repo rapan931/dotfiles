@@ -1,0 +1,16 @@
+snippet     import
+abbr        import { member, ... } from "module-name"
+options     head
+  import { ${1:MEMBERS} } from "${0:TARGET}"
+
+snippet     importd
+abbr        import defaultMember from "module-name";
+options     head
+  import ${1:defaultMember} from "${0:TARGET}"
+
+snippet     lambda
+alias       arrow
+abbr        () => {}
+options     word
+  (${1:#:Args}) => { ${0:#:TARGET} }
+

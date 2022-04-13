@@ -1,5 +1,4 @@
 " echo message highlighted by ErrorMsg
-let g:my#message = 'hoge'
 function! my#error_msg(msg) abort
   echohl ErrorMsg | echo a:msg | echohl none
 endfunction
@@ -45,7 +44,13 @@ endfunction
 " change font size for review, resize the window after changing
 function! my#toggle_fontsize() abort
   if &guifont =~# 'h9'
+    set guifont=MS_Gothic:h12:cSHIFTJIS
+  elseif &guifont =~# 'h12'
     set guifont=MS_Gothic:h16:cSHIFTJIS
+  elseif &guifont =~# 'h16'
+    set guifont=MS_Gothic:h20:cSHIFTJIS
+  elseif &guifont =~# 'h20'
+    set guifont=MS_Gothic:h24:cSHIFTJIS
   else
     set guifont=MS_Gothic:h9:cSHIFTJIS
   endif
@@ -79,17 +84,6 @@ function! my#get_root_dir(...) abort
   return ''
 endfunction
 
-" judge versioning directory
-" not use..
-function! my#is_versioning_dir(...) abort
-  for dir_name in get(a:000, 1, ['.svn'])
-    if !empty(finddir(dir_name, get(a:000, 0, getcwd())))
-      return 1
-    endif
-  endfor
-  return 0
-endfunction
-
 " do ctags
 function! my#do_ctags(do_all) abort
   if !has('win32')
@@ -98,7 +92,7 @@ function! my#do_ctags(do_all) abort
   endif
 
   if isdirectory('.svn') || isdirectory('.git')
-    if input('now: ' . getcwd() . "\nrun ctags? (y)es or (n)o : ") =~# '^y$\|^yes$'
+    if input('now: ' . getcwd() . "\nrun ctags? (y)es or (n)o : ") =~? '^y\%[es]$'
       if a:do_all
         silent !start ctags -R
       else
@@ -191,13 +185,20 @@ function! my#flash_search_word(ms) abort
       return
     endif
 
-    " " このコメント部は何のために入れたのか覚えていない..
-    let cursor_col = col('.')
     let match_last_en = matchstr(@/, '\\\+$')
-    let end = empty(match_last_en) == 1 || len(match_last_en) % 2 == 0 ? '\)' : ')'
+
+    if empty(match_last_en) == 1
+      let end = '\)'
+    elseif len(match_last_en) % 2 == 0
+      let end = '\)'
+    else
+      " 末尾が奇数個の\だった場合は\追加。で、さらに\(を追加
+      let end = '\\)'
+    endif
+
+    " let match_pattern_id = matchadd('CursorIM', '\c\%#\(' . @/ . '\)' , 100)
     let match_pattern_id = matchadd('CursorIM', '\c\%#\(' . @/ . end, 100)
-    " let match_pattern_id = matchadd('CursorIM', '\c\%#' . @/ , 100)
-    " let match_cursor_id = matchadd('Cursor', '\%#', 101)
+    let match_cursor_id = matchadd('Cursor', '\%#', 101)
     redraw
 
     call my#sleep(a:ms)
@@ -345,37 +346,8 @@ function! my#selected_text() abort
   endtry
 endfunction
 
-function! my#unite_menu_map(key, value) abort
-  let [word, value] = a:value
-
-  if empty(value)
-    return {
-    \   "word": "",
-    \   "kind": "",
-    \   "action__directory": "",
-    \ }
-  elseif isdirectory(value)
-    return {
-    \   "word": "[directory] ".word,
-    \   "kind": "directory",
-    \   "action__directory": value,
-    \ }
-  elseif !empty(glob(value))
-    return {
-    \   "word": "[file] ".word,
-    \   "kind": "file",
-    \   "action__path" : value,
-    \ }
-  else
-    return {
-    \   "word": "[command] ".word,
-    \   "kind": "command",
-    \   "action__command": value
-    \ }
-  endif
-endfunction
-
 " REF: http://d.hatena.ne.jp/osyo-manga/20130202/1359735271
+" 上手く動いていない
 function! my#back_slash_linefeed()
   call setline(line("."), my#add_back_slash(getline(line(".")), getline(line(".") - 1)))
   return ""
@@ -389,25 +361,6 @@ function! my#add_back_slash(line, before_line)
     let line = my#s(a:line, '^\s*', '', '')
     return prefix . '\ ' . line
   endif
-endfunction
-
-function! my#comment_search_to_search(search1, search1_flgs, search2, search2_flgs) abort
-  " let save_cursor = getcurpos()
-
-  if &runtimepath !~ 'caw.vim'
-    my#error_msg('Not found caw.vim!')
-  endif
-
-  let line1 = search(a:search1, a:search1_flgs)
-  let line2 = search(a:search2, a:search2_flgs)
-
-  if line1 == 0 && line2 == 0
-    my#error_msg('Not found specified strings!')
-  endif
-
-  call setpos("'<", [bufnr('%'), line1, 0, 0])
-  call setpos("'>", [bufnr('%'), line2, 0, 0])
-  call caw#keymapping_stub('x', 'hatpos', 'comment')
 endfunction
 
 function! my#diff_settings() abort

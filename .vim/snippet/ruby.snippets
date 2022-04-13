@@ -1,0 +1,48 @@
+snippet #!
+abbr    #!/usr/bin/env ruby
+alias   shebang
+options head
+  #!/usr/bin/env ruby
+  ${0}
+
+snippet     init
+abbr        def initialize end
+  def initialize${1:#:(params)}
+    ${0:TARGET}
+  end
+
+snippet     eachd
+options word
+  each do |${1:#:variable}|
+    ${0}
+  end
+
+snippet     eachb
+options word
+  each { |${1:#:variable}| ${0} }
+
+snippet     b
+options word
+  { |${1:#:variable}| ${0} }
+
+snippet     d
+options word
+  do |${1:#:var}|
+    ${0:TARGET}
+  end
+
+snippet     do
+options word
+  do
+    ${0:TARGET}
+  end
+
+snippet     class
+  class ${1:`substitute(expand('%:t:r:r:r'), '\v%(^(.)|_(.))', '\u\1\u\2', 'g')`}
+    ${0}
+  end
+
+snippet     module
+  module ${1:`substitute(expand('%:t:r:r:r'), '\v%(^(.)|_(.))', '\u\1\u\2', 'g')`}
+    ${0}
+  end

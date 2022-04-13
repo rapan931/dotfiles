@@ -14,6 +14,10 @@ function! my#plug#lightline#init() abort
         \     "\<C-s>": 'S-B',
         \     '?':      '      '
         \   },
+        \   'active': {
+        \     'left':  [['mode', 'paste' ], ['cocstatus', 'readonly', 'filename', 'modified', 'modified_buffers']],
+        \     'right': [['lineinfo'], ['percent'], ['fileformat', 'fileencoding', 'filetype']]
+        \   },
         \   'inactive': {
         \     'left':  [['filename', 'modified']],
         \     'right': [[]]
@@ -29,6 +33,8 @@ function! my#plug#lightline#init() abort
         \     'fileformat': 'my#plug#lightline#fileformat',
         \     'filetype': 'my#plug#lightline#filetype',
         \     'fileencoding': 'my#plug#lightline#fileencoding',
+        \     'cocstatus': 'coc#status',
+        \     'modified_buffers': 'my#plug#lightline#modified_buffers',
         \   },
         \   'tab_component_function': {
         \     'filename': 'my#plug#lightline#tab_filename'
@@ -104,4 +110,20 @@ endfunction
 
 function! my#plug#lightline#fileencoding() abort
   return winwidth(0) > 70 ? (&fenc !=# '' ? &fenc : &enc) : ''
+endfunction
+
+function! my#plug#lightline#modified_buffers() abort
+  let modified_background_buffers = filter(range(1, bufnr('$')),
+  \ { _, bufnr -> bufexists(bufnr) && buflisted(bufnr) && getbufvar(bufnr, 'buftype') ==# '' && filereadable(expand('#' . bufnr . ':p')) && bufnr != bufnr('%') && getbufvar(bufnr, '&modified') == 1 }
+  \ )
+
+  " if count(s:lightline_ignore_filename_ft, &filetype)
+    " return ''
+  " endif
+
+  if len(modified_background_buffers) > 0
+    return '{' . len(modified_background_buffers) . '}'
+  else
+    return ''
+  endif
 endfunction

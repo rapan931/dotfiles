@@ -27,41 +27,72 @@ function! my#filetype#java() abort
   inoremap <buffer> jk <End>;
 endfunction
 
+function! my#filetype#ruby() abort
+  if expand('%:t') =~# '.*spec.rb$'
+    nnoremap <buffer> <Leader>R :QuickRun rspec
+  endif
+
+  " 1行下に移動して改行
+  " ポップアップ出てても動くように<C-e>入れとく。
+  inoremap <buffer><expr> <C-CR> pumvisible() ? '<C-e><Down><End><CR>' : '<Down><End><CR>'
+
+  inoremap <buffer> aaa assert_equal
+endfunction
+
+function! my#filetype#quickrun() abort
+  " qで閉じる
+  nnoremap <buffer> q :<C-u>q!<CR>
+endfunction
+
 function! my#filetype#xxd() abort
   setlocal binary
   %!xxd -g 4
 endfunction
 
 function! my#filetype#css() abort
-  call s:set_indent(4, 0)
+  call s:set_indent(2, 0)
 
   " 末尾にセミコロンを入力して次の行に移る
-  imap <buffer> <C-CR> <C-e>;<CR>
+  inoremap <buffer> <C-CR> <C-e>;<CR>
 endfunction
 
 function! my#filetype#vim() abort
   " 明示的に \ を付けて改行する
-  imap <C-CR> <Plug>(my-back-slash-linefeed)
+  imap <buffer> <C-CR> <Plug>(my-back-slash-linefeed)
+endfunction
+
+function! my#filetype#python() abort
+  call s:set_indent(4, 0)
 endfunction
 
 function! my#filetype#html() abort
-  call s:set_indent(4, 0)
-  call s:emmet_mapping()
+  call s:set_indent(2, 0)
+  " call s:emmet_mapping()
 endfunction
 
 function! my#filetype#markdown() abort
-  call asyncomplete#disable_for_buffer()
 endfunction
 
 function! my#filetype#txt() abort
-  call asyncomplete#disable_for_buffer()
+endfunction
+
+function! my#filetype#typescript() abort
+  call my#filetype#javascript()
+
+  " 1行下に移動して改行
+  " ポップアップ出てても動くように<C-e>入れとく。
+  inoremap <buffer><expr> <C-CR> pumvisible() ? '<C-e><Down><End><CR>' : '<Down><End><CR>'
+endfunction
+
+function! my#filetype#typescriptreact() abort
+  call my#filetype#javascript()
 endfunction
 
 function! my#filetype#javascript() abort
-  call s:set_indent(4, 0)
+  " call s:set_indent(2, 0)
   " 末尾にセミコロンを入力して次の行に移る
-  inoremap <buffer> <C-CR> <End>;<CR>
-  inoremap <buffer> jk <End>;
+  " inoremap <buffer> <C-CR> <End>;<CR>
+  " inoremap <buffer> jk <End>;
   " nnoremap <buffer> Q A;
 endfunction
 
@@ -87,41 +118,85 @@ function! my#filetype#help() abort
 endfunction
 
 function! my#filetype#unite() abort
-  call my#plug#unite_vimfiler#unite_mapping()
+  " 横幅のsyntaxハイライトが聞くようにする
+  setlocal synmaxcol=0
+
+  " insertモードでのペースト, カーソル移動
+  inoremap <buffer> <C-y> <C-r>+
+  inoremap <buffer> <C-b> <Left>
+  inoremap <buffer> <C-f> <Right>
+
+  " 画面最下部、最上部でのキー移動は普通のj,kのように(ループしないで)動いてほしい
+  nmap <silent><buffer> j j
+  nmap <silent><buffer> k k
+
+  " <Leader><Leader>t, <Leader><Leader>Tでterminal open
+  " <Leader><Leader>v, <Leader><Leader>sで分割してオープン
+  " <Leader><Leader>g, <Leader><Leader>pで外部Grep
+  " <C-y>でrootからの相対パスのyank
+  nnoremap <silent><buffer><expr> <Leader><Leader>t unite#do_action('open_terminal')
+  nnoremap <silent><buffer><expr> <Leader><Leader>T unite#do_action('open_terminal_choose_window')
+  nnoremap <silent><buffer><expr> <Leader><Leader>v unite#do_action('right')
+  nnoremap <silent><buffer><expr> <Leader><Leader>s unite#do_action('above')
+  nnoremap <silent><buffer><expr> <Leader><Leader>g unite#do_action('outer_grep')
+  nnoremap <silent><buffer><expr> <Leader><Leader>G unite#do_action('outer_grep_add')
+  nnoremap <silent><buffer><expr> <C-y>             unite#do_action('yank_root_relative_path')
+
+  " <Leader><Leader>fでfile action
+  nnoremap <silent><buffer><expr> <Leader><Leader>f unite#do_action('file')
 endfunction
 
 function! my#filetype#vimfiler() abort
-  call my#plug#unite_vimfiler#vimfiler_mapping()
+  " 横幅のsyntaxハイライトが効くようにする
+  setlocal synmaxcol=0
+
+  " copyとpasteよく使うので使いやすいやつにリマップ
+  " moveとc(宛先をinput()で入力してのコピー)はあんまり使わないのでつぶす
+  nunmap <buffer> Cc
+  nunmap <buffer> Cp
+  nunmap <buffer> Cm
+  nunmap <buffer> c
+  nmap <buffer> C <Plug>(vimfiler_clipboard_copy_file)
+  nmap <buffer> P <Plug>(vimfiler_clipboard_paste)
+
+  " lにexpand_treeを割り当てる(ファイルを開かないようにする)
+  nmap <buffer> l <Plug>(vimfiler_expand_tree)
+
+  " 画面最下部、最上部でのキー移動は普通のj,kのように(ループしないで)動いてほしい
+  nmap <silent><buffer> j j
+  nmap <silent><buffer> k k
+
+  " previewはpで実行。Vim標準のvはたまに使うのでunmap
+  nmap <buffer> p <Plug>(vimfiler_preview_file)
+  nmap <silent><buffer> v v
+
+  " <Leader><Leader>tでタブオープン
+  " <Leader><Leader>v, <Leader><Leader>sで分割してオープン
+  " <Leader><Leader>gで外部Grep
+  nnoremap <silent><buffer><expr> <Leader><Leader>t vimfiler#do_action('open_terminal')
+  nnoremap <silent><buffer><expr> <Leader><Leader>T vimfiler#do_action('open_terminal_choose_window')
+  nnoremap <silent><buffer><expr> <Leader><Leader>v vimfiler#do_action('right')
+  nnoremap <silent><buffer><expr> <Leader><Leader>s vimfiler#do_action('above')
+  nnoremap <silent><buffer><expr> <Leader><Leader>g vimfiler#do_action('outer_grep')
+  nnoremap <silent><buffer><expr> <Leader><Leader>a vimfiler#do_action('outer_grep_add')
+  nnoremap <silent><buffer><expr> <C-y>             vimfiler#do_action('yank_root_relative_path')
 endfunction
 
 function! my#filetype#fern() abort
+  nmap <buffer><expr> <Plug>(fern-my-open-or-enter)
+        \ fern#smart#leaf("<Plug>(fern-action-open:select)", "<Plug>(fern-action-enter)")
+
   " nmap <silent><buffer> h
-  nmap <silent><buffer> <CR> <Plug>(fern-action-open:select)
+  " nmap <silent><buffer> <CR> <Plug>(fern-action-open:select)
+  nmap <silent><buffer> <CR> <Plug>(fern-my-open-or-enter)
   nmap <silent><buffer> l    <Plug>(fern-action-expand)
   nmap <silent><buffer> h    <Plug>(fern-action-collapse)
   " nmap <buffer><nowait> x <Plug>(fern-action-open:system)
   " nmap ..... <Plug>(fern-action-terminal:select)
 
   " " もう1つ上の階層に移動
-  " <Plug>(fern-action-leave)
+  nmap <silent><buffer> - <Plug>(fern-action-leave)
 endfunction
-
-" function! my#filetype#denite() abort
-"   nnoremap <buffer><expr> <CR> denite#do_map('do_action')
-"   nnoremap <buffer><expr> d denite#do_map('do_action', 'delete')
-"   nnoremap <buffer><expr> p denite#do_map('do_action', 'preview')
-"   nnoremap <buffer><expr> q denite#do_map('quit')
-"   nnoremap <buffer><expr> i denite#do_map('open_filter_buffer')
-"   nnoremap <buffer><expr> a denite#do_map('open_filter_buffer')
-"   nnoremap <buffer><expr> <Space> denite#do_map('toggle_select').'j'
-" endfunction
-"
-" function! my#filetype#denite_filter() abort
-"   inoremap <silent><buffer><expr> <CR> denite#do_map('do_action')
-"   inoremap <silent><buffer><expr> <C-j> denite#do_map('do_action')
-"
-"   imap     <silent><buffer> <Esc> <Plug>(denite_filter_quit)
-" endfunction
 
 function! my#filetype#godoc() abort
   " qで閉じる
@@ -143,7 +218,6 @@ function! my#filetype#qf() abort
   nnoremap <buffer> <CR> <CR>
 
   " pでプレビューっぽく動作、C-j/C-Kでプレビューっぽく動作した後カーソル移動
-  nnoremap <buffer> p <CR>zz<C-w>p
   nnoremap <buffer> <C-k> k<CR>zrzz<C-w>p
   nnoremap <buffer> <C-j> j<CR>zrzz<C-w>p
 
@@ -215,14 +289,4 @@ function! my#filetype#go_comment_for_tour_of_go(search1, search1_flgs, search2, 
   call caw#keymapping_stub('x', 'hatpos', 'comment')
 
   execute 'normal!' "Go\<Esc>p\<C-a>"
-endfunction
-
-function s:emmet_mapping() abort
-  imap <silent><buffer> <C-j>,  <Plug>(emmet-expand-abbr)
-
-  " REF: https://github.com/mattn/emmet-vim/issues/506
-  call submode#enter_with('emmet-n', 'i', 'rb', '<C-j>n', '<Plug>(emmet-move-next)')
-  call submode#enter_with('emmet-n', 'i', 'rb', '<C-j>N', '<Plug>(emmet-move-prev)')
-  call submode#map('emmet-n', 'i', 'r', 'n', '<Plug>(emmet-move-next)')
-  call submode#map('emmet-n', 'i', 'r', 'N', '<Left><Plug>(emmet-move-prev)')
 endfunction

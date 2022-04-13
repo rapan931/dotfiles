@@ -1,0 +1,24 @@
+snippet     import
+alias       im
+abbr        import { member, ... } from "module-name"
+options     head
+  import { ${1:MEMBERS} } from "${0:TARGET}"
+
+snippet     importd
+alias       imd
+abbr        import defaultMember from "module-name";
+options     head
+  import ${1:defaultMember} from "${0:TARGET}"
+
+snippet     lambda
+alias       lam
+abbr        () => {}
+options     word
+  (${1:#:Args}) => { ${0:#:TARGET} }
+
+snippet     arrow
+alias       arr
+abbr        () => {}
+options     word
+  (${1:#:Args}) => { ${0:#:TARGET} }
+

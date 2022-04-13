@@ -3,3 +3,9 @@
 snippet     name
 options     word
     `expand('$NAME')`${0}
+
+snippet     fpath
+    `substitute(expand("%:p"), '\', '/', "g")`
+
+snippet     rpath
+    `substitute(expand("%"), '\', '/', "g")`

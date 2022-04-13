@@ -5,8 +5,6 @@ set encoding=utf-8
 scriptencoding utf-8
 
 " if filereadable($HOME . '/minimal.vimrc')
-"
-"   set noloadplugins
 "   source $HOME/minimal.vimrc
 "   finish
 " endif
@@ -15,28 +13,24 @@ scriptencoding utf-8
 " = setting: initialize
 function! s:mkdir(dir_path) abort
   if !isdirectory(a:dir_path)
-    echomsg 'mkdir! ' . a:dir_path
     call mkdir(a:dir_path, 'p')
+    echomsg 'mkdir! ' . a:dir_path
   endif
 endfunction
-
-let $PATH = $PATH . ';' . $HOME . "/bin;"
 
 if has('vim_starting')
   if has('win32')
     " Git用
     let $PATH = $PATH . ';C:\Program Files\Git\cmd'
+
+    " " go
+    let $PATH = $PATH . ';' . $HOME . '\go\bin'
   endif
 
-  if exists('$VIMFILES')
-    " REF: https://github.com/vim-jp/issues/issues/1189
-    let &runtimepath = expand('$VIMFILES') . ',' . &runtimepath
+  if has('win32')
+    let $VIMFILES = $HOME . '/vimfiles'
   else
-    if has('win32')
-      let $VIMFILES = $HOME . '/vimfiles'
-    else
-      let $VIMFILES = $HOME . '/.vim'
-    endif
+    let $VIMFILES = $HOME . '/.vim'
   endif
 
   " @Shougo's ware use $XDG_CACHE_HOME, but Windows not exist $XDG_CACHE_HOME. It set up.
@@ -44,10 +38,6 @@ if has('vim_starting')
     let $XDG_CACHE_HOME = $VIMFILES . '/.cache'
     call s:mkdir($XDG_CACHE_HOME)
   endif
-
-  " delete unused 'vimfiles' from runtimepath
-  " set runtimepath-=$VIM/vimfiles
-  " set runtimepath-=$VIM/vimfiles/after
 
   set viminfo& viminfo+='1000,<50,s10,h,rA:,rB:
 endif
@@ -63,28 +53,26 @@ augroup END
 command! -nargs=* MyAutoCmd autocmd vimrc_augroup <args>
 command! -nargs=* MyAutoCmdFT autocmd vimrc_augroup FileType <args>
 
-" do not load unnecessary plugin
-let g:plugin_autodate_disable  = 1
-let g:plugin_scrnmode_disable  = 1
-let g:plugin_verifyenc_disable = 1
-let g:plugin_hz_ja_disable     = 1
-let g:plugin_dicwin_disable    = 1
-let g:loaded_getscriptPlugin   = 1
-let g:loaded_getscript         = 1
-let g:loaded_vimball           = 1
-let g:loaded_vimballPlugin     = 1
-let g:loaded_tar               = 1
-let g:loaded_tarPlugin         = 1
-let g:loaded_zip               = 1
-let g:loaded_zipPlugin         = 1
-let g:loaded_netrw             = 1
-let g:loaded_netrwPlugin       = 1
-let g:loaded_2html_plugin      = 1
-let g:loaded_logiPat           = 1
-let g:loaded_gzip              = 1
 
-" do not register Autocmd related to file type
-" let g:did_load_filetypes = 1
+" do not load unnecessary plugin
+let g:loaded_getscriptPlugin    = 1
+let g:loaded_getscript          = 1
+let g:loaded_vimball            = 1
+let g:loaded_vimballPlugin      = 1
+let g:loaded_tar                = 1
+let g:loaded_tarPlugin          = 1
+let g:loaded_zip                = 1
+let g:loaded_zipPlugin          = 1
+let g:loaded_netrw              = 1
+let g:loaded_netrwPlugin        = 1
+let g:loaded_netrwSettings      = 1
+let g:loaded_netrwFileHandlers  = 1
+let g:loaded_2html_plugin       = 1
+let g:loaded_logiPat            = 1
+let g:loaded_gzip               = 1
+let g:loaded_rrhelper           = 1
+let g:did_install_default_menus = 1
+let g:did_install_syntax_menu   = 1
 
 " do not load menu.vim
 " NOTE: have to setting M option before 'syntax on' also delete other guioptions and empty
@@ -100,11 +88,6 @@ set guioptions-=T guioptions-=e
 set guioptions-=r guioptions-=R guioptions-=l guioptions-=L
 set guioptions-=m guioptions-=t guioptions-=g
 
-" REF: dein.txt
-function! s:sid() abort
-  return matchstr(expand('<sfile>'), '\zs<SNR>\d\+_\zeSID$')
-endfunction
-
 " =================================
 " = Plugin install (by minpac)
 
@@ -118,7 +101,8 @@ packadd minpac
 
 " verbose:3 (Show error messages from external commands)
 " depth: 0 (過去のログ情報全部取得(多分))
-call minpac#init({'package_name': 'm', 'verbose': 3, 'depth': 0})
+" progress_open: 'horizontal' (進捗バーの表示)
+call minpac#init({'package_name': 'm', 'verbose': 3, 'depth': 0, 'progress_open': 'horizontal'})
 
 " minpac
 call minpac#add('k-takata/minpac', {'type': 'opt'})
@@ -131,35 +115,36 @@ call minpac#add('Shougo/unite-outline')
 call minpac#add('Shougo/vimfiler.vim', {'type': 'opt'})
 call minpac#add('Shougo/vimproc')
 
-" denite
-" call minpac#add('Shougo/denite.nvim', {'type': 'opt'})
-" call minpac#add('roxma/nvim-yarp')
-" call minpac#add('roxma/vim-hug-neovim-rpc')
-" let g:python3_host_prog = expand('$DHOME/epython/python.exe')
-" let $NVIM_PYTHON_LOG_FILE = expand('$VIMFILES/log/nvim_log')
-" let $NVIM_PYTHON_LOG_LEVEL = "INFO"
-
-" deoplete
-" call minpac#add('Shougo/deoplete.nvim', {'type': 'opt'})
-
 " fzf
 call minpac#add('junegunn/fzf.vim')
 call minpac#add('junegunn/fzf')
 
+" deno
+call minpac#add('vim-denops/denops.vim')
+
 " complete
-call minpac#add('prabirshrestha/vim-lsp')
-call minpac#add('mattn/vim-lsp-settings')
-call minpac#add('prabirshrestha/asyncomplete.vim', {'type': 'opt'})
-call minpac#add('prabirshrestha/asyncomplete-lsp.vim')
-call minpac#add('prabirshrestha/asyncomplete-neosnippet.vim', {'type': 'opt'})
-call minpac#add('prabirshrestha/asyncomplete-buffer.vim',     {'type': 'opt'})
+" call minpac#add('prabirshrestha/vim-lsp')
+" call minpac#add('mattn/vim-lsp-settings')
+
+" call minpac#add('Shougo/ddc.vim', {'type': 'opt'})
+" call minpac#add('Shougo/ddc-around')
+" call minpac#add('matsui54/ddc-buffer')
+" call minpac#add('shun/ddc-vim-lsp')
+" call minpac#add('tani/ddc-path')
+" call minpac#add('Shougo/ddc-matcher_head')
+" call minpac#add('Shougo/ddc-matcher_length')
+" call minpac#add('Shougo/ddc-sorter_rank')
+" call minpac#add('Shougo/ddc-converter_remove_overlap')
+" call minpac#add('matsui54/denops-signature_help')
+
+" coc
+call minpac#add('neoclide/coc.nvim')
 
 " snippet
 call minpac#add('Shougo/neosnippet.vim')
 call minpac#add('Shougo/neosnippet-snippets')
 
 " search
-" call minpac#add('easymotion/vim-easymotion')
 call minpac#add('haya14busa/incsearch.vim')
 call minpac#add('haya14busa/vim-asterisk')
 call minpac#add('osyo-manga/vim-anzu')
@@ -171,35 +156,25 @@ call minpac#add('kana/vim-textobj-indent')
 call minpac#add('thinca/vim-textobj-between')
 call minpac#add('glts/vim-textobj-comment')
 call minpac#add('osyo-manga/vim-textobj-multiblock')
-call minpac#add('osyo-manga/vim-textobj-from_regexp')
 call minpac#add('rhysd/vim-textobj-conflict')
 
 " operator
 call minpac#add('kana/vim-operator-user')
 call minpac#add('kana/vim-operator-replace')
-call minpac#add('haya14busa/vim-operator-flashy')
-call minpac#add('machakann/vim-sandwich', {'type': 'opt'})
 
 " colorscheme
 call minpac#add('chriskempson/vim-tomorrow-theme')
 call minpac#add('nanotech/jellybeans.vim')
-" call minpac#add('danilo-augusto/vim-afterglow')
-
-" go
-call minpac#add('fatih/vim-go', {'type': 'opt'})
 
 " markdown
 call minpac#add('kannokanno/previm')
-" call minpac#add('Shougo/context_filetype.vim')
-" call minpac#add('osyo-manga/vim-precious')
 
 " other
+call minpac#add('machakann/vim-sandwich', {'type': 'opt'})
 call minpac#add('machakann/vim-highlightedyank')
-call minpac#add('PProvost/vim-ps1')
 call minpac#add('cohama/lexima.vim', {'type': 'opt'})
 call minpac#add('glidenote/memolist.vim')
 call minpac#add('haya14busa/vim-edgemotion')
-call minpac#add('itchyny/calendar.vim')
 call minpac#add('itchyny/lightline.vim')
 call minpac#add('itchyny/vim-qfedit')
 call minpac#add('junegunn/vim-easy-align')
@@ -207,9 +182,6 @@ call minpac#add('kana/vim-altr', {'type': 'opt'})
 call minpac#add('kana/vim-submode', {'type': 'opt'})
 call minpac#add('kshenoy/vim-signature')
 call minpac#add('machakann/vim-swap')
-call minpac#add('mattn/emmet-vim')
-call minpac#add('mopp/sky-color-clock.vim')
-call minpac#add('osyo-manga/shabadou.vim')
 call minpac#add('osyo-manga/vim-jplus')
 call minpac#add('rhysd/clever-f.vim')
 call minpac#add('rhysd/committia.vim')
@@ -219,52 +191,93 @@ call minpac#add('t9md/vim-quickhl')
 call minpac#add('thinca/vim-quickrun')
 call minpac#add('thinca/vim-zenspace')
 call minpac#add('lambdalisue/fern.vim')
+call minpac#add('lambdalisue/gina.vim')
 call minpac#add('tyru/caw.vim')
 call minpac#add('tyru/open-browser-github.vim')
 call minpac#add('tyru/open-browser.vim')
 call minpac#add('vim-jp/autofmt')
 call minpac#add('aklt/plantuml-syntax')
-" call minpac#add('chrisbra/csv.vim')
 call minpac#add('cohama/agit.vim')
-call minpac#add('vim-ruby/vim-ruby', {'type': 'opt'})
+call minpac#add('rbtnn/vim-coloredit')
+call minpac#add('tyru/nextfile.vim')
+call minpac#add('alvan/vim-closetag')
+call minpac#add('MaxMEllon/vim-jsx-pretty')
+" call minpac#add('tyru/empty-prompt.vim')
 
-" mine
-call minpac#add('rapan931/vim-fungo')
-call minpac#add('rapan931/vim-pgpuzzle')
+" filetype
+call minpac#add('vim-ruby/vim-ruby', {'type': 'opt'})
+call minpac#add('ap/vim-css-color')
+call minpac#add('thinca/vim-qfhl')
+call minpac#add('jparise/vim-graphql')
+call minpac#add('PProvost/vim-ps1')
 
 " doc
 call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
 
 " view only
 call minpac#add('vim-jp/vital.vim', {'type': 'opt'})
-call minpac#add('itchyny/lightline-powerful', {'type': 'opt'})
-call minpac#add('twitvim/twitvim', {'type': 'opt'})
 
 filetype plugin indent on
 syntax enable
 
 " init
-" packadd neocomplete.vim
 packadd vim-submode
 packadd vim-altr
 packadd unite.vim
-" packadd denite.nvim
 packadd vimfiler.vim
 packadd vimdoc-ja
-packadd vim-go
 
 " =================================
-" = setting: (Plugin)deoplete.nvim
+" = setting: (Plugin)ddc.nvim & sources
 
-" let g:deoplete#enable_at_startup = 1
-" packadd deoplete.nvim
-" call deoplete#custom#option('num_processes', 1)
-" call deoplete#custom#option({
-      "\ 'auto_complete_delay': 0,
-      "\ 'smart_case': v:true,
-      "\ })
-"
-" call deoplete#custom#source('_', 'matchers', ['matcher_head'])
+" packadd denops.vim
+" packadd ddc.vim
+" packadd denops-signature_help
+
+" " call ddc#custom#patch_global('sources', [
+" "      \   'vim-lsp',
+" "      \   'around',
+" "      \   'buffer',
+" "      \   'neosnippet',
+" "      \   'path',
+" "      \ ])
+" call ddc#custom#patch_global('sources', [
+"      \   'buffer',
+"      \   'neosnippet',
+"      \ ])
+
+" call ddc#custom#patch_global('sourceOptions', {
+"      \   '_': {
+"      \     'matchers': ['matcher_head'],
+"      \     'sorters': ['sorter_rank'],
+"      \     'converters': ['converter_remove_overlap'],
+"      \     'minAutoCompleteLength': 1,
+"      \   },
+"      \   'around': {
+"      \     'mark': 'A',
+"      \   },
+"      \   'buffer': {
+"      \     'mark': 'B',
+"      \     'limitBytes': 5000000,
+"      \   },
+"      \   'vim-lsp': {
+"      \     'mark': 'L',
+"      \   },
+"      \   'neosnippet': {
+"      \     'mark': 'S',
+"      \   },
+"      \   'path': {
+"      \     'mark': 'P',
+"      \   },
+"      \ })
+
+" call ddc#enable()
+" call signature_help#enable()
+
+" =================================
+" = setting: (Plugin)coc.nvim
+
+let $NVIM_COC_LOG_LEVEL='all'
 
 " =================================
 " = setting: (Plugin)fzf.vim
@@ -280,88 +293,201 @@ let $FZF_DEFAULT_OPTS = '--exact --layout=reverse --inline-info --margin=0,2 --n
 let g:fern#disable_default_mappings = 1
 let g:fern#drawer_width = 60
 let g:fern#internal#window#select_chars = split('sdfghjkl;qwertyuiopzcvbnm', '\zs')
+let g:fern#disable_viewer_smart_cursor = 1
 
 " =================================
 " = setting: (Plugin)unite.vim & vimfiler.vim
 
-call my#plug#unite_vimfiler#init()
+" max number of yank history
+let g:neoyank#limit = 200
+
+" disable neomru validation(execute :NeoMRUReload when notice)
+" max number of neomru history
+let g:neomru#do_validate = 0
+let g:neomru#file_mru_limit = 1000
+
+" mru exclude server path(start '//' or '\\')
+call unite#custom#source('file_mru,neomru/file', 'ignore_pattern', '\~$\|\.\%(o\|exe\|dll\|bak\|sw[po]\)$\|\%(^\|/\)\.\%(git\|svn\)\%($\|/\)\|^\%(//\|\\\\\)\|^\%(gina:\)')
+call unite#custom#source('directory_mru', 'ignore_pattern', '\%(^\|/\)\.\%(hg\|git\|bzr\|svn\)\%($\|/\)\|^\%(//\|\\\\\)')
+
+" neomru/file do project directory(file_mru is target all files)
+call unite#custom#source('neomru/file', 'matchers', ['matcher_project_files', 'matcher_default'])
+
+" start insert mode
+call unite#custom#profile('default', 'context', {'start_insert' : 1})
+
+" outer grep
+let s:untie_action = { 'description' : 'outer grep' }
+function! s:untie_action.func(candidates) abort
+  try
+    let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
+    if pattern != ""
+      let project_encoding =  get(g:, 'my_project_encoding', 'utf-8')
+      if project_encoding != 'utf-8'
+        setlocal makeencoding=utf-8
+        silent execute 'grep!' escape(pattern, '|') a:candidates.action__path
+        execute 'setlocal makeencoding=' . project_encoding
+      else
+        silent execute 'grep!' escape(pattern, '|') a:candidates.action__path
+      endif
+    else
+      throw 'non-pattern'
+    endif
+  catch /^Vim:Interrupt$\|^non-pattern$/
+    echo 'Cancel'
+  endtry
+endfunction
+call unite#custom_action('directory,file', 'outer_grep', s:untie_action)
+unlet s:untie_action
+
+" outer grep (Quickfixへの追加)
+let s:untie_action = { 'description' : 'outer grep, and add quickfix list)' }
+function! s:untie_action.func(candidates) abort
+  try
+    let pattern = input(&grepprg . ' ', '', 'customlist,my#complete#ripgrep')
+    if pattern != ""
+
+      if project_encoding != 'utf-8'
+        setlocal makeencoding=utf-8
+        silent execute 'grepadd!' escape(pattern, '|') a:candidates.action__path
+        execute 'setlocal makeencoding=' . project_encoding
+      else
+        silent execute 'grepadd!' escape(pattern, '|') a:candidates.action__path
+      endif
+
+      silent execute 'grepadd!' escape(pattern, '|') a:candidates.action__path
+    else
+      throw 'non-pattern'
+    endif
+  catch /^Vim:Interrupt$\|^non-pattern$/
+    echo 'Cancel'
+  endtry
+endfunction
+call unite#custom_action('directory,file', 'outer_grep_add', s:untie_action)
+unlet s:untie_action
+
+" open terminal
+let s:untie_action = { 'description' : 'open terminal' }
+function! s:untie_action.func(candidates) abort
+  let path = fnamemodify(a:candidates.action__path, ':p:h')
+  execute 'topleft terminal ++close cmd /k cd /d ' . path . ' & set LANG=ja_JP.UTF-8'
+endfunction
+call unite#custom_action('directory,file', 'open_terminal', s:untie_action)
+unlet s:untie_action
+
+" open terminal(choose windows)
+let s:untie_action = { 'description' : 'open terminal(choose window)' }
+function! s:untie_action.func(candidates) abort
+  call unite#take_action('choose', a:candidates)
+  let path = fnamemodify(a:candidates.action__path, ':p:h')
+  execute 'terminal ++curwin ++close cmd /k cd /d ' . path . ' & set LANG=ja_JP.UTF-8'
+endfunction
+call unite#custom_action('directory,file', 'open_terminal_choose_window', s:untie_action)
+unlet s:untie_action
+
+" yank root relative path
+" SEE: autoload/unite/kinds/common.vim(function! s:kind.action_table.yank.func(candidates))
+let s:untie_action = {'description' : 'yank root relative path', 'is_selectable' : 1, 'is_quit' : 0 }
+function! s:untie_action.func(candidates) abort
+  let text = join(map(copy(a:candidates),
+       \  {k, v -> my#get_root_dir(get(v, 'action__text', v.word)) ==# '' ?
+       \    get(v, 'action__text', v.word) :
+       \    my#s(get(v, 'action__text', v.word), my#s(my#get_root_dir(get(v, 'action__text', v.word)), '\', '/') . '/', '')}
+       \ ), "\n")
+
+  let @" = text
+
+  echo 'Yanked:'
+  echo text
+
+  call setreg(v:register, text)
+endfunction
+call unite#custom_action('common', 'yank_root_relative_path', s:untie_action)
+unlet s:untie_action
 
 " =================================
-" = setting: (Plugin)denite.nvim
+" = setting: (Plugin)vimfiler.vim
 
-" call my#filetypes#denite_init()
+" 全部表示(default:['^\.'])
+" vimfilerをデフォルトのファイラーに設定
+let g:vimfiler_ignore_pattern = ''
+let g:vimfiler_as_default_explorer = 1
+
+call vimfiler#custom#profile('default', 'context', {
+     \   'columns' : 'type'
+     \ })
 
 " =================================
 " = setting: (Plugin)vim-lsp-settings
-" = setting: (Plugin)asyncomplete-neosnippet.vim
+"
+" let g:lsp_diagnostics_echo_cursor = 1
+" let g:lsp_diagnostics_highlights_enabled = 1
+" let g:lsp_diagnostics_float_cursor = 1
+" let g:lsp_diagnostics_float_delay = 800
+" 
+" " let g:efm_langserver_settings#debug = 5
+" " let g:efm_langserver_settings#config = 0
+" 
+" let g:lsp_settings = {
+"    \   'typescript-language-server': {
+"    \     'disabled': 0
+"    \   },
+"    \   'vim-language-server': {
+"    \     'disabled': 1
+"    \   },
+"    \   'html-languageserver': {
+"    \     'disabled': 0
+"    \   },
+"    \   'efm-langserver': {
+"    \     'disabled': 0,
+"    \     'cmd': { server_info->['efm-langserver', '-c', expand('$VIMFILES/efm-langserver/config.yaml')] },
+"    \     'allowlist': ['typescript', 'typescriptreact'],
+"    \   },
+"    \   'tailwindcss-intellisense': {
+"    \     'disabled': 1,
+"    \     'allowlist': ['html', 'css', 'typescriptreact'],
+"    \   },
+"    \  'pylsp-all': {
+"    \    'workspace_config': {
+"    \      'pylsp': {
+"    \        'configurationSources': ['flake8'],
+"    \        'plugins': {
+"    \          'flake8': {
+"    \            'enabled': 1
+"    \          },
+"    \          'mccabe': {
+"    \            'enabled': 0
+"    \          },
+"    \          'pycodestyle': {
+"    \            'enabled': 0
+"    \          },
+"    \          'pyflakes': {
+"    \            'enabled': 0
+"    \          },
+"    \        }
+"    \      }
+"    \    }
+"    \  }
+"    \ }
+" 
+" " tailwindcss-intellisense
+" " let g:lsp_log_verbose = 1
+" " let g:lsp_log_file = expand('$VIMFILES/log/vim-lsp.log')
+" 
+" function! s:on_lsp_buffer_enabled() abort
+"     setlocal omnifunc=lsp#complete
+"     setlocal signcolumn=yes
+"     " nmap <buffer> gd <plug>(lsp-declaration)
+"     nmap <buffer> K <Plug>(lsp-hover)
+" 
+"     " https://github.com/prabirshrestha/vim-lsp/pull/776
+"     " nmap <buffer> <C-]> <Plug>(lsp-definition)
+"     nnoremap <buffer> <C-]> :<C-u>LspDefinition<CR>
+"     nnoremap <buffer> = :<C-u>LspDocumentFormatSync --server=efm-langserver<CR>
+" endfunction
+" 
+" MyAutoCmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
 
-let g:lsp_settings = {
-    \   'vim-language-server': {
-    \     'disabled': 1
-    \   },
-    \   'html-languageserver': {
-    \     'disabled': 1
-    \   }
-    \ }
-
-" let g:lsp_log_verbose = 1
-" let g:lsp_log_file = expand('$VIMFILES/log/vim-lsp.log')
-
-let g:asyncomplete_popup_delay = 50
-let g:asyncomplete_matchfuzzy = 0
-
-packadd asyncomplete.vim
-packadd asyncomplete-neosnippet.vim
-packadd asyncomplete-buffer.vim
-call asyncomplete#register_source(asyncomplete#sources#neosnippet#get_source_options({
-     \   'name': 'neosnippet',
-     \   'allowlist': ['*'],
-     \   'blacklist': ['unite', 'vimfiler', 'txt', ''],
-     \   'completor': function('asyncomplete#sources#neosnippet#completor'),
-     \ }))
-
-call asyncomplete#register_source(asyncomplete#sources#buffer#get_source_options({
-   \ 'name': 'buffer',
-   \ 'allowlist': ['plantuml', 'vim'],
-   \ 'completor': function('asyncomplete#sources#buffer#completor'),
-   \ 'config': {
-   \    'max_buffer_size': 4000000,
-   \  },
-   \ }))
-
-function! s:on_lsp_buffer_enabled() abort
-    setlocal omnifunc=lsp#complete
-    setlocal signcolumn=yes
-    " nmap <buffer> gd <plug>(lsp-declaration)
-    nmap <buffer> K <Plug>(lsp-hover)
-
-    " https://github.com/prabirshrestha/vim-lsp/pull/776
-    " nmap <buffer> <C-]> <Plug>(lsp-definition)
-    nnoremap <buffer> <C-]> :<C-u>LspDefinition<CR>
-endfunction
-
-MyAutoCmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
-
-" =================================
-" = setting: (Plugin)lsp
-
-" let g:lsp_async_completion = 1
-
-" if executable('gopls')
-"   MyAutoCmd User lsp_setup call lsp#register_server({
-      "\ 'name': 'gopls',
-      "\ 'cmd': {server_info->['gopls', '-mode', 'stdio']},
-      "\ 'whitelist': ['go'],
-      "\ })
-" endif
-
-" =================================
-" = setting: (Plugin)vim-precious & context_filetype.vim
-
-" " markdownでのみ機能するよう修正
-" let g:precious_enable_switchers = {'*': {'setfiletype': 0}, 'markdown': {'setfiletype': 1}}
-" let g:precious_enable_switch_CursorMoved   = {'*': 0, 'markdown': 1}
-" let g:precious_enable_switch_CursorMoved_i = {'*': 0, 'markdown': 1}
 
 " =================================
 " = setting: (Plugin)vim-altr
@@ -370,10 +496,14 @@ call altr#remove_all()
 
 " vim
 " vim(opeartor-user and textobj-user based Vim plugins)
-" go
 call altr#define('autoload/%.vim', 'doc/%.txt', 'plugin/%.vim')
 call altr#define('autoload/%/%.vim', 'doc/%-%.txt', 'plugin/%/%.vim')
+
+" go
 call altr#define('%.go', '%_test.go')
+
+"ruby
+call altr#define('lib/%.rb', 'test/%_test.rb')
 
 " =================================
 " = setting: (Plugin)neosnippet.vim
@@ -382,17 +512,8 @@ call altr#define('%.go', '%_test.go')
 let g:neosnippet#snippets_directory = $VIMFILES . '/snippet'
 call s:mkdir(g:neosnippet#snippets_directory)
 
-" cppでもcのsnippetを読み込む
-let g:neosnippet#scope_aliases = {'cpp': 'c'}
-
-" =================================
-" = setting: (Plugin)vim-go
-
-" quickfixのみ使用
-let g:go_list_type = 'quickfix'
-
-" default mappingを設定しない
-let g:go_def_mapping_enabled = 0
+" rubyのsnippetは一旦ストップ
+let g:neosnippet#disable_runtime_snippets = {'ruby' : 1}
 
 " =================================
 " = setting: (Plugin)incsearch.vim
@@ -405,9 +526,9 @@ let g:incsearch#do_not_save_error_message_history = 1
 "    なぜか検索文字の後ろに\cがついてしまう??(しまう??)
 " -> call anzu#echohl_search_status()だとanzuのステータス情報が出ない
 MyAutoCmd User IncSearchExecute AnzuUpdateSearchStatus |
-      \ if anzu#search_status() !=# '' |
-      \   call feedkeys(":\<C-u>AnzuUpdateSearchStatusOutput\<CR>", 'n') |
-      \ endif
+     \ if anzu#search_status() !=# '' |
+     \   call feedkeys(":\<C-u>AnzuUpdateSearchStatusOutput\<CR>", 'n') |
+     \ endif
 
 " =================================
 " = setting: (Plugin)clever-f.vim
@@ -422,22 +543,7 @@ let g:clever_f_across_no_line = 1
 let g:clever_f_ignore_case = 0
 let g:clever_f_smart_case = 0
 let g:clever_f_show_prompt = 1
-
-" =================================
-" = setting: (Plugin)vim-easymotion
-
-" " プラグインのデフォルトキーマップを適用しない
-" " easymotion用のキーもvimfilerに合わせる
-" let g:EasyMotion_do_mapping = 0
-" let g:EasyMotion_keys = 'sdfghjkl;qwertyuiopzcvbnm'
-
-" =================================
-" = setting: (Plugin)vim-operator-flashy
-
-" 点灯時間を300msに変更
-" ハイライトグループを'MyFlashy'に変更
-let g:operator#flashy#flash_time = 300
-let g:operator#flashy#group = 'MyFlashy'
+let g:clever_f_highlight_timeout_ms = 1500
 
 " =================================
 " = setting: (Plugin)vim-swap
@@ -454,31 +560,34 @@ let g:SignatureMarkLineHL = 'Underlined'
 let g:SignatureMarkerLineHL = 'Underlined'
 let g:SignaturePurgeConfirmation = 1
 let g:SignatureMap = {
-      \   'Leader':            'm',
-      \   'PlaceNextMark':     '',
-      \   'ToggleMarkAtLine':  'm.',
-      \   'PurgeMarksAtLine':  '',
-      \   'DeleteMark':        '',
-      \   'PurgeMarks':        'm<Space>',
-      \   'PurgeMarkers':      '',
-      \   'GotoNextLineAlpha': '',
-      \   'GotoPrevLineAlpha': '',
-      \   'GotoNextSpotAlpha': '',
-      \   'GotoPrevSpotAlpha': '',
-      \   'GotoNextLineByPos': '',
-      \   'GotoPrevLineByPos': '',
-      \   'GotoNextSpotByPos': '',
-      \   'GotoPrevSpotByPos': '',
-      \   'GotoNextMarker':    '',
-      \   'GotoPrevMarker':    '',
-      \   'GotoNextMarkerAny': '',
-      \   'GotoPrevMarkerAny': '',
-      \   'ListBufferMarks':   'm/',
-      \   'ListBufferMarkers': 'm?'
-      \ }
+     \   'Leader':            'm',
+     \   'PlaceNextMark':     '',
+     \   'ToggleMarkAtLine':  'm.',
+     \   'PurgeMarksAtLine':  '',
+     \   'DeleteMark':        '',
+     \   'PurgeMarks':        'm<Space>',
+     \   'PurgeMarkers':      '',
+     \   'GotoNextLineAlpha': '',
+     \   'GotoPrevLineAlpha': '',
+     \   'GotoNextSpotAlpha': '',
+     \   'GotoPrevSpotAlpha': '',
+     \   'GotoNextLineByPos': '',
+     \   'GotoPrevLineByPos': '',
+     \   'GotoNextSpotByPos': '',
+     \   'GotoPrevSpotByPos': '',
+     \   'GotoNextMarker':    '',
+     \   'GotoPrevMarker':    '',
+     \   'GotoNextMarkerAny': '',
+     \   'GotoPrevMarkerAny': '',
+     \   'ListBufferMarks':   'm/',
+     \   'ListBufferMarkers': 'm?'
+     \ }
 
 " =================================
 " = setting: (Plugin)vim-submode
+
+" timeoutを3秒に
+let g:submode_timeoutlen = 3000
 
 " windowサイズの変更
 call submode#enter_with('winsize', 'n', '', 'z>', '<C-w>>')
@@ -490,12 +599,6 @@ call submode#map('winsize', 'n', '', '<', '<C-w><')
 call submode#map('winsize', 'n', '', '+', '<C-w>+')
 call submode#map('winsize', 'n', '', '-', '<C-w>-')
 
-" " quickfixのcnext, cprev
-" call submode#enter_with('quickfix', 'n', '', '<Leader>qj', ':<C-u>cnext<CR>')
-" call submode#enter_with('quickfix', 'n', '', '<Leader>qk', ':<C-u>cprevious<CR>')
-" call submode#map('quickfix', 'n', '', 'j', ':<C-u>cnext<CR>')
-" call submode#map('quickfix', 'n', '', 'k', ':<C-u>cprevious<CR>')
-
 " 変更箇所への移動
 " REF: https://github.com/thinca/config/blob/83c2a1e11ca2205eb3af56c98b1947381b2c06e7/dotfiles/dot.vim/vimrc#L2438-L2441
 call submode#enter_with('change-list', 'n', '', 'g;', 'g;')
@@ -503,6 +606,7 @@ call submode#enter_with('change-list', 'n', '', 'g,', 'g,')
 call submode#map('change-list', 'n', '', ';', 'g;')
 call submode#map('change-list', 'n', '', ',', 'g,')
 
+" カーソル動かさずに横スクロール(横長csvの時便利)
 call submode#enter_with('hl-scroll', 'n', '', ';l', 'zl')
 call submode#enter_with('hl-scroll', 'n', '', ';h', 'zh')
 call submode#map('hl-scroll', 'n', '', 'l', 'zl')
@@ -518,11 +622,11 @@ call submode#enter_with('cnew-cold', 'n', '', 'g<C-j>', ':<C-u>copen<CR>:<C-u>cn
 call submode#map('cnew-cold', 'n', '', '<C-k>', ':<C-u>colder<CR>')
 call submode#map('cnew-cold', 'n', '', '<C-j>', ':<C-u>cnewer<CR>')
 
-" " カーソル位置起点でのマークへのジャンプ
-" call submode#enter_with('jump-mark', 'n', '', 'mj', "]'")
-" call submode#enter_with('jump-mark', 'n', '', 'mk', "['")
-" call submode#map('jump-mark', 'n', '', 'j', "]'")
-" call submode#map('jump-mark', 'n', '', 'k', "['")
+" nextfile.vim (https://thinca.hatenablog.com/entry/20130131/1359567419)
+call submode#enter_with('nextfile', 'n', 'r', '<Leader>nj', '<Plug>(nextfile-next)')
+call submode#enter_with('nextfile', 'n', 'r', '<Leader>nk', '<Plug>(nextfile-previous)')
+call submode#map('nextfile', 'n', 'r', 'j', '<Plug>(nextfile-next)')
+call submode#map('nextfile', 'n', 'r', 'k', '<Plug>(nextfile-previous)')
 
 " =================================
 " = setting: (Plugin)lightline.vim
@@ -530,7 +634,7 @@ call submode#map('cnew-cold', 'n', '', '<C-j>', ':<C-u>cnewer<CR>')
 call my#plug#lightline#init()
 
 " =================================
-" = setting: (Plugin)caw.vim start
+" = setting: (Plugin)caw.vim
 
 " プラグインのデフォルトキーマップを適用しない
 let g:caw_no_default_keymappings = 1
@@ -540,8 +644,8 @@ let g:caw_no_default_keymappings = 1
 
 " cppコメント(//)の位置揃え
 let g:easy_align_delimiters = {
-      \   '/': {'pattern': '//\+', 'delimiter_align': 'l', 'ignore_groups': ['!Comment']}
-      \ }
+     \   '/': {'pattern': '//\+', 'delimiter_align': 'l', 'ignore_groups': ['!Comment']}
+     \ }
 
 " =================================
 " = setting: (Plugin)vim-clurin
@@ -555,43 +659,44 @@ function! ClurinCtrlAX(cnt) abort
 endfunction
 
 let g:clurin =
-      \ {
-      \   '-': {
-      \     'def': [
-      \       ['on', 'off'],
-      \       ['Jan', 'Feb', 'Apr', 'Mar', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      \       ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
-      \       ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-      \       ['True', 'False'],
-      \       ['true', 'false'],
-      \       ['TRUE', 'FALSE'],
-      \       ['Yes', 'No'],
-      \       ['ok', 'ng'],
-      \       ['Ok', 'Ng'],
-      \       ['OK', 'NG'],
-      \       ['ON', 'OFF'],
-      \       ['enable', 'disable'],
-      \       ['Enable', 'Disable'],
-      \       ['ENABLE', 'DISABLE'],
-      \       ['有効', '無効'],
-      \       ['有り', '無し'],
-      \       ['作成', '削除'],
-      \       ['未着手', '着手', '完了'],
-      \       ['可', '不可'],
-      \       ['&&', '||'],
-      \       ['==', '!='],
-      \       ['■', '□'],
-      \       ['×', '○'],
-      \       ['月', '火', '水', '木', '金', '土', '日'],
-      \       [
-      \         '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩',
-      \         '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'
-      \       ],
-      \     ],
-      \     'nomatch': function('ClurinCtrlAX'),
-      \   },
-      \   'use_default': 0,
-      \ }
+     \ {
+     \   '-': {
+     \     'def': [
+     \       ['on', 'off'],
+     \       ['Jan', 'Feb', 'Apr', 'Mar', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+     \       ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
+     \       ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+     \       ['True', 'False'],
+     \       ['true', 'false'],
+     \       ['TRUE', 'FALSE'],
+     \       ['Yes', 'No'],
+     \       ['ok', 'ng'],
+     \       ['Ok', 'Ng'],
+     \       ['OK', 'NG'],
+     \       ['ON', 'OFF'],
+     \       ['enable', 'disable'],
+     \       ['Enable', 'Disable'],
+     \       ['ENABLE', 'DISABLE'],
+     \       ['有効', '無効'],
+     \       ['有り', '無し'],
+     \       ['作成', '削除'],
+     \       ['未着手', '着手', '完了'],
+     \       ['可', '不可'],
+     \       ['&&', '||'],
+     \       ['==', '!='],
+     \       ['■', '□'],
+     \       ['×', '○'],
+     \       ['月', '火', '水', '木', '金', '土', '日'],
+     \       ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'],
+     \       [
+     \         '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩',
+     \         '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'
+     \       ],
+     \     ],
+     \     'nomatch': function('ClurinCtrlAX'),
+     \   },
+     \   'use_default': 0,
+     \ }
 
 " =================================
 " = setting: (Plugin)vim-anzu
@@ -601,8 +706,8 @@ let g:anzu_status_format = '%p(%i/%l) %#ErrorMsg#%w'
 
 " 検索実行時(CmdlineLeave時にanzuの結果を表示)
 MyAutoCmd CmdlineLeave / if !empty(getcmdline()) && mode() ==# 'c' |
-      \   call feedkeys(":\<C-u>AnzuUpdateSearchStatus | if anzu#search_status() !=# '' | echo anzu#search_status() | endif\<CR>", 'n') |
-      \ endif
+     \   call feedkeys(":\<C-u>AnzuUpdateSearchStatus | if anzu#search_status() !=# '' | echo anzu#search_status() | endif\<CR>", 'n') |
+     \ endif
 
 " =================================
 " = setting: (Plugin)vim-textobj-xxxxx
@@ -610,8 +715,6 @@ MyAutoCmd CmdlineLeave / if !empty(getcmdline()) && mode() ==# 'c' |
 " デフォルトのキーマッピングを使わない
 let g:textobj_indent_no_default_key_mappings     = 1
 let g:textobj_multiblock_no_default_key_mappings = 1
-let g:textobj_wiw_no_default_key_mappings        = 1
-let g:textobj_precious_no_default_key_mappings   = 1
 let g:textobj_conflict_no_default_key_mappings   = 1
 
 " =================================
@@ -630,61 +733,57 @@ let g:choosewin_label_padding = 5
 " = setting: (Plugin)vim-quickrun
 
 let g:quickrun_no_default_key_mappings = 1
-let g:quickrun_config =
-      \ {
-      \   '_': {
-      \     'hook/close_quickfix/enable_hook_loaded': 1,
-      \     'hook/close_quickfix/enable_success':     1,
-      \     'hook/close_buffer/enable_failure':       1,
-      \     'hook/close_buffer/enable_empty_data':    1,
-      \     'hook/inu/enable':                        1,
-      \     'hook/inu/wait':                          20,
-      \     'outputter':                              'multi:buffer:quickfix',
-      \     'outputter/buffer/split':                 ':botright 8',
-      \     'runner':                                 'job',
-      \   },
-      \   'asciidoc': {
-      \     'runner': 'shell',
-      \     'outputter': 'null',
-      \     'command': ':PrevimOpen',
-      \     'exec': '%c',
-      \   },
-      \   'typescript': {
-      \     'type': executable('ts-node') ? 'typescript/ts-node' :
-      \             executable('tsc') ? 'typescript/tsc' : '',
-      \   },
-      \   'typescript/ts-node': {
-      \     'command': 'ts-node',
-      \     'cmdopt': '--compiler-options ''{"target": "es2015"}''',
-      \     'tempfile': '%{tempname()}.ts',
-      \     'exec': '%c %o %s',
-      \   },
-      \   'ruby.spec': {
-      \     'command': 'rspec',
-      \     'outputter/quickfix/errorformat': "\%f:%l:\ %tarning:\ %m,\%E%.%#:in\ `load':\ %f:%l:%m,\%E%f:%l:in\ `%*[^']':\ %m,\%-Z\ \ \ \ \ %\\+\#\ %f:%l:%.%#,\%E\ \ \ \ \ Failure/Error:\ %m,\%E\ \ \ \ \ Failure/Error:,\%C\ \ \ \ \ %m,\%C%\\s%#,\%-G%.%#",
-      \     'exec': 'bundle exec %c %a %s'
-      \   },
-      \   'java': {
-      \     'exec': ['javac -J-Dfile.encoding=UTF8 %o -d %s:p:h %s', '%c -Dfile.encoding=UTF8 -cp %s:p:h %s:t:r %a'],
-      \     'hook/sweep/files': '%S:p:r.class',
-      \   },
-      \   'typescript/tsc': {
-      \     'command': 'tsc',
-      \     'exec': ['%c --target es5 --module commonjs %o %s', 'node %s:r.js'],
-      \     'tempfile': '%{tempname()}.ts',
-      \     'hook/sweep/files': ['%S:p:r.js'],
-      \   }
-      \ }
-
-" 拡張子とファイルタイプの関連付け
-autocmd BufNewFile,BufRead *.{asciidoc,adoc,asc} set filetype=asciidoc
-autocmd BufNewFile,BufRead *spec.rb set filetype=ruby.spec
+let g:quickrun_config =  {
+     \   '_': {
+     \     'outputter' : 'error',
+     \     'outputter/error/success': 'buffer',
+     \     'outputter/error/error':   'buffer',
+     \     'outputter/buffer/opener': ':botright 15split',
+     \     'outputter/buffer/close_on_empty' : 1,
+     \     'runner': 'job',
+     \     'runner/job/pty': 1,
+     \   },
+     \   'typescript': {
+     \     'type': executable('ts-node') ? 'typescript/ts-node' :
+     \             executable('deno') ? 'typescript/deno' :
+     \             executable('tsc') ? 'typescript/tsc' : '',
+     \   },
+     \   'typescript/deno' : {
+     \     'command': 'deno',
+     \     'cmdopt': '--no-check --allow-all --unstable',
+     \     'tempfile': '%{tempname()}.ts',
+     \     'exec': ['set NO_COLOR=1 %{"&&"} %c run %o %s'],
+     \   },
+     \   'typescript/ts-node': {
+     \     'command': 'ts-node',
+     \     'cmdopt': '--compiler-options {\\"target\":\"es2015\"}',
+     \     'tempfile': '%{tempname()}.ts',
+     \     'exec': '%c %o %s',
+     \   },
+     \   'rspec': {
+     \     'command': 'rspec',
+     \     'outputter/quickfix/errorformat': "\%f:%l:\ %tarning:\ %m,\%E%.%#:in\ `load':\ %f:%l:%m,\%E%f:%l:in\ `%*[^']':\ %m,\%-Z\ \ \ \ \ %\\+\#\ %f:%l:%.%#,\%E\ \ \ \ \ Failure/Error:\ %m,\%E\ \ \ \ \ Failure/Error:,\%C\ \ \ \ \ %m,\%C%\\s%#,\%-G%.%#",
+     \     'exec': 'bundle exec %c %a %s'
+     \   },
+     \   'java': {
+     \     'exec': ['javac -J-Dfile.encoding=UTF8 %o -d %s:p:h %s', '%c -Dfile.encoding=UTF8 -cp %s:p:h %s:t:r %a'],
+     \     'hook/sweep/files': '%S:p:r.class',
+     \   },
+     \   'typescript/tsc': {
+     \     'command': 'tsc',
+     \     'exec': ['%c --target es5 --module commonjs %o %s', 'node %s:r.js'],
+     \     'tempfile': '%{tempname()}.ts',
+     \     'hook/sweep/files': ['%S:p:r.js'],
+     \   }
+     \ }
 
 " =================================
 " = setting: (Plugin)lexima.vim
 
-" " Escキーのマップを除去
+" Escキーのマップを除去
+" CR打鍵時のデフォルト設定無効化
 let g:lexima_map_escape = ''
+let g:lexima_enable_endwise_rules = 0
 
 packadd lexima.vim
 
@@ -698,30 +797,65 @@ call lexima#add_rule({ 'char' : '<CR>', 'at' : ', \%#', 'input' : '<BS><CR>'})
 " [ \%# ]の状態から']'の入力でleaveするようにする
 call lexima#add_rule({'char': ']', 'at': '\[ \%# ]', 'leave': 2})
 
-" <>の補完, 他と合わせ、'\'が直前にある場合にはinput_afterは行わない
-call lexima#add_rule({'char': '<', 'input_after': '>', 'filetype': 'html'})
-call lexima#add_rule({'char': '<', 'at': '\\\%#', 'filetype': 'html'})
-call lexima#add_rule({'char': '>', 'at': '\%#>', 'leave': 1, 'filetype': 'html'})
-call lexima#add_rule({'char': '<BS>', 'at': '<\%#>', 'delete': 1})
+" " String,  Commentでは"{}"の補完を無効に
+" call lexima#add_rule({'char': '{', 'input': '{', 'syntax': 'String'})
+" call lexima#add_rule({'char': '{', 'input': '{', 'syntax': 'Comment'})
 
-" String,  Commentでは"{}"の補完を無効に
-call lexima#add_rule({'char': '{', 'input': '{', 'syntax': 'String'})
-call lexima#add_rule({'char': '{', 'input': '{', 'syntax': 'Comment'})
+" コロンは常にスペース付き
+call lexima#add_rule({ 'char': ':', 'input': ':<Space>'})
 
 " css
-call lexima#add_rule({'char': ':', 'input': ':<Space>', 'input_after': ';', 'filetype': 'css'})
-call lexima#add_rule({'char': ';', 'at': '\%#;', 'leave': 1, 'filetype': 'css'})
-call lexima#add_rule({'char': '<CR>', 'at': '\%#;', 'input': '<End><CR>', 'filetype': 'css'})
-call lexima#add_rule({'char': '<BS>', 'at': ': \%#;', 'input': '<BS><BS>', 'delete': 2, 'filetype': 'css'})
+call lexima#add_rule({'filetype': 'css', 'char': ':', 'at': '\%#$', 'input': ':<Space>', 'input_after': ';'})
+call lexima#add_rule({'filetype': 'css', 'char': ':', 'at': ': \%#;', 'input': '<BS><Del>:'})
+call lexima#add_rule({'filetype': 'css', 'char': ';', 'at': '\%#;', 'leave': 1})
+call lexima#add_rule({'filetype': 'css', 'char': '<CR>', 'at': '\%#;', 'input': '<End><CR>'})
+call lexima#add_rule({'filetype': 'css', 'char': '<BS>', 'at': ': \%#;', 'input': '<BS><BS>', 'delete': 2})
 
 " javascript
-call lexima#add_rule({'char': ':', 'at': '\w\%#', 'input': ':<Space>', 'filetype': 'javascript'})
+call lexima#add_rule({'filetype': ['javascript', 'typescriptreact', 'typescript', 'json'],  'char': '<Tab>', 'at': '{\%#}', 'input': '<Space>', 'input_after': '<Space>'})
 
-" html
-call lexima#add_rule({'char': '<CR>', 'at': '<\(\w\+\)[^>]\+>\%#<\/\1', 'input': '<CR>','input_after': '<CR>', 'filetype': 'html'})
+" typescriptreact
+call lexima#add_rule({'filetype': 'typescriptreact', 'char': '<CR>', 'at': '<\(\w\+\)[^>]\+>\%#<\/\1', 'input': '<CR><Tab>','input_after': '<CR>'})
+call lexima#add_rule({'filetype': 'typescriptreact', 'char': '<CR>', 'at': '^\s\+<>\%#$', 'input': '<CR>','input_after': '<CR></>'})
 
-" call lexima#add_rule({'char': '<CR>', 'at': '```\s(\w\|\.)\+\%#```', 'input_after': '<CR>'})
-" call lexima#add_rule({'char': '<CR>', 'at': '```\%#$', 'input_after': '<CR>```', 'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1```'})
+" ruby
+call lexima#add_rule({'filetype': 'ruby', 'char': '<Bar>', 'at': 'do\%#',     'input': '<Space><Bar>', 'input_after': '<Bar><CR>end', })
+call lexima#add_rule({'filetype': 'ruby', 'char': '<Bar>', 'at': 'do\s\%#',   'input': '<Bar>',        'input_after': '<Bar><CR>end', })
+call lexima#add_rule({'filetype': 'ruby', 'char': '<Bar>', 'at': '{\%#',      'input': '<Space><Bar>', 'input_after': '<Bar><Space>', })
+call lexima#add_rule({'char': '<CR>', 'input': '<CR>', 'input_after': '<CR>' . 'end', 'at': '^\s*\%(module\|def\|class\|if\|unless\|for\|while\|until\|case\)\>\%(.*[^.:@$]\<end\>\)\@!.*\%#', 'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . 'end', 'filetype': 'ruby', 'syntax': []})
+call lexima#add_rule({'char': '<CR>', 'input': '<CR>', 'input_after': '<CR>' . 'end', 'at': '^\s*\%(begin\)\s*\%#', 'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . 'end', 'filetype': 'ruby', 'syntax': []})
+call lexima#add_rule({'char': '<CR>', 'input': '<CR>', 'input_after': '<CR>' . 'end', 'at': '\<\%(if\|unless\)\>.*\%#', 'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1' . 'end', 'filetype': 'ruby', 'syntax': 'rubyConditionalExpression'})
+
+" eruby
+call lexima#add_rule({'filetype': 'eruby', 'char': '%',     'at': '<\%#',         'input': '%<Space>','input_after': '<Space>%>', })
+call lexima#add_rule({'filetype': 'eruby', 'char': '=',     'at': '<%\%#',        'input': '=<Space><Right>', 'input_after': '<Space>%>', })
+call lexima#add_rule({'filetype': 'eruby', 'char': '=',     'at': '<%\s\%#\s%>',  'input': '<Left>=<Right>', })
+call lexima#add_rule({'filetype': 'eruby', 'char': '=',     'at': '<%\%#.\+%>',   'priority': 10})
+call lexima#add_rule({'filetype': 'eruby', 'char': '<C-h>', 'at': '<%\s\%#\s%>',  'input': '<BS><BS><BS><Del><Del><Del>', })
+call lexima#add_rule({'filetype': 'eruby', 'char': '<BS>',  'at': '<%\s\%#\s%>',  'input': '<BS><BS><BS><Del><Del><Del>', })
+call lexima#add_rule({'filetype': 'eruby', 'char': '<C-h>', 'at': '<%=\s\%#\s%>', 'input': '<BS><BS><BS><BS><Del><Del><Del>', })
+call lexima#add_rule({'filetype': 'eruby', 'char': '<BS>',  'at': '<%=\s\%#\s%>', 'input': '<BS><BS><BS><BS><Del><Del><Del>', })
+
+" vim
+for at in ['fu', 'fun', 'func', 'funct', 'functi', 'functio', 'function', 'if', 'wh', 'whi', 'whil', 'while', 'for', 'try']
+  call lexima#add_rule({'filetype': 'vim', 'char': '<CR>', 'input': '<CR>', 'at': '^\s*' . at . '\>.*\%#$', 'input_after': '<CR>end' . at})
+endfor
+
+for at in ['aug', 'augroup']
+  call lexima#add_rule({'filetype': 'vim', 'char': '<CR>', 'input': '<CR>', 'at': '^\s*' . at . '\s\+.\+\%#$', 'input_after': '<CR>'. at . ' END'})
+endfor
+
+" =================================
+" = setting: (Plugin)gina.vim
+
+packadd gina.vim
+
+call gina#custom#command#alias('status --short --branch', 'st')
+call gina#custom#command#alias('checkout', 'co')
+call gina#custom#command#alias('add', 'ad')
+call gina#custom#command#alias('add', 'adddd')
+call gina#custom#command#alias('branch', 'b')
+call gina#custom#command#alias('diff', 'd')
 
 " =================================
 " = setting: (Plugin)memolist.vim
@@ -730,11 +864,7 @@ call lexima#add_rule({'char': '<CR>', 'at': '<\(\w\+\)[^>]\+>\%#<\/\1', 'input':
 " ファイル保存時の拡張子
 " uniteの設定
 " let g:memolist_path = expand('$VIM') . '\.vim\memo'
-if exists('$DHOME')
-  let g:memolist_path = $DHOME . '/memo'
-else
-  let g:memolist_path = $VIMFILES . '/memo'
-endif
+let g:memolist_path = $VIMFILES . '/memo'
 let g:memolist_memo_date = '%Y-%m-%d %H:%M:%S'
 let g:memolist_memo_suffix = 'md'
 let g:memolist_unite = 1
@@ -769,38 +899,33 @@ let g:previm_plantuml_imageprefix = 'http://localhost:8888/png/'
 " =================================
 " = setting: (Plugin)vim-pgpuzzle
 
-let g:pgpuzzle_auto_load = 1
-
-" =================================
-" = setting: (Plugin)vim-pgpuzzle
-
 let g:committia_use_singlecolumn = 'always'
 
 " =================================
-" = setting: (Plugin)open-browser.vim
+" = setting: (Plugin)vim-closetag
 
-" open by Chrome.(?)
-" let g:openbrowser_use_vimproc = 0
-" let g:openbrowser_browser_commands = [
-      "\   {
-      "\     'name': 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
-      "\     'args': ['!start', '{browser}', '{uri_noesc}']
-      "\   }
-      "\ ]
+let g:closetag_filenames = '*.html,*.tsx'
 
 " =================================
-" = setting: (Plugin)calendar.vim
-let g:calendar_views = [ 'year', 'month', 'day_3', 'clock' ]
-
-" =================================
-" = setting: (Plugin)emmet-vim
-
-let g:user_emmet_mode = 'i'
-" let g:user_emmet_install_global = 0
-let g:emmet_install_only_plug = 1
+" = setting: (Plugin)nextfile.vim
+" https://github.com/thinca/config/blob/7c39384dfe5e61f74f53284d1286ea5468bf567f/dotfiles/dot.vim/vimrc#L2256
+let g:nf_map_next = ''
+let g:nf_map_previous = ''
+let g:nf_include_dotfiles = 1
+let g:nf_loop_files = 1
+let g:nf_loop_hook_fn = 'MyNextFileLoop'
+function MyNextFileLoop(file) abort
+  return input('nextfile: loop?[Y/n]: ') =~? '^y\%[es]$'
+endfunction
 
 " =================================
 " = setting: Vim
+
+" tagfuncはcocに全振り
+set tagfunc=CocTagFunc
+
+" Use terminal API
+set termwintype=conpty
 
 if !has('win32')
   " REF: https://qiita.com/usamik26/items/f733add9ca910f6c5784
@@ -855,6 +980,13 @@ set laststatus=2
 set cmdheight=2
 set showcmd
 
+" for coc
+set hidden
+set nobackup
+set nowritebackup
+set updatetime=300
+set shortmess+=c
+
 " 行番号の表示(落ち着くから)
 " ルーラーを表示
 " 長い行を折り返して表示
@@ -878,12 +1010,7 @@ set listchars=tab:^\
 " REF: kaoriya同梱のvimrc
 set formatexpr=autofmt#japanese#formatexpr()
 
-" ウィンドウの最終行を頑張って表示
-" なんか逆にもっさりする気がするからコメントアウト(もっさり?)
-" set display=lastline
-
 " syntaxが効く範囲を狭める(デフォルト3000)
-" set synmaxcol=200
 set synmaxcol=1000
 
 " 横移動の幅を3に変更
@@ -951,9 +1078,9 @@ let g:vim_indent_cont = shiftwidth() * 3
 " (happens when dropping a file on gvim).
 " REF: defaults.vim
 MyAutoCmd BufReadPost *
-      \ if line("'\"") >= 1 && line("'\"") <= line("$") |
-      \   execute "normal! g`\"" |
-      \ endif
+    \ if line("'\"") >= 1 && line("'\"") <= line("$") |
+    \   execute "normal! g`\"" |
+    \ endif
 
 " マウスはnormal, visualモードだけ使用
 " マウスの移動でフォーカスを自動的に切替えない
@@ -976,15 +1103,6 @@ set undofile
 set directory=$VIMFILES/swap
 call s:mkdir(&directory)
 set swapfile
-
-" バックアップを一か所にまとめる
-" ファイルの上書きの前にバックアップを取る
-" バックアップファイルの名前を指定する
-set backupdir=$VIMFILES/backup
-call s:mkdir(&backupdir)
-set writebackup
-set backup
-MyAutoCmd BufWritePre * let &backupext = '_' . strftime('%Y%m%d') . '~'
 
 " コマンド履歴の保存数を200に
 set history=2000
@@ -1022,20 +1140,19 @@ endif
 " jellybeanのコメントとかのitalic見づらいので、修正
 " CursorLineもわかりづらいので微調整
 let g:jellybeans_overrides = {
-      \   'TabLine':      {'guifg': 'ffffff', 'guibg': 'b0b8c0', 'ctermfg': '',      'ctermbg': 'Black', 'attr': ''    },
-      \   'TabLineSel':   {'guifg': '000000', 'guibg': 'f0f0f0', 'ctermfg': 'Black', 'ctermbg': 'White', 'attr': 'bold'},
-      \   'StatusLine':   {'guifg': '000000', 'guibg': 'dddddd', 'ctermfg': '',      'ctermbg': 'White', 'attr': ''    },
-      \   'Comment':      {'guifg': '888888', 'guibg': '',       'ctermfg': 'Grey',  'ctermbg': '',      'attr': ''    },
-      \   'StatusLineNC': {'guifg': 'ffffff', 'guibg': '403c41', 'ctermfg': 'White', 'ctermbg': 'Black', 'attr': ''    },
-      \   'Folded':       {'guifg': 'a0a8b0', 'guibg': '384048', 'ctermfg': 'Black', 'ctermbg': '',      'attr': ''    },
-      \   'CursorLine':   {'guifg': '',       'guibg': '2a2a2a', 'ctermfg': 'Black', 'ctermbg': '',      'attr': ''    },
-      \   'CursorColumn': {'guifg': '',       'guibg': '3a3a3a', 'ctermfg': 'Black', 'ctermbg': '',      'attr': ''    },
-      \ }
+    \   'TabLine':      {'guifg': 'ffffff', 'guibg': 'b0b8c0', 'ctermfg': '',      'ctermbg': 'Black', 'attr': ''    },
+    \   'TabLineSel':   {'guifg': '000000', 'guibg': 'f0f0f0', 'ctermfg': 'Black', 'ctermbg': 'White', 'attr': 'bold'},
+    \   'StatusLine':   {'guifg': '000000', 'guibg': 'dddddd', 'ctermfg': '',      'ctermbg': 'White', 'attr': ''    },
+    \   'Comment':      {'guifg': '888888', 'guibg': '',       'ctermfg': 'Grey',  'ctermbg': '',      'attr': ''    },
+    \   'StatusLineNC': {'guifg': 'ffffff', 'guibg': '403c41', 'ctermfg': 'White', 'ctermbg': 'Black', 'attr': ''    },
+    \   'Folded':       {'guifg': 'a0a8b0', 'guibg': '384048', 'ctermfg': 'Black', 'ctermbg': '',      'attr': ''    },
+    \   'CursorLine':   {'guifg': '',       'guibg': '2a2a2a', 'ctermfg': 'Black', 'ctermbg': '',      'attr': ''    },
+    \   'CursorColumn': {'guifg': '',       'guibg': '3a3a3a', 'ctermfg': 'Black', 'ctermbg': '',      'attr': ''    },
+    \ }
 
 if has('vim_starting')
   if has('win32')
     colorscheme jellybeans
-    " colorscheme desert
   else
     colorscheme desert
   endif
@@ -1047,7 +1164,7 @@ highlight CursorIM guibg=Purple guifg=NONE
 set iminsert=0
 set imsearch=0
 inoremap <silent> <Esc> <Esc>:set iminsert=0<CR>
-nnoremap / :<C-u>set imsearch=0<cr>/
+nnoremap / :<C-u>set imsearch=0<CR>/
 
 if has('vim_starting') && has('gui_running')
   " ウインドウの幅、高さ
@@ -1061,20 +1178,13 @@ endif
 set guifont=MS_Gothic:h9:cSHIFTJIS
 " set linespace=1
 
-if has('kaoriya')
-  set ambiwidth=auto
-else
-  set ambiwidth=double
-endif
+set ambiwidth=double
 
 " タブを常に表示
 set showtabline=2
 
 " 全てのイベントでベルが鳴らないようにする
 set belloff=all
-
-highlight default MyFlashy term=bold ctermbg=0 guibg=#13354A
-highlight default TrailingSpaces guibg=darkgray
 
 " MyAutoCmdとMyAutoCmdFTの強調
 "   REF: http://pocke.hatenablog.com/entry/2014/06/21/101827
@@ -1091,21 +1201,20 @@ call s:my_hl_autocmd()
 
 " 末尾空白文字強調。vimfiler, calendarについてはしない
 " REF: https://teratail.com/questions/71693
-MyAutoCmdFT vimfiler,calendar match none
+MyAutoCmdFT vimfiler match none
 MyAutoCmd VimEnter,WinEnter,BufWinEnter *
-      \ if &filetype ==# 'vimfiler' || &filetype ==# 'calendar' |
-      \   match none |
-      \ else |
-      \   match TrailingSpaces /\s\+$/ |
-      \ endif
+    \ if &filetype ==# 'vimfiler' |
+    \   match none |
+    \ else |
+    \   match TrailingSpaces /\s\+$/ |
+    \ endif
 
 " Windowを分割するマンなので、
 " どのウィンドウにカーソルがあるかわかるように、Vimにfocusが戻ったら対象ウィンドウをハイライトする。
 " MyAutoCmd FocusGained * call matchadd('Cursor', '\%#', 101)
+highlight default MyFlashy term=bold ctermbg=0 guibg=#13354A
+highlight default TrailingSpaces guibg=darkgray
 MyAutoCmd FocusGained * call my#flash_window(1000, 'MyFlashy')
-
-" http://qiita.com/kentaro/items/6aa9f108df825b2a8b39
-MyAutoCmd BufEnter *.rb,*.vim,*.html,*.css execute 'lcd' my#get_root_dir()
 
 " コマンドラインモードの時だけカーソルの移動を無効化
 " (:%s/<pattern>//gの<pattern>入力中にカーソルが動くのが嫌だから)
@@ -1163,10 +1272,6 @@ command! RunVimScript source $VIMFILES/run.vim
 
 " 開いているファイルに移動(元: plugins/kaoriya/plugin/cmdex.vim)
 command! CdCurrent cd %:p:h
-
-if has('win32') && executable('C:/msys64/usr/bin/touch.exe')
-  command! Touch if &modified | call my#error_msg('modified file!') | else | silent execute '!start C:/msys64/usr/bin/touch.exe' expand('%:p') | endif
-endif
 
 command! MinpacUpdate call minpac#update('', {'do': 'call minpac#status()'})
 
@@ -1258,18 +1363,6 @@ xmap + <Plug>(clurin-next)
 xmap - <Plug>(clurin-prev)
 
 " =================================
-" = mapping: (Plugin)vim-easymotion
-
-" " 2-key Find Motion
-" map <Leader>S <Plug>(easymotion-s2)
-
-" f,F,t,Tのオペレータ待機の時だけはclever-f使わないでeasymotion使う
-" omap t <Plug>(easymotion-tl)
-" omap T <Plug>(easymotion-Tl)
-" omap f <Plug>(easymotion-fl)
-" omap F <Plug>(easymotion-Fl)
-
-" =================================
 " = mapping: (Plugin)vim-operator-replace
 
 " 個人的なシュミでselect modeのマッピングはしたくないけど、neosnippet用にsmapでも動作するようにしておく
@@ -1297,25 +1390,12 @@ nmap g< <Plug>(swap-prev)
 nmap g> <Plug>(swap-next)
 
 " =================================
-" = mapping: (Plugin)vim-operator-flashy
+" = mapping: (Plugin)vim-highlightedyank
 
-" map y <Plug>(operator-flashy)
-" nmap Y <Plug>(operator-flashy)$
-
-function! Hogehoge() abort
-  autocmd CursorMoved <buffer> ++once call highlightedyank#obsolete#highlight#cancel()
-  return ""
-endfunction
-nmap <expr><silent> <Plug>(my-highlightedyank-cancel) Hogehoge()
-xmap <expr><silent> <Plug>(my-highlightedyank-cancel) Hogehoge()
-omap <expr><silent> <Plug>(my-highlightedyank-cancel) Hogehoge()
-" nmap y <Plug>(highlightedyank)<Plug>(my-highlightedyank-cancel)
-" xmap y <Plug>(highlightedyank)<Plug>(my-highlightedyank-cancel)
-" omap y <Plug>(highlightedyank)<Plug>(my-highlightedyank-cancel)
 nmap y <Plug>(highlightedyank)
 xmap y <Plug>(highlightedyank)
 omap y <Plug>(highlightedyank)
-nmap Y <Plug>(highlightedyank)$<Plug>(my-highlightedyank-cancel)
+nmap Y <Plug>(highlightedyank)$
 
 " =================================
 " = mapping: (Plugin)vim-easy-align
@@ -1326,9 +1406,6 @@ xmap <CR> <Plug>(EasyAlign)
 " = mapping: (Plugin)incsearch.vim
 
 map z/ <Plug>(incsearch-stay)
-
-" クリップボードから検索(改行に対応)
-nnoremap g/ :<C-u>set imsearch=0<CR>/\V<C-r>=join(map(getreg(v:register,1,1),{k,v->escape(v,'\/')}),'\n')<CR><CR>
 
 " =================================
 " = mapping: (Plugin)vim-anzu & vim-asterisk
@@ -1364,18 +1441,15 @@ nnoremap <Space>ep :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=minpac#
 nnoremap <Space>ev :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($VIM)<CR><CR>
 nnoremap <Space>eh :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($HOME)<CR><CR>
 nnoremap <Space>ed :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($HOME)<CR>/dotfiles<CR>
-nnoremap <Space>eg :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($GOPATH)<CR><CR>
 nnoremap <Space>er :<C-u>VimFilerBufferDir -winwidth=60 -no-toggle -explorer -project<CR>
+nnoremap <Space>et :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($HOME)<CR>/w/tmp<CR>
+nnoremap <Space>eC :<C-u>VimFilerExplorer  -winwidth=60 -no-toggle <C-r>=expand($HOME)<CR>/AppData/Local/coc/extensions<CR>
 
 " 多用
 nnoremap <Space>f  :<C-u>Unite -buffer-name=proj_file_mru neomru/file<CR>
 nnoremap <Space>F  :<C-u>Unite -buffer-name=file_mru file_mru<CR>
-nnoremap <Space>bo :<C-u>Unite -buffer-name=bookmark bookmark<CR>
 nnoremap <Space>bu :<C-u>Unite -buffer-name=buffer buffer<CR>
 nnoremap <Space>R  :<C-u>UniteResume<CR>
-
-" nnoremap <Space>f  :<C-u>Denite proj_file_mru<CR>
-" nnoremap <Space>F  :<C-u>Denite file_mru<CR>
 
 " たまに使う
 nnoremap <Space>ol :<C-u>Unite -create -vertical -no-quit -winwidth=50 -direction=botright -no-start-insert outline<CR>
@@ -1406,20 +1480,6 @@ nmap <Space>_ yy<Plug>(caw:hatpos:toggle)p
 xmap <Space>_ :yank<CR>gv<Plug>(caw:hatpos:toggle)`>p
 
 " =================================
-" = mapping: (Plugin)vim-textobj-from_regexp
-
-" REF: https://gist.githubusercontent.com/mattn/fecf0ce486192d83a95d93bdcd5def09/raw/9d0c0a19e4292ffdb1be21daf1ad3c5d8d06df01/textobj.vim
-
-omap <expr> i# textobj#from_regexp#mapexpr('#\zs.\{-}\ze#')
-xmap <expr> i# textobj#from_regexp#mapexpr('#\zs.\{-}\ze#')
-
-omap <expr> i_ textobj#from_regexp#mapexpr('_\zs.\{-}\ze_')
-xmap <expr> i_ textobj#from_regexp#mapexpr('_\zs.\{-}\ze_')
-
-omap <expr> i/ textobj#from_regexp#mapexpr('\/\zs.\{-}\ze\/')
-xmap <expr> i/ textobj#from_regexp#mapexpr('\/\zs.\{-}\ze\/')
-
-" =================================
 " = mapping: (Plugin) vim-swap
 
 omap io <Plug>(swap-textobject-i)
@@ -1438,14 +1498,6 @@ xmap ii <Plug>(textobj-indent-a)
 
 " =================================
 " = mapping: (Plugin)vim-textobj-multiblock
-
-" 全角の「」, （）、【】にも反応するように追加
-" 使うときにコメントアウトを取る
-" let g:textobj_multiblock_blocks = [
-" \   ['「', '」'],
-" \   ['（', '）'],
-" \   ['|', '|', 1],
-" \ ]
 
 omap aq <Plug>(textobj-multiblock-a)
 omap iq <Plug>(textobj-multiblock-i)
@@ -1476,29 +1528,13 @@ nnoremap <Leader>og :OpenBrowser https://github.com/<C-r>=expand('<cfile>')<CR><
 xnoremap <Leader>og :<C-u>OpenBrowser https://github.com/<C-r>=my#selected_text()<CR><CR>
 
 " =================================
-" = mapping: (Plugin)vim-textmanip
-
-" xmap <Down>  <Plug>(textmanip-move-down-r)
-" xmap <Up>    <Plug>(textmanip-move-up-r)
-" xmap <Left>  <Plug>(textmanip-move-left-r)
-" xmap <Right> <Plug>(textmanip-move-right-r)
-"
-" xmap <C-Down>  <Plug>(textmanip-duplicate-down)
-" xmap <C-Up>    <Plug>(textmanip-duplicate-up)
-" nmap <C-Down>  <Plug>(textmanip-duplicate-down)
-" nmap <C-Up>    <Plug>(textmanip-duplicate-up)
-
-" nmap <F10>   <Plug>(textmanip-toggle-mode)
-" xmap <F10>   <Plug>(textmanip-toggle-mode)
-
-" =================================
 " = mapping: (Plugin)memolist.vim
 
 nnoremap <Leader>mn :<C-u>MemoNew<CR>task<CR>
 nnoremap <Leader>ml :<C-u>MemoList<CR>
 nnoremap <leader>mo :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.' . g:memolist_memo_suffix, 1, 12, 0)<CR>
 nnoremap <leader>mc :<C-u>call my#copy_or_open_past_file(g:memolist_path, '%Y-%m-%d', '-task.' . g:memolist_memo_suffix, 1, 12, 1)<CR>
-      \ :1,3s/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d/\=strftime(g:memolist_memo_date)/g<CR>
+    \ :1,3s/\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d/\=strftime(g:memolist_memo_date)/g<CR>
 
 " =================================
 " = mapping: (Plugin)vim-edgemotion
@@ -1515,15 +1551,10 @@ nmap <Leader>a <Plug>(altr-forward)
 " = mapping: (Plugin)neosnippet.vim, neocomplete.vim
 " = mapping: (Plugin)vim-edgemotion
 
-imap <expr> <C-k> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<C-s>"
-smap <expr> <C-k> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<C-s>"
-xmap        <C-s> <Plug>(neosnippet_expand_target)
+imap <expr> <C-k> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<C-k>"
+smap <expr> <C-k> neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" : "\<C-k>"
+" xmap        <C-s> <Plug>(neosnippet_expand_target)
 " imap <expr> <C-l> neocomplete#start_manual_complete('neosnippet')
-
-" =================================
-" = mapping: (Plugin)calendar.vim
-
-nnoremap <Leader>cav :<C-u>Calendar -view=year -split=vertical -position=left -width=27
 
 " =================================
 " = mapping: window operation
@@ -1564,7 +1595,6 @@ nnoremap <silent> z<BAR> <C-w><BAR>
 nnoremap <silent> z_ <C-w>_
 nnoremap <silent> z1<BAR> <C-w>1<BAR>
 nnoremap <silent> z1_ <C-w>1_
-nnoremap <silent> zo <C-w>_<C-w><BAR>
 
 " 新規window, tabの生成
 nnoremap <silent> zs :<C-u>split<CR>
@@ -1584,10 +1614,6 @@ nnoremap z<C-o> :<C-u>tabonly <BAR> only
 nnoremap <silent> z]v :<C-u>vsplit<CR>g<C-]>
 nnoremap <silent> z]s :<C-u>split<CR>g<C-]>
 
-" Windowを分割して検索
-" nnoremap <silent> z/v :<C-u>vsplit<CR>/
-" nnoremap <silent> z/s :<C-u>split<CR>/
-
 " =================================
 " = mapping: cursor move
 
@@ -1598,6 +1624,9 @@ cnoremap <C-f> <Right>
 inoremap <C-a> <Home>
 inoremap <C-b> <Left>
 inoremap <C-f> <Right>
+
+" Del
+inoremap <C-d> <Del>
 
 " カーソル移動(補完用ポップアップ表示中じゃなければ)
 " どこかのサイトでpumvisibleじゃなくて、mode(?)を見ろみたいなことが書かれていたような。
@@ -1616,6 +1645,7 @@ xnoremap v $h
 " スクロール時の調整
 nnoremap <C-e> <C-e>j
 nnoremap <C-y> <C-y>k
+
 
 " カーソル位置起点でのマークへのジャンプ
 noremap mj ]'
@@ -1639,7 +1669,32 @@ nnoremap <Leader>csfs :<C-u>cscope find s <C-r>=expand('<cword>')<CR><CR>
 nnoremap <Leader>csfS :<C-u>cscope find s <C-r>=getreg(v:register)<CR><CR>
 
 " =================================
+" = mapping: coc
+"
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  elseif (coc#rpc#ready())
+    call CocActionAsync('doHover')
+  else
+    execute '!' . &keywordprg . " " . expand('<cword>')
+  endif
+endfunction
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+" Show all diagnostics.
+nnoremap <silent><nowait> sa  :<C-u>CocDiagnostics<CR>
+
+" =================================
 " = mapping: other
+
+" クリップボードから検索(改行に対応)
+nnoremap g/ :<C-u>set imsearch=0<CR>/\V<C-r>=join(map(getreg(v:register,1,1),{k,v->escape(v,'\/')}),'\n')<CR><CR>
 
 if has('vim_starting') && has('win32')
   " REF: :h v_CTRL-X
@@ -1651,8 +1706,8 @@ nnoremap <expr> gl getqflist({'id': 0, 'idx': 0}).idx == getqflist({'size': 0}).
 nnoremap <expr> gh getqflist({'id': 0, 'idx': 0}).idx == 1                           ? ':<C-u>cfirst<CR>zz' : (getqflist({'size': 0}).size == 1 ? ':<C-u>cfirst<CR>zz' : ':<C-u>cprevious<CR>zz')
 nnoremap gk :<C-u>copen<CR>
 nnoremap gj :<C-u>cclose<CR>
-nnoremap gH :<C-u>cfirst<CR>zz
-nnoremap gL :<C-u>clast<CR>zz
+" nnoremap gH :<C-u>cfirst<CR>zz
+" nnoremap gL :<C-u>clast<CR>zz
 
 if has('win32')
   " 開いているファイルを選択した状態でExplorerを開く
@@ -1681,9 +1736,6 @@ inoremap <silent><expr> <S-CR> '<C-r>=cursor(line("."), 10000)<CR><BS>' . lexima
 "       ↑のように2行分のスクリプトが実行され123タイプでエラーとなってしまうので、\<CR>ではなく、\<LT>CR>と記載する必要がある。
 nnoremap <silent> <CR> :<C-u>call feedkeys("A\<LT>CR>")<CR>
 
-" ^はあんまり使わない(_を使う)ので他に割り当て
-nnoremap ^ :<C-u>Cfp<CR>
-
 " H,Lを拡張
 nmap H <Plug>(my-H)
 nmap L <Plug>(my-L)
@@ -1697,6 +1749,7 @@ xmap _ <Plug>(my-underscore)
 " カーソルを動かさずに全体をコピー、削除
 nmap yie <Plug>(my-flash-window-and-yank-entire)
 nnoremap die :<C-u>%delete _<CR>
+nnoremap cie :<C-u>%delete _<CR>I
 xnoremap ie  <Esc>ggVG
 
 " " :h ins-completion
@@ -1711,13 +1764,8 @@ xnoremap ie  <Esc>ggVG
 " <C-x><C-d> : 定義もしくはマクロ
 " <C-x><C-v> : Vimのコマンドライン
 " <C-x><C-o> : オムニ補完
-
-" inoremap <C-Space> <C-x><C-o>
-
 " <C-x><C-u> : ユーザー定義補完
 " <C-x><C-s> : スペリング補完
-" inoremap jju <C-x><C-u>
-" inoremap jjs <C-x><C-s>
 
 " 置換, vimgrep, lvimgrepのコマンドを簡略化
 nnoremap <expr> gs v:count == 0 ? ':<C-u>%s///g<Left><Left>' : 'gs'
@@ -1755,10 +1803,6 @@ inoremap <C-w> <C-g>u<C-w>
 " ,で,<Space>
 inoremap , ,<Space>
 
-" 短縮入力が起動しないようにする 
-" ※leximaでspace割り当てる場合はspaceしか入力できないようになるので、気を付けるように
-inoremap <Space> <Space>
-
 " normalモードでの<Esc>で以下をクリア(<C-l>も同じようにしておく)
 " * clever-f
 " * 検索ハイライト
@@ -1771,10 +1815,7 @@ nmap gF <Plug>(my-gf)
 
 " insertモード,commandモードのC-yでクリップボードからペースト
 cnoremap <C-y> <C-r>*
-" inoremap <expr> <C-y> pumvisible() ? '<C-y>' : '<C-g>u<C-r>+'
-inoremap <expr> <C-y> pumvisible() ? '<C-y><C-r>=asyncomplete#close_popup()<CR>' : '<C-g>u<C-r>+'
-" inoremap <expr> <CR>  pumvisible() ? "\<C-n>\<C-y>" . asyncomplete#close_popup() : lexima#expand("\<LT>CR>", 'i')
-" inoremap <expr> <CR>  pumvisible() ? "\<C-n>\<C-y>" . asyncomplete#close_popup() : lexima#expand('<LT>CR>', 'i')
+inoremap <expr> <C-y> pumvisible() ? '<C-y>' : '<C-g>u<C-r>+'
 
 " <Up><Down>を割り当て
 cnoremap <C-p> <Up>
@@ -1791,16 +1832,6 @@ nnoremap <Space>. :<C-u>EVimrc<CR>
 " タグジャンプ時に複数候補表示
 nnoremap <C-]> g<C-]>
 nnoremap g<C-]> :<C-u>tjump <C-r>=getreg(v:register)<CR><CR>
-
-if has('win32')
-  " Tortoise svn diff, log, blame, repobrowser
-  nnoremap <silent> <Leader>td  :<C-u>execute '!start TortoiseProc.exe /command:diff /path:"' . expand("%:p") . '" /ignoreprops'<CR>
-  nnoremap <silent> <Leader>tb  :<C-u>execute '!start TortoiseProc.exe /command:blame /path:"' . expand("%:p") . '" /line:' . line(".")<CR>
-  nnoremap <silent> <Leader>tr  :<C-u>execute '!start TortoiseProc.exe /command:repobrowser'<CR>
-  nnoremap <silent> <Leader>tf  :<C-u>execute '!start TortoiseProc.exe /command:repostatus /path:"' . my#get_root_dir() . '"'<CR>
-  nnoremap <silent> <Leader>tl  :<C-u>execute '!start TortoiseProc.exe /command:log /path:"' . my#get_root_dir() . '" /strict'<CR>
-  nnoremap <silent> <Leader>tcl :<C-u>execute '!start TortoiseProc.exe /command:log /path:"' . expand("%:p") . '" /strict'<CR>
-endif
 
 " diff
 nnoremap <Leader>qw :<C-u>windo diffthis<CR>
@@ -1822,17 +1853,12 @@ nnoremap <expr> dk line('.') == line('$') ? 'dk' : 'dkk'
 " 短縮入力にユーザ定義補完を使う
 " inoremap <C-]> <C-x><C-u>
 
-" <F1>でpasteのtoggle(他と合わせてなんとなくpastetoggleは使わない)
 " <F2>は別で使っているので、指定しないあるので
 " <F4>でwrapのtoggle
-" <F9>で透過度を50 <-> 255に変更
 " <F12>でフォントサイズを9 <-> 16に変更
-nnoremap <F1> :<C-u>set paste!<CR>
 nnoremap <F4> :<C-u>set wrap!<CR>
 nnoremap <S-F4> :<C-u>windo set nowrap<CR>
-nmap <F9> <Plug>(my-toggle-transparency)
 nmap <F12> <Plug>(my-toggle-fontsize)
-" nnoremap <F12> :<C-u>set guifont=*<CR>
 
 " ================================
 " = for private job
