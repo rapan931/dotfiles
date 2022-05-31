@@ -20,10 +20,12 @@ endfunction
 
 if has('vim_starting')
   if has('win32')
+    let $PATH = $PATH . ';' . $HOME . '\bin'
+
     " Git用
     let $PATH = $PATH . ';C:\Program Files\Git\cmd'
 
-    " " go
+    " go
     let $PATH = $PATH . ';' . $HOME . '\go\bin'
   endif
 
