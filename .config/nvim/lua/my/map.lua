@@ -25,6 +25,10 @@ M.cnoremap = function (lhs, rhs, ...)
   vim.keymap.set('c', lhs, rhs, ...)
 end
 
+M.noremap = function (lhs, rhs, ...)
+  vim.keymap.set({'n', 'x', 'o'}, lhs, rhs, ...)
+end
+
 M.nmap = function (lhs, rhs, ...)
   local merged_opt = vim.tbl_deep_extend('force', { remap = true }, handle_args(...))
   vim.keymap.set('n', lhs, rhs, merged_opt)
@@ -43,6 +47,11 @@ end
 M.cmap = function (lhs, rhs, ...)
   local merged_opt = vim.tbl_deep_extend('force', { remap = true }, handle_args(...))
   vim.keymap.set('c', lhs, rhs, merged_opt)
+end
+
+M.map = function (lhs, rhs, ...)
+  local merged_opt = vim.tbl_deep_extend('force', { remap = true }, handle_args(...))
+  vim.keymap.set({'n', 'x', 'o'}, lhs, rhs, merged_opt)
 end
 
 return M
