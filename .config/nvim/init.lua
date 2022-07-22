@@ -1,12 +1,15 @@
 My = require('my')
 
 local my_filetype = require('my.filetype')
+local bistahieversor = require('bistahieversor')
 
 local my_map = require('my.map')
+local map = my_map.map
 local xmap = my_map.xmap
 local nmap = my_map.nmap
 -- local imap = My.keymap.imap
 -- local cmap = My.keymap.cmap
+-- local noremap = my_map.noremap
 local xnoremap = my_map.xnoremap
 local nnoremap = my_map.nnoremap
 local inoremap = my_map.inoremap
@@ -14,14 +17,13 @@ local cnoremap = my_map.cnoremap
 
 local api = vim.api
 local fn = vim.fn
-local cmd = vim.cmd
 local vg = vim.g
 local vo = vim.o
+local vv = vim.v
 
 local command = vim.api.nvim_create_user_command
 local autocmd = vim.api.nvim_create_autocmd
 
--- vim.cmd("scriptencoding 'utf-8'")
 vg.ruby_no_expensive = 1
 
 if fn.has('vim_starting') then
@@ -29,8 +31,6 @@ if fn.has('vim_starting') then
 end
 
 api.nvim_create_augroup('vimrc_augroup', {})
--- command('MyAutoCmd', 'autocmd vimrc_augroup <args>', { nargs = '*' })
--- command('MyAutoCmdFT', 'autocmd vimrc_augroup FileType <args>', { nargs = '*' })
 
 autocmd('QuickfixCmdPost', {
   group = 'vimrc_augroup',
@@ -56,6 +56,33 @@ autocmd('CmdlineLeave', {
   group = 'vimrc_augroup',
   pattern = '*',
   command = 'call system("zenhan.exe 0")',
+})
+
+autocmd('CmdlineLeave', {
+  group = 'vimrc_augroup',
+  pattern = '*',
+  command = 'call system("zenhan.exe 0")',
+})
+
+autocmd('CmdlineLeave', {
+  group = 'vimrc_augroup',
+  pattern = {'/', '?'},
+  callback = function()
+    pp(fn.getpos('.'))
+    bistahieversor.echo(1)
+  end
+})
+
+autocmd('BufEnter', {
+  group = 'vimrc_augroup',
+  pattern = '*',
+  callback = function()
+    local root_dir = My.get_root_dir()
+    if root_dir ~= nil and #root_dir ~= 0 then
+      -- vim.bo.path = '.,,' .. root_dir .. '/**'
+      vim.cmd('lcd ' .. root_dir)
+    end
+  end
 })
 
 autocmd('FileType', {
@@ -141,8 +168,8 @@ vg.loaded_tutor_mode_plugin  = 1
 
 -- packer.nvim
 
-vim.o.packpath = fn.stdpath('data') .. '/site/'
-cmd [[packadd packer.nvim]]
+vo.packpath = fn.stdpath('data') .. '/site/'
+vim.cmd [[packadd packer.nvim]]
 local packer = require('packer')
 packer.init({
   plugin_package = 'p'
@@ -184,13 +211,10 @@ packer.startup(function(use)
   use 'rhysd/committia.vim'
   use 'hotwatermorning/auto-git-diff'
 
-  use 'rapan931/lasterisk.nvim'
+  -- use 'rapan931/lasterisk.nvim'
+  use "~/repos/github.com/rapan931/lasterisk.nvim"
+  use "~/repos/github.com/rapan931/bistahieversor.nvim"
 end)
-
-local plugin_names = vim.fn.glob(vim.fn.stdpath('data') .. '/site/pack/p/start/*', '', true)
-for _, path in pairs(vim.fn.glob(vim.fn.stdpath('data') .. '/site/pack/p/opt/*', '', true)) do
-  table.insert(plugin_names, path)
-end
 
 -- nvim-cmp setup
 local cmp = require('cmp')
@@ -221,15 +245,14 @@ cmp.setup {
 
       else
         fallback()
-	      end
+      end
     end, { 'i', 's' }),
     ['<S-Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_prev_item()
-
       else
         fallback()
-	      end
+      end
     end, { 'i', 's' }),
   }),
 }
@@ -280,7 +303,7 @@ require('lspconfig').sumneko_lua.setup {
         globals = { 'vim' },
       },
       workspace = {
-        library = plugin_names,
+        library = My.plugin_paths(),
       },
       telemetry = {
         enable = false,
@@ -335,16 +358,26 @@ require('lualine').setup {
   extensions = {}
 }
 
--- vim-asterisk
-nmap('*', [[<Plug>(asterisk-z*)]])
-nmap('g*', [[<Plug>(asterisk-gz*)]])
-xmap('*', [[<Plug>(asterisk-z*)]])
-xmap('g*', [[<Plug>(asterisk-gz*)]])
-nmap('*', [[<Plug>(asterisk-z*)]])
-nmap('g*', [[<Plug>(asterisk-gz*)]])
+bistahieversor.setup({ maxcount = 500 })
+map('n', function() bistahieversor.n_and_echo() end)
+map('N', function() bistahieversor.N_and_echo() end)
+-- map('N', function() bistahieversor.n_and_echo() end)
 
-nmap('#',  function() require("lasterisk").lasterisk_do({}) end)
-nmap('g#', function() require("lasterisk").lasterisk_do({ is_whole = false }) end)
+nmap('*',  function() require("lasterisk").search() bistahieversor.echo(1) end)
+nmap('g*', function() require("lasterisk").search({ is_whole = false }) bistahieversor.echo(1) end)
+xmap('*',  function() require("lasterisk").search() bistahieversor.echo(1) end)
+xmap('g*', function() require("lasterisk").search({ is_whole = false }) bistahieversor.echo(1) end)
+
+
+nnoremap('g/', function()
+  local pattern = [[\V]] .. fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vv.register, 1, 1)), [[\n]])
+
+  vo.hlsearch = vo.hlsearch
+  fn.setreg('/', pattern)
+  fn.histadd('/', pattern)
+  print('/' .. pattern)
+end)
+
 cnoremap('<C-e>', '<End>')
 inoremap('<C-e>', '<End>')
 cnoremap('<C-a>', '<Home>')
@@ -358,6 +391,7 @@ nnoremap('gs', ':<C-u>%s///g<Left><Left>')
 xnoremap('gs', ':s///g<Left><Left>')
 
 xnoremap('v', '$h')
+-- xnoremap('v', '$')
 
 xnoremap('<ESC>', 'o<ESC>')
 nnoremap('gv', 'gvo')
@@ -457,7 +491,7 @@ vg.clipboard = {
 }
 
 vo.termguicolors = true
-cmd [[colorscheme tokyonight]]
+vim.cmd [[colorscheme tokyonight]]
 
 
 -- previm
