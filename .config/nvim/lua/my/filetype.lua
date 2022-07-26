@@ -20,6 +20,10 @@ M.help = function()
   buf_map(0, 'n', 'q', 'ZZ', noremap)
 end
 
+M.quickfix = function()
+  buf_map(0, 'n', 'q', 'ZZ', noremap)
+end
+
 M.java = function()
   set_indent(4, false)
 end

@@ -58,25 +58,26 @@ autocmd('CmdlineLeave', {
   command = 'call system("zenhan.exe 0")',
 })
 
-autocmd('CmdlineLeave', {
-  group = 'vimrc_augroup',
-  pattern = '*',
-  command = 'call system("zenhan.exe 0")',
-})
-
-autocmd('CmdlineLeave', {
-  group = 'vimrc_augroup',
-  pattern = {'/', '?'},
-  callback = function()
-    pp(fn.getpos('.'))
-    bistahieversor.echo(1)
-  end
-})
+-- autocmd('CmdlineLeave', {
+--   group = 'vimrc_augroup',
+--   pattern = {'/', '\\?'},
+--   callback = function()
+--     if vim.v.event.abort == false then
+--       pp(fn.getpos('v'))
+--       pp(fn.getpos('.'))
+--       bistahieversor.echo()
+--     end
+--   end
+-- })
 
 autocmd('BufEnter', {
   group = 'vimrc_augroup',
   pattern = '*',
   callback = function()
+    local t = vim.bo.buftype
+    if t == 'terminal' or t == 'prompt' or t == 'quickfix' then
+      return
+    end
     local root_dir = My.get_root_dir()
     if root_dir ~= nil and #root_dir ~= 0 then
       -- vim.bo.path = '.,,' .. root_dir .. '/**'
@@ -358,15 +359,14 @@ require('lualine').setup {
   extensions = {}
 }
 
-bistahieversor.setup({ maxcount = 500 })
+bistahieversor.setup({ maxcount = 1000 , echo_wrapscan = true})
 map('n', function() bistahieversor.n_and_echo() end)
 map('N', function() bistahieversor.N_and_echo() end)
 -- map('N', function() bistahieversor.n_and_echo() end)
 
-nmap('*',  function() require("lasterisk").search() bistahieversor.echo(1) end)
-nmap('g*', function() require("lasterisk").search({ is_whole = false }) bistahieversor.echo(1) end)
-xmap('*',  function() require("lasterisk").search() bistahieversor.echo(1) end)
-xmap('g*', function() require("lasterisk").search({ is_whole = false }) bistahieversor.echo(1) end)
+nmap('*',  function() require("lasterisk").search(); bistahieversor.echo() end)
+nmap('g*', function() require("lasterisk").search({ is_whole = false }); bistahieversor.echo() end)
+xmap('g*', function() require("lasterisk").search({ is_whole = false }); bistahieversor.echo() end)
 
 
 nnoremap('g/', function()
