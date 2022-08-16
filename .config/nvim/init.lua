@@ -2,10 +2,11 @@ My = require('my')
 
 local my_filetype = require('my.filetype')
 local bistahieversor = require('bistahieversor')
+local utahraptor = require('utahraptor')
 
 local my_map = require('my.map')
 local map = my_map.map
-local xmap = my_map.xmap
+-- local xmap = my_map.xmap
 local nmap = my_map.nmap
 -- local imap = My.keymap.imap
 -- local cmap = My.keymap.cmap
@@ -58,17 +59,15 @@ autocmd('CmdlineLeave', {
   command = 'call system("zenhan.exe 0")',
 })
 
--- autocmd('CmdlineLeave', {
---   group = 'vimrc_augroup',
---   pattern = {'/', '\\?'},
---   callback = function()
---     if vim.v.event.abort == false then
---       pp(fn.getpos('v'))
---       pp(fn.getpos('.'))
---       bistahieversor.echo()
---     end
---   end
--- })
+autocmd('CmdlineLeave', {
+  group = 'vimrc_augroup',
+  pattern = {'/', '\\?'},
+  callback = function()
+    if vim.v.event.abort == false then
+      api.nvim_feedkeys(api.nvim_replace_termcodes(':lua require("bistahieversor").echo() require("utahraptor").flash()<CR>',true,false,true), 'n',true)
+    end
+  end
+})
 
 autocmd('BufEnter', {
   group = 'vimrc_augroup',
@@ -90,6 +89,16 @@ autocmd('FileType', {
   group = 'vimrc_augroup',
   pattern = '*',
   callback = function(args) my_filetype[args.match]() end
+})
+
+autocmd('TextYankPost', {
+  group = 'vimrc_augroup',
+  pattern = '*',
+  callback = function() vim.highlight.on_yank({
+    higroup = 'Utahraptor',
+    timeout = 400,
+    on_visual = false
+  }) end
 })
 
 command('CdCurrent', 'cd %:p:h', {})
@@ -177,11 +186,17 @@ packer.init({
 })
 packer.startup(function(use)
   use 'wbthomason/packer.nvim'
+  use {
+    'nvim-treesitter/nvim-treesitter',
+    run = ':TSUpdate'
+  }
 
   use 'nvim-lua/plenary.nvim'
   use 'nvim-telescope/telescope.nvim'
+
   use 'neovim/nvim-lspconfig'
-  use 'williamboman/nvim-lsp-installer'
+  use "williamboman/mason.nvim"
+  use "williamboman/mason-lspconfig.nvim"
 
   use 'hrsh7th/nvim-cmp'
   use 'hrsh7th/cmp-nvim-lsp'
@@ -212,10 +227,29 @@ packer.startup(function(use)
   use 'rhysd/committia.vim'
   use 'hotwatermorning/auto-git-diff'
 
+  use{ 'nvim-colortils/colortils.nvim',
+    cmd = "Colortils",
+    config = function()
+      require("colortils").setup()
+    end
+  }
+  use {
+    "windwp/nvim-autopairs",
+    config = function() require("nvim-autopairs").setup {} end
+  }
+
   -- use 'rapan931/lasterisk.nvim'
   use "~/repos/github.com/rapan931/lasterisk.nvim"
   use "~/repos/github.com/rapan931/bistahieversor.nvim"
+  use "~/repos/github.com/rapan931/utahraptor.nvim"
 end)
+
+require('nvim-treesitter.configs').setup {
+  highlight = {
+    enable = true,
+    additional_vim_regex_highlighting = false
+  }
+}
 
 -- nvim-cmp setup
 local cmp = require('cmp')
@@ -285,14 +319,50 @@ cmp.setup.cmdline(':', {
   })
 })
 
-require('lspconfig').sumneko_lua.setup {
+require("mason").setup()
+local nvim_lspconfig = require('lspconfig')
+local mason_lspconfig = require('mason-lspconfig')
+mason_lspconfig.setup_handlers({
+  function(server_name)
+    local opts = {}
+
+    -- if server_name == "sumneko_lua" then
+    --   opts.settings = {
+    --     Lua = {
+    --       runtime = {
+    --         version = 'LuaJIT',
+    --         path = {
+    --           'lua/?/init.lua',
+    --           'lua/?.lua',
+    --         },
+    --       },
+    --       completion = {
+    --          callSnippet = 'Replace',
+    --       },
+    --       diagnostics = {
+    --         globals = { 'vim' },
+    --       },
+    --       workspace = {
+    --         library = My.plugin_paths(),
+    --       },
+    --       telemetry = {
+    --         enable = false,
+    --       },
+    --     },
+    --   }
+    -- end
+
+    nvim_lspconfig[server_name].setup(opts)
+  end
+})
+
+nvim_lspconfig.sumneko_lua.setup {
   cmd = {'lua-language-server'},
   settings = {
     Lua = {
       runtime = {
         version = 'LuaJIT',
         path = {
-          'lua/?.lua',
           'lua/?/init.lua',
           'lua/?.lua',
         },
@@ -304,7 +374,8 @@ require('lspconfig').sumneko_lua.setup {
         globals = { 'vim' },
       },
       workspace = {
-        library = My.plugin_paths(),
+        -- library = vim.api.nvim_get_runtime_file("", true),
+        library = My.plugin_paths()
       },
       telemetry = {
         enable = false,
@@ -360,22 +431,35 @@ require('lualine').setup {
 }
 
 bistahieversor.setup({ maxcount = 1000 , echo_wrapscan = true})
-map('n', function() bistahieversor.n_and_echo() end)
-map('N', function() bistahieversor.N_and_echo() end)
--- map('N', function() bistahieversor.n_and_echo() end)
+map('n', function()
+  bistahieversor.n_and_echo()
+  utahraptor.flash()
+end)
 
-nmap('*',  function() require("lasterisk").search(); bistahieversor.echo() end)
-nmap('g*', function() require("lasterisk").search({ is_whole = false }); bistahieversor.echo() end)
-xmap('g*', function() require("lasterisk").search({ is_whole = false }); bistahieversor.echo() end)
+map('N', function()
+  bistahieversor.N_and_echo()
+  utahraptor.flash()
+end)
 
+nmap('*',  function()
+  require('lasterisk').search()
+  bistahieversor.echo()
+  utahraptor.flash()
+end)
 
-nnoremap('g/', function()
+map('g*',  function()
+  require('lasterisk').search({ is_whole = false })
+  bistahieversor.echo()
+  utahraptor.flash()
+end)
+
+nmap('g/', function()
   local pattern = [[\V]] .. fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vv.register, 1, 1)), [[\n]])
-
   vo.hlsearch = vo.hlsearch
   fn.setreg('/', pattern)
   fn.histadd('/', pattern)
-  print('/' .. pattern)
+  bistahieversor.n_and_echo()
+  utahraptor.flash()
 end)
 
 cnoremap('<C-e>', '<End>')
