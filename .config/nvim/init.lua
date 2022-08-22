@@ -1,10 +1,88 @@
 My = require('my')
 
-local my_filetype = require('my.filetype')
-local bistahieversor = require('bistahieversor')
-local utahraptor = require('utahraptor')
+local api = vim.api
+local fn = vim.fn
+local vg = vim.g
+local vo = vim.o
+local vv = vim.v
 
-local my_map = require('my.map')
+local command = vim.api.nvim_create_user_command
+local autocmd = vim.api.nvim_create_autocmd
+
+-- packer.nvim
+vo.packpath = fn.stdpath('data') .. '/site/'
+vim.cmd [[packadd packer.nvim]]
+local packer = require('packer')
+packer.init({ plugin_package = 'p' })
+packer.startup(function(use)
+  use 'wbthomason/packer.nvim'
+  use {
+    'nvim-treesitter/nvim-treesitter',
+    run = ':TSUpdate'
+  }
+
+  use 'nvim-lua/plenary.nvim'
+  use 'nvim-telescope/telescope.nvim'
+  use {
+    'nvim-telescope/telescope-fzf-native.nvim',
+    run = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build'
+  }
+
+  use 'neovim/nvim-lspconfig'
+  use "williamboman/mason.nvim"
+  use "williamboman/mason-lspconfig.nvim"
+
+  use 'hrsh7th/nvim-cmp'
+  use 'hrsh7th/cmp-nvim-lsp'
+  use 'hrsh7th/cmp-buffer'
+  use 'hrsh7th/cmp-path'
+  use 'hrsh7th/cmp-cmdline'
+  use 'hrsh7th/cmp-emoji'
+  use 'hrsh7th/cmp-nvim-lua'
+
+  use 'hrsh7th/cmp-vsnip'
+  use 'hrsh7th/vim-vsnip'
+
+  use 'mjlbach/onedark.nvim'
+  use 'rebelot/kanagawa.nvim'
+  use 'ellisonleao/gruvbox.nvim'
+  use 'EdenEast/nightfox.nvim'
+  use 'cocopon/iceberg.vim'
+
+  use 'nvim-lualine/lualine.nvim'
+
+  use {
+    'numToStr/Comment.nvim',
+    config = function() require('Comment').setup() end
+  }
+
+  use 'haya14busa/vim-asterisk'
+  use 'AndrewRadev/linediff.vim'
+  use 'tyru/open-browser.vim'
+  use 'tyru/open-browser-github.vim'
+  use 'jose-elias-alvarez/null-ls.nvim'
+  use 'klen/nvim-config-local'
+  use 'rhysd/committia.vim'
+  use 'hotwatermorning/auto-git-diff'
+
+  use {
+    "windwp/nvim-autopairs",
+    config = function() require("nvim-autopairs").setup {} end
+  }
+
+  use 'anuvyklack/hydra.nvim'
+
+  use "~/repos/github.com/rapan931/lasterisk.nvim"
+  use "~/repos/github.com/rapan931/bistahieversor.nvim"
+  use "~/repos/github.com/rapan931/utahraptor.nvim"
+end)
+
+local my_filetype = require'my.filetype'
+local bistahieversor = require'bistahieversor'
+local utahraptor = require'utahraptor'
+
+local my_map = require'my.map'
+
 local map = my_map.map
 -- local xmap = my_map.xmap
 local nmap = my_map.nmap
@@ -16,18 +94,9 @@ local nnoremap = my_map.nnoremap
 local inoremap = my_map.inoremap
 local cnoremap = my_map.cnoremap
 
-local api = vim.api
-local fn = vim.fn
-local vg = vim.g
-local vo = vim.o
-local vv = vim.v
-
-local command = vim.api.nvim_create_user_command
-local autocmd = vim.api.nvim_create_autocmd
-
 vg.ruby_no_expensive = 1
 
-if fn.has('vim_starting') then
+if fn.has'vim_starting' then
   vo.viminfo = "!,'1000,<100,s10,h"
 end
 
@@ -49,7 +118,6 @@ autocmd('TermOpen', {
 autocmd('InsertLeave', {
   group = 'vimrc_augroup',
   pattern = '*',
-  -- command = 'call system("zenhan.exe 0")',
   command = 'call system("zenhan.exe 0")',
 })
 
@@ -64,7 +132,9 @@ autocmd('CmdlineLeave', {
   pattern = {'/', '\\?'},
   callback = function()
     if vim.v.event.abort == false then
-      api.nvim_feedkeys(api.nvim_replace_termcodes(':lua require("bistahieversor").echo() require("utahraptor").flash()<CR>',true,false,true), 'n',true)
+      api.nvim_feedkeys(api.nvim_replace_termcodes(
+        ":lua require('bistahieversor').echo() require('utahraptor').flash()<CR>", true, false, true
+      ), 'n',true)
     end
   end
 })
@@ -94,11 +164,13 @@ autocmd('FileType', {
 autocmd('TextYankPost', {
   group = 'vimrc_augroup',
   pattern = '*',
-  callback = function() vim.highlight.on_yank({
+  callback = function()
+    vim.highlight.on_yank({
     higroup = 'Utahraptor',
     timeout = 400,
     on_visual = false
-  }) end
+    })
+  end
 })
 
 command('CdCurrent', 'cd %:p:h', {})
@@ -107,22 +179,6 @@ command('Cfp', function() My.echo_and_yank(fn.expand('%:p')) end, {})
 command('Crp', function() My.echo_and_yank(fn.expand('%')) end, {})
 command('Cdp', function() My.echo_and_yank(My.get_root_dir()) end, {})
 command('Cdn', function() My.echo_and_yank(string.gsub(My.get_root_dir(), '.*/', '')) end, {})
-
--- command('TCurrent', function(arg)
---   local path = fn.expand('%:p')
---   if fn.filereadable(path) == 1 then
---     local dir_path = fn.expand('%:p:h')
--- 
---     local bufnr = api.nvim_create_buf(true, false)
---     local bufpos = { vim.fn.line(".")-1, vim.fn.col(".")  }
---     -- local bufpos = { vim.fn.line(".")-1, vim.fn.col(".")  }
---     -- local winid = api.nvim_open_win(bufnr, true, {relative = "editor", width= 30, height= 10, row= 1, col= 1, border = "single"})
---     local winid = api.nvim_open_win(0, true, {})
---     fn.termopen('bash', { cwd = fn.expand('%:p:h') })
---   else
---     print('Current buffer is not file!!')
---   end
--- end, {})
 
 command('TCurrent', function()
   local path = fn.expand('%:p')
@@ -136,26 +192,26 @@ command('TCurrent', function()
   end
 end, {})
 
-command('OpenTerm', function()
-  local buffer_handle = vim.api.nvim_create_buf(false, false)
-  if not buffer_handle then
-    return
-  end
-
-  local window_handle = vim.api.nvim_open_win(buffer_handle, true, {
-    relative = 'editor',
-    width = 100,
-    height = 25,
-    row = 10,
-    col = 10
-  })
-
-  if not window_handle then
-    return
-  end
-
-  vim.api.nvim_open_term(buffer_handle, { })
-end, { })
+-- command('OpenTerm', function()
+--   local buffer_handle = vim.api.nvim_create_buf(false, false)
+--   if not buffer_handle then
+--     return
+--   end
+--
+--   local window_handle = vim.api.nvim_open_win(buffer_handle, true, {
+--     relative = 'editor',
+--     width = 100,
+--     height = 25,
+--     row = 10,
+--     col = 10
+--   })
+--
+--   if not window_handle then
+--     return
+--   end
+--
+--   vim.api.nvim_open_term(buffer_handle, {})
+-- end, {})
 
 vg.did_install_default_menus = 1
 vg.did_install_syntax_menu   = 1
@@ -175,74 +231,6 @@ vg.loaded_tarPlugin          = 1
 vg.loaded_sql_completion     = 1
 vg.loaded_xmlformat          = 1
 vg.loaded_tutor_mode_plugin  = 1
-
--- packer.nvim
-
-vo.packpath = fn.stdpath('data') .. '/site/'
-vim.cmd [[packadd packer.nvim]]
-local packer = require('packer')
-packer.init({
-  plugin_package = 'p'
-})
-packer.startup(function(use)
-  use 'wbthomason/packer.nvim'
-  use {
-    'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate'
-  }
-
-  use 'nvim-lua/plenary.nvim'
-  use 'nvim-telescope/telescope.nvim'
-
-  use 'neovim/nvim-lspconfig'
-  use "williamboman/mason.nvim"
-  use "williamboman/mason-lspconfig.nvim"
-
-  use 'hrsh7th/nvim-cmp'
-  use 'hrsh7th/cmp-nvim-lsp'
-  use 'hrsh7th/cmp-buffer'
-  use 'hrsh7th/cmp-path'
-  use 'hrsh7th/cmp-cmdline'
-  use 'hrsh7th/cmp-emoji'
-  use 'hrsh7th/cmp-nvim-lua'
-
-  use 'hrsh7th/cmp-vsnip'
-  use 'hrsh7th/vim-vsnip'
-
-  use 'mjlbach/onedark.nvim'
-  use 'folke/tokyonight.nvim'
-  use 'nvim-lualine/lualine.nvim'
-
-  -- use 'kevinhwang91/nvim-hlslens'
-  -- use 'petertriho/nvim-scrollbar'
-
-  use 'previm/previm'
-
-  use 'haya14busa/vim-asterisk'
-  use 'AndrewRadev/linediff.vim'
-  use 'tyru/open-browser.vim'
-  use 'tyru/open-browser-github.vim'
-  use 'jose-elias-alvarez/null-ls.nvim'
-  use 'klen/nvim-config-local'
-  use 'rhysd/committia.vim'
-  use 'hotwatermorning/auto-git-diff'
-
-  use{ 'nvim-colortils/colortils.nvim',
-    cmd = "Colortils",
-    config = function()
-      require("colortils").setup()
-    end
-  }
-  use {
-    "windwp/nvim-autopairs",
-    config = function() require("nvim-autopairs").setup {} end
-  }
-
-  -- use 'rapan931/lasterisk.nvim'
-  use "~/repos/github.com/rapan931/lasterisk.nvim"
-  use "~/repos/github.com/rapan931/bistahieversor.nvim"
-  use "~/repos/github.com/rapan931/utahraptor.nvim"
-end)
 
 require('nvim-treesitter.configs').setup {
   highlight = {
@@ -326,37 +314,36 @@ mason_lspconfig.setup_handlers({
   function(server_name)
     local opts = {}
 
-    -- if server_name == "sumneko_lua" then
-    --   opts.settings = {
-    --     Lua = {
-    --       runtime = {
-    --         version = 'LuaJIT',
-    --         path = {
-    --           'lua/?/init.lua',
-    --           'lua/?.lua',
-    --         },
-    --       },
-    --       completion = {
-    --          callSnippet = 'Replace',
-    --       },
-    --       diagnostics = {
-    --         globals = { 'vim' },
-    --       },
-    --       workspace = {
-    --         library = My.plugin_paths(),
-    --       },
-    --       telemetry = {
-    --         enable = false,
-    --       },
-    --     },
-    --   }
-    -- end
-
     nvim_lspconfig[server_name].setup(opts)
   end
 })
 
-nvim_lspconfig.sumneko_lua.setup {
+nnoremap('<space>e', vim.diagnostic.open_float)
+nnoremap('gh', vim.diagnostic.goto_prev)
+nnoremap('gl', vim.diagnostic.goto_next)
+nnoremap('<space>q', vim.diagnostic.setloclist)
+
+local on_attach = function(_, bufnr)
+  -- vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+  local bufopts = { buffer=bufnr }
+  nnoremap('gD', vim.lsp.buf.declaration, bufopts)
+  nnoremap('gd', vim.lsp.buf.definition, bufopts)
+  nnoremap('K', vim.lsp.buf.hover, bufopts)
+  nnoremap('gi', vim.lsp.buf.implementation, bufopts)
+  nnoremap('<C-k>', vim.lsp.buf.signature_help, bufopts)
+  nnoremap('<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
+  nnoremap('<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
+  nnoremap('<space>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, bufopts)
+  nnoremap('<space>D', vim.lsp.buf.type_definition, bufopts)
+  nnoremap('<space>rn', vim.lsp.buf.rename, bufopts)
+  nnoremap('<space>ca', vim.lsp.buf.code_action, bufopts)
+  nnoremap('gr', vim.lsp.buf.references, bufopts)
+  nnoremap('<space>f',function() vim.lsp.buf.format { async = true } end, bufopts)
+end
+
+nvim_lspconfig.sumneko_lua.setup({
+  on_attach = on_attach,
   cmd = {'lua-language-server'},
   settings = {
     Lua = {
@@ -382,30 +369,31 @@ nvim_lspconfig.sumneko_lua.setup {
       },
     },
   },
-}
+})
 
--- Add additional capabilities supported by nvim-cmp
--- local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
-
--- local servers = { 'clangd', 'rust_analyzer', 'pyright', 'tsserver' }
--- local lspconfig = require('lspconfig')
--- local servers = { 'solargraph' }
--- for _, lsp in ipairs(servers) do
---   lspconfig[lsp].setup {
---     capabilities = capabilities
---   }
--- end
-
--- require'lspconfig'.sumneko_lua.setup {
---   cmd = 'lua-language-server',
--- }
+local hydra = require('hydra')
+hydra({
+  name = 't window',
+  mode = {'i', 't', 'n'},
+  body = [[<C-\>]],
+  heads = {
+    { '>', function() My.all_mode_wincmd('>') end },
+    { '<', function() My.all_mode_wincmd('<') end },
+    { '+', function() My.all_mode_wincmd('+') end },
+    { '-', function() My.all_mode_wincmd('-') end },
+    { 'h', function() My.all_mode_wincmd('h') end },
+    { 'j', function() My.all_mode_wincmd('j') end },
+    { 'k', function() My.all_mode_wincmd('k') end },
+    { 'l', function() My.all_mode_wincmd('l') end },
+  },
+})
 
 require('lualine').setup {
   options = {
     icons_enabled = false,
     theme = 'auto',
-    component_separators = { left = '', right = ''},
-    section_separators = { left = '', right = ''},
+    component_separators = { left = '|', right = '|'},
+    section_separators = { left = '', right = ''},
     disabled_filetypes = {},
      always_divide_middle = true,
     globalstatus = false,
@@ -480,9 +468,20 @@ xnoremap('v', '$h')
 xnoremap('<ESC>', 'o<ESC>')
 nnoremap('gv', 'gvo')
 
-inoremap('<ESC>', '<ESC>:<C-u>set iminsert=0<CR>')
-
 -- telescope
+local telescope = require('telescope')
+telescope.setup {
+  extensions = {
+    fzf = {
+      fuzzy = false,
+      override_generic_sorter = true,
+      override_file_sorter = true,
+      case_mode = "smart_case",
+    }
+  }
+}
+telescope.load_extension('fzf')
+
 local tele_builtin = require('telescope.builtin')
 nnoremap('<Space>F', '', { callback = function() tele_builtin.oldfiles() end })
 nnoremap('<Space>f', '', { callback = function() tele_builtin.oldfiles({ only_cwd = true }) end })
@@ -519,7 +518,7 @@ vo.shortmess = 'filmnrwxtToOIS'
 
 vo.title = true
 vo.laststatus = 2
-vo.cmdheight = 2
+vo.cmdheight = 1
 vo.showcmd = true
 
 vo.backup = false
@@ -575,70 +574,4 @@ vg.clipboard = {
 }
 
 vo.termguicolors = true
-vim.cmd [[colorscheme tokyonight]]
-
-
--- previm
-
-vim.g.previm_wsl_mode = true
--- vim.g.previm_open_cmd = '/mnt/c/Program\\ Files\\ (x86)/Google/Chrome/Application/chrome.exe'
-vim.g.previm_open_cmd = '/mnt/c/Program Files \\(x86\\)/Google/Chrome/Application/chrome.exe'
-
--- local my = require('my')
-
--- local opts = { noremap=true, silent=true }
--- vim.api.nvim_set_keymap('n', '<space>e', '<cmd>lua vim.diagnostic.open_float()<CR>', opts)
--- -- vim.api.nvim_set_keymap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>', opts)
--- -- vim.api.nvim_set_keymap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<CR>', opts)
--- -- vim.api.nvim_set_keymap('n', '<space>q', '<cmd>lua vim.diagnostic.setloclist()<CR>', opts)
---
--- -- Use an on_attach function to only map the following keys
--- -- after the language server attaches to the current buffer
--- local on_attach = function(client, bufnr)
---   -- Enable completion triggered by <c-x><c-o>
---   vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
---
---   -- Mappings.
---   -- See `:help vim.lsp.*` for documentation on any of the below functions
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
---   vim.api.nvim_buf_set_keymap(bufnr, 'n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
---
--- local search_count_message = ''
--- local function reset_search_count()
---   search_count_message = ''
--- end
---
--- vim.autocmd({'CursorMoved'}, {
---   pattern = '*',
---   group = 'vimrc_augroup',
---   callback = reset_search_count
--- })
---
---  function reflesh_search_count()
---   print('aaaaaaaaaaaa')
---   local result = vim.fn.searchcount({ maxcount = 1000, timeout = 500, recompute = 0 })
---   if not next(result) then
---     search_count_message = ''
---   end
---
---   if result.incomplete == 1 then
---     search_count_message = '[?/??]'
---   elseif result.incomplete == 2 then
---     search_count_message = string.format('[>%d/>%d]', result.current, result.total)
---   elseif result.total > result.maxcount then
---     search_count_message = string.format('[%d/>%d]', result.current, result.total)
---   end
---
---   search_count_message = string.format('[%d/%d]', result.current, result.total)
--- end
+vim.cmd [[colorscheme iceberg]]

@@ -20,7 +20,7 @@ M.help = function()
   buf_map(0, 'n', 'q', 'ZZ', noremap)
 end
 
-M.quickfix = function()
+M.qf = function()
   buf_map(0, 'n', 'q', 'ZZ', noremap)
 end
 

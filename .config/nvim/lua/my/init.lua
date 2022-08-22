@@ -19,20 +19,18 @@ M.get_root_dir = function()
   end
 end
 
-M.dump = function(o)
-   if type(o) == 'table' then
-      local s = '{ '
-      for k,v in pairs(o) do
-         if type(k) ~= 'number' then k = '"'..k..'"' end
-         s = s .. '['..k..'] = ' .. M.dump(v) .. ','
-
-      end
-      return s .. '} '
-   else
-      return tostring(o)
-   end
+---@param cmd string wincmd
+M.all_mode_wincmd = function(cmd)
+  local mode = fn.mode()
+  if mode == 'n' then
+    vim.cmd('wincmd ' .. cmd)
+  elseif mode == 't' or mode == 'i' then
+    vim.cmd('stopinsert')
+    vim.cmd('wincmd ' .. cmd)
+  end
 end
 
+---@param obj any
 M.echo_and_yank = function(obj)
   -- Since vim.inspect adds double quotation for string,  
   if type(obj) == 'string' then
@@ -42,17 +40,6 @@ M.echo_and_yank = function(obj)
     fn.setreg(vim.v.register, vim.inspect(obj))
     print(vim.inspect(obj))
   end
-
-end
-
-M.slice = function(tbl, first, last, step)
-  local sliced = {}
-
-  for i = first or 1, last or #tbl, step or 1 do
-    sliced[#sliced+1] = tbl[i]
-  end
-
-  return sliced
 end
 
 M.plugin_paths = function()
