@@ -75,13 +75,15 @@ packer.startup(function(use)
   use "~/repos/github.com/rapan931/lasterisk.nvim"
   use "~/repos/github.com/rapan931/bistahieversor.nvim"
   use "~/repos/github.com/rapan931/utahraptor.nvim"
+  use "~/repos/github.com/rapan931/flag_comments.nvim"
 end)
 
-local my_filetype = require 'my.filetype'
-local bistahieversor = require 'bistahieversor'
-local utahraptor = require 'utahraptor'
+local my_filetype = require('my.filetype')
+local bistahieversor = require('bistahieversor')
+local lasterisk = require('bistahieversor')
+local utahraptor = require('utahraptor')
 
-local my_map = require 'my.map'
+local my_map = require('my.map')
 
 local map = my_map.map
 -- local xmap = my_map.xmap
@@ -385,6 +387,10 @@ hydra({
     { 'j', function() My.all_mode_wincmd('j') end },
     { 'k', function() My.all_mode_wincmd('k') end },
     { 'l', function() My.all_mode_wincmd('l') end },
+    { '<c-h>', function() My.all_mode_wincmd('h') end },
+    { '<c-j>', function() My.all_mode_wincmd('j') end },
+    { '<c-k>', function() My.all_mode_wincmd('k') end },
+    { '<c-l>', function() My.all_mode_wincmd('l') end },
   },
 })
 
@@ -430,13 +436,13 @@ map('N', function()
 end)
 
 nmap('*', function()
-  require('lasterisk').search()
+  lasterisk.search()
   bistahieversor.echo()
   utahraptor.flash()
 end)
 
 map('g*', function()
-  require('lasterisk').search({ is_whole = false })
+  lasterisk.search({ is_whole = false })
   bistahieversor.echo()
   utahraptor.flash()
 end)
