@@ -77,11 +77,11 @@ packer.startup(function(use)
   use "~/repos/github.com/rapan931/utahraptor.nvim"
 end)
 
-local my_filetype = require'my.filetype'
-local bistahieversor = require'bistahieversor'
-local utahraptor = require'utahraptor'
+local my_filetype = require 'my.filetype'
+local bistahieversor = require 'bistahieversor'
+local utahraptor = require 'utahraptor'
 
-local my_map = require'my.map'
+local my_map = require 'my.map'
 
 local map = my_map.map
 -- local xmap = my_map.xmap
@@ -96,7 +96,7 @@ local cnoremap = my_map.cnoremap
 
 vg.ruby_no_expensive = 1
 
-if fn.has'vim_starting' then
+if fn.has 'vim_starting' then
   vo.viminfo = "!,'1000,<100,s10,h"
 end
 
@@ -104,7 +104,7 @@ api.nvim_create_augroup('vimrc_augroup', {})
 
 autocmd('QuickfixCmdPost', {
   group = 'vimrc_augroup',
-  pattern = {'grep', 'vimgrep', 'helpgrep'},
+  pattern = { 'grep', 'vimgrep', 'helpgrep' },
   nested = true,
   command = 'botright copen',
 })
@@ -129,12 +129,12 @@ autocmd('CmdlineLeave', {
 
 autocmd('CmdlineLeave', {
   group = 'vimrc_augroup',
-  pattern = {'/', '\\?'},
+  pattern = { '/', '\\?' },
   callback = function()
     if vim.v.event.abort == false then
       api.nvim_feedkeys(api.nvim_replace_termcodes(
         ":lua require('bistahieversor').echo() require('utahraptor').flash()<CR>", true, false, true
-      ), 'n',true)
+      ), 'n', true)
     end
   end
 })
@@ -166,15 +166,15 @@ autocmd('TextYankPost', {
   pattern = '*',
   callback = function()
     vim.highlight.on_yank({
-    higroup = 'Utahraptor',
-    timeout = 400,
-    on_visual = false
+      higroup = 'Utahraptor',
+      timeout = 400,
+      on_visual = false
     })
   end
 })
 
 command('CdCurrent', 'cd %:p:h', {})
-command('Cn',  function() My.echo_and_yank(fn.expand('%:t')) end, {})
+command('Cn', function() My.echo_and_yank(fn.expand('%:t')) end, {})
 command('Cfp', function() My.echo_and_yank(fn.expand('%:p')) end, {})
 command('Crp', function() My.echo_and_yank(fn.expand('%')) end, {})
 command('Cdp', function() My.echo_and_yank(My.get_root_dir()) end, {})
@@ -185,7 +185,7 @@ command('TCurrent', function()
   if fn.filereadable(path) == 1 then
     local dir_path = fn.expand('%:p:h')
 
-    vim.cmd[[new]]
+    vim.cmd [[new]]
     fn.termopen('bash', { cwd = dir_path })
   else
     print('Current buffer is not file!!')
@@ -216,21 +216,21 @@ end, {})
 vg.did_install_default_menus = 1
 vg.did_install_syntax_menu   = 1
 
-vg.loaded_vimball            = 1
-vg.loaded_vimballPlugin      = 1
-vg.loaded_tar                = 1
-vg.loaded_zip                = 1
-vg.loaded_zipPlugin          = 1
-vg.loaded_netrw              = 1
-vg.loaded_netrwPlugin        = 1
-vg.loaded_netrwSettings      = 1
-vg.loaded_netrwFileHandlers  = 1
-vg.loaded_2html_plugin       = 1
-vg.loaded_gzip               = 1
-vg.loaded_tarPlugin          = 1
-vg.loaded_sql_completion     = 1
-vg.loaded_xmlformat          = 1
-vg.loaded_tutor_mode_plugin  = 1
+vg.loaded_vimball           = 1
+vg.loaded_vimballPlugin     = 1
+vg.loaded_tar               = 1
+vg.loaded_zip               = 1
+vg.loaded_zipPlugin         = 1
+vg.loaded_netrw             = 1
+vg.loaded_netrwPlugin       = 1
+vg.loaded_netrwSettings     = 1
+vg.loaded_netrwFileHandlers = 1
+vg.loaded_2html_plugin      = 1
+vg.loaded_gzip              = 1
+vg.loaded_tarPlugin         = 1
+vg.loaded_sql_completion    = 1
+vg.loaded_xmlformat         = 1
+vg.loaded_tutor_mode_plugin = 1
 
 require('nvim-treesitter.configs').setup {
   highlight = {
@@ -249,7 +249,7 @@ cmp.setup {
   }, sources = cmp.config.sources({
     { name = 'nvim_lsp' },
     { name = 'vsnip' },
-  } , {
+  }, {
     { name = 'buffer' },
     { name = 'emoji' },
   }),
@@ -282,7 +282,7 @@ cmp.setup {
 
 -- Set configuration for specific filetype.
 cmp.setup.filetype('gitcommit', {
-   sources = cmp.config.sources({
+  sources = cmp.config.sources({
     { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
   }, {
     { name = 'buffer' },
@@ -300,7 +300,7 @@ cmp.setup.cmdline('/', {
 -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
 cmp.setup.cmdline(':', {
   mapping = cmp.mapping.preset.cmdline(),
-   sources = cmp.config.sources({
+  sources = cmp.config.sources({
     { name = 'path' }
   }, {
     { name = 'cmdline' }
@@ -326,7 +326,7 @@ nnoremap('<space>q', vim.diagnostic.setloclist)
 local on_attach = function(_, bufnr)
   -- vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
-  local bufopts = { buffer=bufnr }
+  local bufopts = { buffer = bufnr }
   nnoremap('gD', vim.lsp.buf.declaration, bufopts)
   nnoremap('gd', vim.lsp.buf.definition, bufopts)
   nnoremap('K', vim.lsp.buf.hover, bufopts)
@@ -339,12 +339,12 @@ local on_attach = function(_, bufnr)
   nnoremap('<space>rn', vim.lsp.buf.rename, bufopts)
   nnoremap('<space>ca', vim.lsp.buf.code_action, bufopts)
   nnoremap('gr', vim.lsp.buf.references, bufopts)
-  nnoremap('<space>f',function() vim.lsp.buf.format { async = true } end, bufopts)
+  nnoremap('<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
 end
 
 nvim_lspconfig.sumneko_lua.setup({
   on_attach = on_attach,
-  cmd = {'lua-language-server'},
+  cmd = { 'lua-language-server' },
   settings = {
     Lua = {
       runtime = {
@@ -355,7 +355,7 @@ nvim_lspconfig.sumneko_lua.setup({
         },
       },
       completion = {
-         callSnippet = 'Replace',
+        callSnippet = 'Replace',
       },
       diagnostics = {
         globals = { 'vim' },
@@ -374,7 +374,7 @@ nvim_lspconfig.sumneko_lua.setup({
 local hydra = require('hydra')
 hydra({
   name = 't window',
-  mode = {'i', 't', 'n'},
+  mode = { 'i', 't', 'n' },
   body = [[<C-\>]],
   heads = {
     { '>', function() My.all_mode_wincmd('>') end },
@@ -392,25 +392,25 @@ require('lualine').setup {
   options = {
     icons_enabled = false,
     theme = 'auto',
-    component_separators = { left = '|', right = '|'},
-    section_separators = { left = '', right = ''},
+    component_separators = { left = '|', right = '|' },
+    section_separators = { left = '', right = '' },
     disabled_filetypes = {},
-     always_divide_middle = true,
+    always_divide_middle = true,
     globalstatus = false,
   },
   sections = {
-    lualine_a = {'mode'},
-    lualine_b = {'branch', 'diff', 'diagnostics'},
-    lualine_c = {'filename'},
-    lualine_x = {'encoding', 'fileformat', 'filetype'},
-    lualine_y = {'progress'},
-    lualine_z = {'location'}
+    lualine_a = { 'mode' },
+    lualine_b = { 'branch', 'diff', 'diagnostics' },
+    lualine_c = { 'filename' },
+    lualine_x = { 'encoding', 'fileformat', 'filetype' },
+    lualine_y = { 'progress' },
+    lualine_z = { 'location' }
   },
   inactive_sections = {
     lualine_a = {},
     lualine_b = {},
-    lualine_c = {'filename'},
-    lualine_x = {'location'},
+    lualine_c = { 'filename' },
+    lualine_x = { 'location' },
     lualine_y = {},
     lualine_z = {}
   },
@@ -418,7 +418,7 @@ require('lualine').setup {
   extensions = {}
 }
 
-bistahieversor.setup({ maxcount = 1000 , echo_wrapscan = true})
+bistahieversor.setup({ maxcount = 1000, echo_wrapscan = true })
 map('n', function()
   bistahieversor.n_and_echo()
   utahraptor.flash()
@@ -429,20 +429,21 @@ map('N', function()
   utahraptor.flash()
 end)
 
-nmap('*',  function()
+nmap('*', function()
   require('lasterisk').search()
   bistahieversor.echo()
   utahraptor.flash()
 end)
 
-map('g*',  function()
+map('g*', function()
   require('lasterisk').search({ is_whole = false })
   bistahieversor.echo()
   utahraptor.flash()
 end)
 
 nmap('g/', function()
-  local pattern = [[\V]] .. fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vv.register, 1, 1)), [[\n]])
+  local pattern = [[\V]] ..
+      fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vv.register, 1, 1)), [[\n]])
   vo.hlsearch = vo.hlsearch
   fn.setreg('/', pattern)
   fn.histadd('/', pattern)
@@ -497,7 +498,7 @@ xnoremap('k', 'gk')
 
 -- setting
 vo.undofile = true
-vo.undodir = vim.env.XDG_STATE_HOME..'/nvim/undo/'
+vo.undodir = vim.env.XDG_STATE_HOME .. '/nvim/undo/'
 
 vo.smartcase = true
 vo.ignorecase = true
@@ -505,9 +506,9 @@ vo.ignorecase = true
 vo.hidden = false
 
 vo.undofile = true
-vo.undodir = vim.env.XDG_STATE_HOME..'/nvim/undo/'
+vo.undodir = vim.env.XDG_STATE_HOME .. '/nvim/undo/'
 
-vo.directory = vim.env.XDG_STATE_HOME..'/nvim/swap/'
+vo.directory = vim.env.XDG_STATE_HOME .. '/nvim/swap/'
 vo.swapfile = true
 
 vo.cursorline = true
