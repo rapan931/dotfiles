@@ -43,6 +43,7 @@ packer.startup(function(use)
   use 'hrsh7th/cmp-vsnip'
   use 'hrsh7th/vim-vsnip'
 
+  use 'folke/tokyonight.nvim'
   use 'mjlbach/onedark.nvim'
   use 'rebelot/kanagawa.nvim'
   use 'ellisonleao/gruvbox.nvim'
@@ -80,13 +81,17 @@ end)
 
 local my_filetype = require('my.filetype')
 local bistahieversor = require('bistahieversor')
-local lasterisk = require('bistahieversor')
+local lasterisk = require('lasterisk')
 local utahraptor = require('utahraptor')
+utahraptor.setup({
+  flash_ms = 500,
+  flash_hl_group = 'MyFlash'
+})
 
 local my_map = require('my.map')
 
 local map = my_map.map
--- local xmap = my_map.xmap
+local xmap = my_map.xmap
 local nmap = my_map.nmap
 -- local imap = My.keymap.imap
 -- local cmap = My.keymap.cmap
@@ -96,6 +101,10 @@ local nnoremap = my_map.nnoremap
 local inoremap = my_map.inoremap
 local cnoremap = my_map.cnoremap
 
+local flag_comments = require('flag_comments')
+xmap('ge', flag_comments.draw)
+nmap('ge', flag_comments.draw)
+
 vg.ruby_no_expensive = 1
 
 if fn.has 'vim_starting' then
@@ -103,6 +112,17 @@ if fn.has 'vim_starting' then
 end
 
 api.nvim_create_augroup('vimrc_augroup', {})
+
+api.nvim_set_hl(0, 'MyFlash', { bg = 'Purple', fg = 'White' })
+api.nvim_set_hl(0, 'MyWindowFlash', { bg = 'LightYellow', fg = 'DarkGray' })
+autocmd('ColorScheme', {
+  group = 'vimrc_augroup',
+  pattern = '*',
+  callback = function()
+    api.nvim_set_hl(0, 'MyFlash', { bg = 'Purple', fg = 'White' })
+    api.nvim_set_hl(0, 'MyWindowFlash', { bg = 'LightYellow', fg = 'DarkGray' })
+  end
+})
 
 autocmd('QuickfixCmdPost', {
   group = 'vimrc_augroup',
@@ -133,11 +153,33 @@ autocmd('CmdlineLeave', {
   group = 'vimrc_augroup',
   pattern = { '/', '\\?' },
   callback = function()
-    if vim.v.event.abort == false then
+    if vv.event.abort == false then
       api.nvim_feedkeys(api.nvim_replace_termcodes(
         ":lua require('bistahieversor').echo() require('utahraptor').flash()<CR>", true, false, true
       ), 'n', true)
     end
+  end
+})
+
+autocmd('FocusGained', {
+  group = 'vimrc_augroup',
+  pattern = '*',
+  callback = function()
+    pp(vv.event)
+
+    vim.defer_fn(function()
+      local win_id = fn.win_getid()
+      local match_id = fn.matchadd('MyWindowFlash',
+        [[\%>]] .. (fn.line('w0') - 1) .. [[l\_.*\%<]] .. (fn.line('w$') + 1) .. 'l',
+        100,
+        -1,
+        { window = win_id }
+      )
+      vim.defer_fn(function()
+        fn.matchdelete(match_id, win_id)
+        vim.cmd [[redraw]]
+      end, 300)
+    end, 30)
   end
 })
 
@@ -168,7 +210,7 @@ autocmd('TextYankPost', {
   pattern = '*',
   callback = function()
     vim.highlight.on_yank({
-      higroup = 'Utahraptor',
+      higroup = 'MyFlash',
       timeout = 400,
       on_visual = false
     })
@@ -333,7 +375,7 @@ local on_attach = function(_, bufnr)
   nnoremap('gd', vim.lsp.buf.definition, bufopts)
   nnoremap('K', vim.lsp.buf.hover, bufopts)
   nnoremap('gi', vim.lsp.buf.implementation, bufopts)
-  nnoremap('<C-k>', vim.lsp.buf.signature_help, bufopts)
+  nnoremap('<C-k>', vim.lsp.buf.signature_help, bufoptsu)
   nnoremap('<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
   nnoremap('<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
   nnoremap('<space>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, bufopts)
@@ -360,7 +402,7 @@ nvim_lspconfig.sumneko_lua.setup({
         callSnippet = 'Replace',
       },
       diagnostics = {
-        globals = { 'vim' },
+        globals = { 'vim', 'pp' }, -- pp is same vim.pretty_print
       },
       workspace = {
         -- library = vim.api.nvim_get_runtime_file("", true),
@@ -521,7 +563,7 @@ vo.cursorline = true
 
 vo.signcolumn = 'yes'
 
-vo.shortmess = 'filmnrwxtToOIS'
+vo.shortmess = 'filmnrwxtToOISs'
 
 vo.title = true
 vo.laststatus = 2
@@ -581,4 +623,5 @@ vg.clipboard = {
 }
 
 vo.termguicolors = true
-vim.cmd [[colorscheme iceberg]]
+vim.cmd [[colorscheme tokyonight]]
+
