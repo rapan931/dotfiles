@@ -1,5 +1,5 @@
 local M = {}
-local buf_map = vim.api.nvim_buf_set_keymap
+local bm = vim.api.nvim_buf_set_keymap
 local noremap = { noremap = true }
 
 ---@param tab_length number
@@ -16,12 +16,20 @@ local function set_indent(tab_length, is_hard_tab)
   vim.bo.tabstop     = tab_length
 end
 
+M.gitconfig = function()
+  set_indent(2, true)
+end
+
+M.make = function()
+  set_indent(4, true)
+end
+
 M.help = function()
-  buf_map(0, 'n', 'q', 'ZZ', noremap)
+  bm(0, 'n', 'q', 'ZZ', noremap)
 end
 
 M.qf = function()
-  buf_map(0, 'n', 'q', 'ZZ', noremap)
+  bm(0, 'n', 'q', 'ZZ', noremap)
 end
 
 M.java = function()

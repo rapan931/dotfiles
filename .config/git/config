@@ -11,29 +11,31 @@
 [alias]
 	ad = add
 	addd = add
-
 	b = branch
-
 	cp = cherry-pick
-
 	sw = switch
-
 	d = diff
 	dc = diff --cached
 	dn = diff --name-only
-
 	l = log
 	ln = log --name-only
 	ls = log --name-status
 	lp = log -p
 	ltree = log --graph --oneline --date=iso                   --pretty=format:'%C(yellow)%h%C(reset) %C(magenta)[%ad]%C(reset)%C(auto)%d%C(reset) %C(cyan)@%an%C(reset) %s'
 	lone  = log --oneline --date=short --date=iso --date-order --pretty=format:'%C(yellow)%h%C(reset) %C(magenta)[%ad]%C(reset)%C(auto)%d%C(reset) %C(cyan)@%an%C(reset) %s'
-
 	st = status --short --branch
 	stig = status --ignored
-
 	it = !git init && git add . && git commit -m \"Init\"
+
+	default-branch = !git symbolic-ref refs/remotes/origin/HEAD | sed 's!.*/!!'
+	home = !git switch $(git default-branch)
 [credential]
 	helper = store
 [init]
 	defaultBranch = main
+[ghq]
+	root = ~/repos
+
+; [includeIf "gitdir:~/repos/github.com/mycompany/"]
+; 	path = ~/.gitconfig-mycompany
+

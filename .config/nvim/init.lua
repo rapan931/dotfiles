@@ -2,81 +2,81 @@ My = require('my')
 
 local api = vim.api
 local fn = vim.fn
-local vg = vim.g
-local vo = vim.o
-local vv = vim.v
+
+local opt = vim.opt
+local cmd = vim.cmd
 
 local command = vim.api.nvim_create_user_command
 local autocmd = vim.api.nvim_create_autocmd
 
 -- packer.nvim
-vo.packpath = fn.stdpath('data') .. '/site/'
-vim.cmd [[packadd packer.nvim]]
+vim.opt.packpath = fn.stdpath('data') .. '/site/'
+cmd.packadd('packer.nvim')
 local packer = require('packer')
 packer.init({ plugin_package = 'p' })
 packer.startup(function(use)
-  use 'wbthomason/packer.nvim'
-  use {
-    'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate'
-  }
+  use({ 'wbthomason/packer.nvim', opt = true })
+  use({ 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' })
+  use('nvim-treesitter/nvim-treesitter-textobjects')
 
-  use 'nvim-lua/plenary.nvim'
-  use 'nvim-telescope/telescope.nvim'
-  use {
+  use('nvim-lua/plenary.nvim')
+  use('nvim-telescope/telescope.nvim')
+  use({
     'nvim-telescope/telescope-fzf-native.nvim',
     run = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build'
-  }
+  })
+  use('nvim-telescope/telescope-file-browser.nvim')
 
-  use 'neovim/nvim-lspconfig'
-  use "williamboman/mason.nvim"
-  use "williamboman/mason-lspconfig.nvim"
+  use('neovim/nvim-lspconfig')
+  use("williamboman/mason.nvim")
+  use("williamboman/mason-lspconfig.nvim")
 
-  use 'hrsh7th/nvim-cmp'
-  use 'hrsh7th/cmp-nvim-lsp'
-  use 'hrsh7th/cmp-buffer'
-  use 'hrsh7th/cmp-path'
-  use 'hrsh7th/cmp-cmdline'
-  use 'hrsh7th/cmp-emoji'
-  use 'hrsh7th/cmp-nvim-lua'
+  use('hrsh7th/nvim-cmp')
+  use('hrsh7th/cmp-nvim-lsp')
+  use('hrsh7th/cmp-buffer')
+  use('hrsh7th/cmp-path')
+  use('hrsh7th/cmp-cmdline')
+  use('hrsh7th/cmp-emoji')
+  use('hrsh7th/cmp-nvim-lua')
 
-  use 'hrsh7th/cmp-vsnip'
-  use 'hrsh7th/vim-vsnip'
+  use('hrsh7th/cmp-vsnip')
+  use('hrsh7th/vim-vsnip')
 
-  use 'folke/tokyonight.nvim'
-  use 'mjlbach/onedark.nvim'
-  use 'rebelot/kanagawa.nvim'
-  use 'ellisonleao/gruvbox.nvim'
-  use 'EdenEast/nightfox.nvim'
-  use 'cocopon/iceberg.vim'
+  use('folke/tokyonight.nvim')
+  use('mjlbach/onedark.nvim')
+  use('rebelot/kanagawa.nvim')
+  use('ellisonleao/gruvbox.nvim')
+  use('EdenEast/nightfox.nvim')
+  use('cocopon/iceberg.vim')
 
-  use 'nvim-lualine/lualine.nvim'
-
-  use {
+  use('nvim-lualine/lualine.nvim')
+  use({
     'numToStr/Comment.nvim',
     config = function() require('Comment').setup() end
-  }
+  })
 
-  use 'haya14busa/vim-asterisk'
-  use 'AndrewRadev/linediff.vim'
-  use 'tyru/open-browser.vim'
-  use 'tyru/open-browser-github.vim'
-  use 'jose-elias-alvarez/null-ls.nvim'
-  use 'klen/nvim-config-local'
-  use 'rhysd/committia.vim'
-  use 'hotwatermorning/auto-git-diff'
+  use('haya14busa/vim-asterisk')
+  use('AndrewRadev/linediff.vim')
+  use('tyru/open-browser.vim')
+  use('tyru/open-browser-github.vim')
+  use('jose-elias-alvarez/null-ls.nvim')
+  use('klen/nvim-config-local')
+  use('rhysd/committia.vim')
+  use('hotwatermorning/auto-git-diff')
 
-  use {
+  use({ 'machakann/vim-sandwich', opt = true })
+
+  use({
     "windwp/nvim-autopairs",
-    config = function() require("nvim-autopairs").setup {} end
-  }
+    config = function() require("nvim-autopairs").setup({}) end
+  })
 
-  use 'anuvyklack/hydra.nvim'
+  use('anuvyklack/hydra.nvim')
 
-  use "~/repos/github.com/rapan931/lasterisk.nvim"
-  use "~/repos/github.com/rapan931/bistahieversor.nvim"
-  use "~/repos/github.com/rapan931/utahraptor.nvim"
-  use "~/repos/github.com/rapan931/flag_comments.nvim"
+  use("~/repos/github.com/rapan931/lasterisk.nvim")
+  use("~/repos/github.com/rapan931/bistahieversor.nvim")
+  use("~/repos/github.com/rapan931/utahraptor.nvim")
+  use("~/repos/github.com/rapan931/binary_comments.vim")
 end)
 
 local my_filetype = require('my.filetype')
@@ -88,27 +88,29 @@ utahraptor.setup({
   flash_hl_group = 'MyFlash'
 })
 
-local my_map = require('my.map')
 
-local map = my_map.map
-local xmap = my_map.xmap
-local nmap = my_map.nmap
+vim.g.mapleader = ','
+local my_map = require('my.map')
+-- local map = my_map.map
+-- local xmap = my_map.xmap
+-- local nmap = my_map.nmap
 -- local imap = My.keymap.imap
 -- local cmap = My.keymap.cmap
--- local noremap = my_map.noremap
+local noremap = my_map.noremap
 local xnoremap = my_map.xnoremap
 local nnoremap = my_map.nnoremap
 local inoremap = my_map.inoremap
 local cnoremap = my_map.cnoremap
+local onoremap = my_map.onoremap
 
-local flag_comments = require('flag_comments')
-xmap('ge', flag_comments.draw)
-nmap('ge', flag_comments.draw)
+local binary_comments = require('binary_comments')
+xnoremap('ge', binary_comments.draw)
 
-vg.ruby_no_expensive = 1
+vim.g.ruby_no_expensive = 1
 
 if fn.has 'vim_starting' then
-  vo.viminfo = "!,'1000,<100,s10,h"
+  -- opt.viminfo = "!,'1000,<100,s10,h"
+  opt.shada = { "!", "'1000", "<100", "s10", "h" }
 end
 
 api.nvim_create_augroup('vimrc_augroup', {})
@@ -153,10 +155,10 @@ autocmd('CmdlineLeave', {
   group = 'vimrc_augroup',
   pattern = { '/', '\\?' },
   callback = function()
-    if vv.event.abort == false then
+    if vim.v.event.abort == false then
       api.nvim_feedkeys(api.nvim_replace_termcodes(
         ":lua require('bistahieversor').echo() require('utahraptor').flash()<CR>", true, false, true
-      ), 'n', true)
+      ), 'n', false)
     end
   end
 })
@@ -165,8 +167,6 @@ autocmd('FocusGained', {
   group = 'vimrc_augroup',
   pattern = '*',
   callback = function()
-    pp(vv.event)
-
     vim.defer_fn(function()
       local win_id = fn.win_getid()
       local match_id = fn.matchadd('MyWindowFlash',
@@ -177,7 +177,7 @@ autocmd('FocusGained', {
       )
       vim.defer_fn(function()
         fn.matchdelete(match_id, win_id)
-        vim.cmd [[redraw]]
+        cmd('redraw')
       end, 300)
     end, 30)
   end
@@ -194,7 +194,7 @@ autocmd('BufEnter', {
     local root_dir = My.get_root_dir()
     if root_dir ~= nil and #root_dir ~= 0 then
       -- vim.bo.path = '.,,' .. root_dir .. '/**'
-      vim.cmd('lcd ' .. root_dir)
+      cmd('lcd ' .. root_dir)
     end
   end
 })
@@ -229,7 +229,7 @@ command('TCurrent', function()
   if fn.filereadable(path) == 1 then
     local dir_path = fn.expand('%:p:h')
 
-    vim.cmd [[new]]
+    cmd('new')
     fn.termopen('bash', { cwd = dir_path })
   else
     print('Current buffer is not file!!')
@@ -257,35 +257,35 @@ end, {})
 --   vim.api.nvim_open_term(buffer_handle, {})
 -- end, {})
 
-vg.did_install_default_menus = 1
-vg.did_install_syntax_menu   = 1
+vim.g.did_install_default_menus = 1
+vim.g.did_install_syntax_menu   = 1
 
-vg.loaded_vimball           = 1
-vg.loaded_vimballPlugin     = 1
-vg.loaded_tar               = 1
-vg.loaded_zip               = 1
-vg.loaded_zipPlugin         = 1
-vg.loaded_netrw             = 1
-vg.loaded_netrwPlugin       = 1
-vg.loaded_netrwSettings     = 1
-vg.loaded_netrwFileHandlers = 1
-vg.loaded_2html_plugin      = 1
-vg.loaded_gzip              = 1
-vg.loaded_tarPlugin         = 1
-vg.loaded_sql_completion    = 1
-vg.loaded_xmlformat         = 1
-vg.loaded_tutor_mode_plugin = 1
+vim.g.loaded_vimball           = 1
+vim.g.loaded_vimballPlugin     = 1
+vim.g.loaded_tar               = 1
+vim.g.loaded_zip               = 1
+vim.g.loaded_zipPlugin         = 1
+vim.g.loaded_netrw             = 1
+vim.g.loaded_netrwPlugin       = 1
+vim.g.loaded_netrwSettings     = 1
+vim.g.loaded_netrwFileHandlers = 1
+vim.g.loaded_2html_plugin      = 1
+vim.g.loaded_gzip              = 1
+vim.g.loaded_tarPlugin         = 1
+vim.g.loaded_sql_completion    = 1
+vim.g.loaded_xmlformat         = 1
+vim.g.loaded_tutor_mode_plugin = 1
 
-require('nvim-treesitter.configs').setup {
+require('nvim-treesitter.configs').setup({
   highlight = {
     enable = true,
     additional_vim_regex_highlighting = false
   }
-}
+})
 
 -- nvim-cmp setup
 local cmp = require('cmp')
-cmp.setup {
+cmp.setup({
   snippet = {
     expand = function(args)
       fn['vsnip#anonymous'](args.body) -- For `vsnip` users.
@@ -322,7 +322,7 @@ cmp.setup {
       end
     end, { 'i', 's' }),
   }),
-}
+})
 
 -- Set configuration for specific filetype.
 cmp.setup.filetype('gitcommit', {
@@ -351,21 +351,10 @@ cmp.setup.cmdline(':', {
   })
 })
 
-require("mason").setup()
-local nvim_lspconfig = require('lspconfig')
-local mason_lspconfig = require('mason-lspconfig')
-mason_lspconfig.setup_handlers({
-  function(server_name)
-    local opts = {}
-
-    nvim_lspconfig[server_name].setup(opts)
-  end
-})
-
-nnoremap('<space>e', vim.diagnostic.open_float)
-nnoremap('gh', vim.diagnostic.goto_prev)
-nnoremap('gl', vim.diagnostic.goto_next)
-nnoremap('<space>q', vim.diagnostic.setloclist)
+nnoremap('<Leader><Leader>e', vim.diagnostic.open_float)
+nnoremap('g[', vim.diagnostic.goto_prev)
+nnoremap('g]', vim.diagnostic.goto_next)
+nnoremap('<Leader><Leader>q', vim.diagnostic.setloclist)
 
 local on_attach = function(_, bufnr)
   -- vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -374,17 +363,30 @@ local on_attach = function(_, bufnr)
   nnoremap('gD', vim.lsp.buf.declaration, bufopts)
   nnoremap('gd', vim.lsp.buf.definition, bufopts)
   nnoremap('K', vim.lsp.buf.hover, bufopts)
-  nnoremap('gi', vim.lsp.buf.implementation, bufopts)
-  nnoremap('<C-k>', vim.lsp.buf.signature_help, bufoptsu)
-  nnoremap('<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
-  nnoremap('<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
-  nnoremap('<space>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, bufopts)
-  nnoremap('<space>D', vim.lsp.buf.type_definition, bufopts)
-  nnoremap('<space>rn', vim.lsp.buf.rename, bufopts)
-  nnoremap('<space>ca', vim.lsp.buf.code_action, bufopts)
+  nnoremap('<Leader><Leaer>gi', vim.lsp.buf.implementation, bufopts)
+  nnoremap('<C-k>', vim.lsp.buf.signature_help, bufopts)
+  nnoremap('<Leader><Leader>wa', vim.lsp.buf.add_workspace_folder, bufopts)
+  nnoremap('<Leader><Leader>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
+  nnoremap('<Leader><Leader>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, bufopts)
+  nnoremap('<Leader><Leader>D', vim.lsp.buf.type_definition, bufopts)
+  nnoremap('<Leader><Leader>rn', vim.lsp.buf.rename, bufopts)
+  nnoremap('<Leader><Leader>ca', vim.lsp.buf.code_action, bufopts)
   nnoremap('gr', vim.lsp.buf.references, bufopts)
-  nnoremap('<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
+  nnoremap('<Leader><Leader>f', function() vim.lsp.buf.format { async = false } end, bufopts)
 end
+
+
+require("mason").setup()
+local nvim_lspconfig = require('lspconfig')
+local mason_lspconfig = require('mason-lspconfig')
+mason_lspconfig.setup_handlers({
+  function(server_name)
+    local opts = {}
+    opts.on_attach = on_attach
+
+    nvim_lspconfig[server_name].setup(opts)
+  end
+})
 
 nvim_lspconfig.sumneko_lua.setup({
   on_attach = on_attach,
@@ -394,8 +396,8 @@ nvim_lspconfig.sumneko_lua.setup({
       runtime = {
         version = 'LuaJIT',
         path = {
-          'lua/?/init.lua',
-          'lua/?.lua',
+          '?.lua',
+          '?/init.lua',
         },
       },
       completion = {
@@ -406,7 +408,9 @@ nvim_lspconfig.sumneko_lua.setup({
       },
       workspace = {
         -- library = vim.api.nvim_get_runtime_file("", true),
-        library = My.plugin_paths()
+        -- '/usr/local/share/lua/5.1/?/?.lua',
+        library = vim.list_extend(My.plugin_paths(), { '/usr/local/share/lua/5.1/' }),
+        checkThirdParty = false,
       },
       telemetry = {
         enable = false,
@@ -417,7 +421,7 @@ nvim_lspconfig.sumneko_lua.setup({
 
 local hydra = require('hydra')
 hydra({
-  name = 't window',
+  name = 'window',
   mode = { 'i', 't', 'n' },
   body = [[<C-\>]],
   heads = {
@@ -425,10 +429,6 @@ hydra({
     { '<', function() My.all_mode_wincmd('<') end },
     { '+', function() My.all_mode_wincmd('+') end },
     { '-', function() My.all_mode_wincmd('-') end },
-    { 'h', function() My.all_mode_wincmd('h') end },
-    { 'j', function() My.all_mode_wincmd('j') end },
-    { 'k', function() My.all_mode_wincmd('k') end },
-    { 'l', function() My.all_mode_wincmd('l') end },
     { '<c-h>', function() My.all_mode_wincmd('h') end },
     { '<c-j>', function() My.all_mode_wincmd('j') end },
     { '<c-k>', function() My.all_mode_wincmd('k') end },
@@ -436,7 +436,19 @@ hydra({
   },
 })
 
-require('lualine').setup {
+hydra({
+  name = 'quickfix/locationlist',
+  mode = 'n',
+  body = 'g',
+  heads = {
+    { 'l', '<cmd>cnext<cr>' },
+    { 'h', '<cmd>cprev<cr>' },
+    { 'L', '<cmd>lnext<cr>' },
+    { 'H', '<cmd>lprev<cr>' },
+  },
+})
+
+require('lualine').setup({
   options = {
     icons_enabled = false,
     theme = 'auto',
@@ -464,35 +476,41 @@ require('lualine').setup {
   },
   tabline = {},
   extensions = {}
-}
+})
 
 bistahieversor.setup({ maxcount = 1000, echo_wrapscan = true })
-map('n', function()
+noremap('n', function()
   bistahieversor.n_and_echo()
   utahraptor.flash()
 end)
 
-map('N', function()
+noremap('N', function()
   bistahieversor.N_and_echo()
   utahraptor.flash()
 end)
 
-nmap('*', function()
+noremap('*', function()
   lasterisk.search()
   bistahieversor.echo()
   utahraptor.flash()
 end)
 
-map('g*', function()
+xnoremap('*', function()
   lasterisk.search({ is_whole = false })
   bistahieversor.echo()
   utahraptor.flash()
 end)
 
-nmap('g/', function()
+noremap('g*', function()
+  lasterisk.search({ is_whole = false })
+  bistahieversor.echo()
+  utahraptor.flash()
+end)
+
+nnoremap('g/', function()
   local pattern = [[\V]] ..
-      fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vv.register, 1, 1)), [[\n]])
-  vo.hlsearch = vo.hlsearch
+      fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vim.v.register, 1, 1)), [[\n]])
+  opt.hlsearch = opt.hlsearch
   fn.setreg('/', pattern)
   fn.histadd('/', pattern)
   bistahieversor.n_and_echo()
@@ -519,16 +537,38 @@ nnoremap('gv', 'gvo')
 
 -- telescope
 local telescope = require('telescope')
-telescope.setup {
+telescope.setup({
+  defaults = {
+    mappings = {
+      i = {
+        ['<C-u>'] = false,
+        ['<Up>'] = require('telescope.actions').preview_scrolling_up,
+        ['<Down>'] = require('telescope.actions').preview_scrolling_down,
+      }
+    }
+  },
   extensions = {
     fzf = {
       fuzzy = false,
       override_generic_sorter = true,
       override_file_sorter = true,
       case_mode = "smart_case",
-    }
+    },
+    file_browser = {
+      theme = "ivy",
+      -- disables netrw and use telescope-file-browser in its place
+      hijack_netrw = true,
+      mappings = {
+        ["i"] = {
+          -- your custom insert mode mappings
+        },
+        ["n"] = {
+          -- your custom normal mode mappings
+        },
+      },
+    },
   }
-}
+})
 telescope.load_extension('fzf')
 
 local tele_builtin = require('telescope.builtin')
@@ -542,73 +582,86 @@ xnoremap('j', 'gj')
 nnoremap('k', 'gk')
 xnoremap('k', 'gk')
 
+nnoremap('yie', [[<cmd>%y<cr>]])
+nnoremap('die', 'ggdG')
+
+xnoremap('<Esc>', 'o<Esc>')
+nnoremap('gv', 'gvo')
+
+nnoremap('gF', '<Cmd>vertical botright wincmd F<CR>')
+
 -- nnoremap('n', 'n', { callback = function() print('callback!!!') end })
 
 -- setting
-vo.undofile = true
-vo.undodir = vim.env.XDG_STATE_HOME .. '/nvim/undo/'
+opt.undofile = true
+opt.undodir = vim.env.XDG_STATE_HOME .. '/nvim/undo/'
 
-vo.smartcase = true
-vo.ignorecase = true
+opt.smartcase = true
+opt.ignorecase = true
 
-vo.hidden = false
+opt.hidden = false
 
-vo.undofile = true
-vo.undodir = vim.env.XDG_STATE_HOME .. '/nvim/undo/'
+opt.undofile = true
+opt.undodir = vim.env.XDG_STATE_HOME .. '/nvim/undo/'
 
-vo.directory = vim.env.XDG_STATE_HOME .. '/nvim/swap/'
-vo.swapfile = true
+opt.directory = vim.env.XDG_STATE_HOME .. '/nvim/swap/'
+opt.swapfile = true
 
-vo.cursorline = true
+opt.cursorline = true
 
-vo.signcolumn = 'yes'
+opt.signcolumn = 'yes'
 
-vo.shortmess = 'filmnrwxtToOISs'
+opt.shortmess = 'filmnrwxtToOISs'
 
-vo.title = true
-vo.laststatus = 2
-vo.cmdheight = 1
-vo.showcmd = true
+opt.title = true
+opt.cmdheight = 2
+opt.showcmd = true
 
-vo.backup = false
-vo.writebackup = false
+opt.backup = false
+opt.writebackup = false
 
-vo.equalalways = true
-vo.splitright = true
+opt.equalalways = true
+opt.splitright = true
 
-vo.list = true
-vo.listchars = 'tab:>-'
+opt.list = true
+opt.listchars = {
+  tab = '>--'
+}
 
-vo.sidescroll = 3
+opt.sidescroll = 3
 
-vo.matchpairs = '(:),{:},[:],<:>'
+opt.matchpairs = { '(:)', '{:}', '[:]', '<:>' }
 
-vo.expandtab = true
-vo.tabstop = 2
-vo.softtabstop = 2
-vo.shiftwidth = 2
-vo.shiftround = 2
+opt.expandtab = true
+opt.tabstop = 2
+opt.softtabstop = 2
+opt.shiftwidth = 2
+opt.shiftround = true
 
-vo.spelllang = 'en,cjk'
+opt.spelllang = 'en,cjk'
 
-vo.formatoptions = 'tcroqmMj'
+opt.formatoptions = 'tcroqmMj'
 
-vo.fixendofline = false
+opt.fixendofline = false
 
-vo.mouse = 'nv'
-vo.mousehide = false
+opt.mouse = 'nv'
+opt.mousehide = false
 
-vo.fileencoding = 'utf-8'
+opt.fileencoding = 'utf-8'
 
 if fn.executable('rg') then
-  vo.grepprg = "rg --vimgrep --no-heading"
+  opt.grepprg = "rg --vimgrep --no-heading"
 end
 
 -- vim.fileencodings = 'utf-8,sjis,euc-jp,ucs-bom,ucs-2le,ucs-2,iso-2022-jp-3,euc-jisx0213'
 
-vo.completeopt = 'menu,menuone,noselect'
-vo.clipboard = 'unnamed'
-vg.clipboard = {
+opt.completeopt = {
+  'menu',
+  'menuone',
+  'noselect'
+}
+opt.clipboard = 'unnamed'
+vim.g.clipboard = {
   name = 'win32yank-wsl',
 
   copy = {
@@ -622,6 +675,29 @@ vg.clipboard = {
   cache_enable = 1,
 }
 
-vo.termguicolors = true
-vim.cmd [[colorscheme tokyonight]]
+opt.termguicolors = true
 
+vim.g.sandwich_no_default_key_mappings = 1
+vim.g.operator_sandwich_no_default_key_mappings = 1
+
+cmd.packadd('vim-sandwich')
+fn['operator#sandwich#set']('add', 'all', 'highlight', 10)
+fn['operator#sandwich#set']('delete', 'all', 'highlight', 10)
+fn['operator#sandwich#set']('add', 'all', 'hi_duration', 10)
+fn['operator#sandwich#set']('delete', 'all', 'hi_duration', 10)
+
+xnoremap('sd', '<Plug>(operator-sandwich-delete)')
+xnoremap('sr', '<Plug>(operator-sandwich-replace)')
+nnoremap('sa', '<Plug>(operator-sandwich-add)iw')
+xnoremap('sa', '<Plug>(operator-sandwich-add)')
+noremap('sA', '<Plug>(operator-sandwich-add)')
+
+nnoremap('sd', '<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-auto-a)')
+nnoremap('sr', '<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-auto-a)')
+
+onoremap('iq', '<Plug>(textobj-sandwich-auto-i)')
+xnoremap('iq', '<Plug>(textobj-sandwich-auto-i)')
+onoremap('aq', '<Plug>(textobj-sandwich-auto-a)')
+onoremap('aq', '<Plug>(textobj-sandwich-auto-a)')
+
+cmd.colorscheme('tokyonight')
