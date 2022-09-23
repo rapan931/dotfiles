@@ -1,19 +1,20 @@
 local M = {}
 local bm = vim.api.nvim_buf_set_keymap
 local noremap = { noremap = true }
+local lopt = vim.opt_local
 
 ---@param tab_length number
 ---@param is_hard_tab boolean
 local function set_indent(tab_length, is_hard_tab)
   if is_hard_tab then
-    vim.bo.expandtab = false
+    lopt.expandtab = false
   else
-    vim.bo.expandtab = true
+    lopt.expandtab = true
   end
 
-  vim.bo.shiftwidth  = tab_length
-  vim.bo.softtabstop = tab_length
-  vim.bo.tabstop     = tab_length
+  lopt.shiftwidth  = tab_length
+  lopt.softtabstop = tab_length
+  lopt.tabstop     = tab_length
 end
 
 M.gitconfig = function()

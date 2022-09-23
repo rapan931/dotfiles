@@ -219,6 +219,8 @@ call minpac#add('vim-jp/vimdoc-ja', {'type': 'opt'})
 " view only
 call minpac#add('vim-jp/vital.vim', {'type': 'opt'})
 
+call minpac#add('rapan931/binary_comments.vim')
+
 filetype plugin indent on
 syntax enable
 
@@ -992,7 +994,7 @@ set shortmess+=c
 " 行番号の表示(落ち着くから)
 " ルーラーを表示
 " 長い行を折り返して表示
-set number
+" set number
 set ruler
 set wrap
 
@@ -1153,11 +1155,7 @@ let g:jellybeans_overrides = {
     \ }
 
 if has('vim_starting')
-  if has('win32')
-    colorscheme jellybeans
-  else
-    colorscheme desert
-  endif
+  colorscheme jellybeans
 endif
 
 " IME ON時のカーソルの色を設定(紫)
@@ -1298,6 +1296,8 @@ nnoremap <F1> :<C-u>OpenBrowserCurrent<CR>
 
 " =================================
 " = mapping: initialize
+
+xmap gE <Plug>(binary-comments-draw)
 
 " mapleaderに','を指定
 let g:mapleader = ','
