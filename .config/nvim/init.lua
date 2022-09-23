@@ -69,9 +69,7 @@ packer.startup(function(use)
   use("nvim-lualine/lualine.nvim")
   use({
     "numToStr/Comment.nvim",
-    config = function()
-      require("Comment").setup()
-    end,
+    config = function() require("Comment").setup() end,
   })
 
   use("haya14busa/vim-asterisk")
@@ -86,9 +84,7 @@ packer.startup(function(use)
 
   use({
     "windwp/nvim-autopairs",
-    config = function()
-      require("nvim-autopairs").setup({})
-    end,
+    config = function() require("nvim-autopairs").setup({}) end,
   })
 
   use("anuvyklack/hydra.nvim")
@@ -221,9 +217,7 @@ autocmd("BufEnter", {
 autocmd("FileType", {
   group = "vimrc_augroup",
   pattern = "*",
-  callback = function(args)
-    my_filetype[args.match]()
-  end,
+  callback = function(args) my_filetype[args.match]() end,
 })
 
 autocmd("TextYankPost", {
@@ -239,21 +233,11 @@ autocmd("TextYankPost", {
 })
 
 command("CdCurrent", "cd %:p:h", {})
-command("Cn", function()
-  My.echo_and_yank(fn.expand("%:t"))
-end, {})
-command("Cfp", function()
-  My.echo_and_yank(fn.expand("%:p"))
-end, {})
-command("Crp", function()
-  My.echo_and_yank(fn.expand("%"))
-end, {})
-command("Cdp", function()
-  My.echo_and_yank(My.get_root_dir())
-end, {})
-command("Cdn", function()
-  My.echo_and_yank(string.gsub(My.get_root_dir(), ".*/", ""))
-end, {})
+command("Cn", function() My.echo_and_yank(fn.expand("%:t")) end, {})
+command("Cfp", function() My.echo_and_yank(fn.expand("%:p")) end, {})
+command("Crp", function() My.echo_and_yank(fn.expand("%")) end, {})
+command("Cdp", function() My.echo_and_yank(My.get_root_dir()) end, {})
+command("Cdn", function() My.echo_and_yank(string.gsub(My.get_root_dir(), ".*/", "")) end, {})
 
 command("TCurrent", function()
   local path = fn.expand("%:p")
@@ -398,16 +382,12 @@ local on_attach = function(_, bufnr)
   nnoremap("<C-k>", vim.lsp.buf.signature_help, bufopts)
   nnoremap("<Leader><Leader>wa", vim.lsp.buf.add_workspace_folder, bufopts)
   nnoremap("<Leader><Leader>wr", vim.lsp.buf.remove_workspace_folder, bufopts)
-  nnoremap("<Leader><Leader>wl", function()
-    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-  end, bufopts)
+  nnoremap("<Leader><Leader>wl", function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, bufopts)
   nnoremap("<Leader><Leader>D", vim.lsp.buf.type_definition, bufopts)
   nnoremap("<Leader><Leader>rn", vim.lsp.buf.rename, bufopts)
   nnoremap("<Leader><Leader>ca", vim.lsp.buf.code_action, bufopts)
   nnoremap("gr", vim.lsp.buf.references, bufopts)
-  nnoremap("<Leader><Leader>f", function()
-    vim.lsp.buf.format({ async = false })
-  end, bufopts)
+  nnoremap("<Leader><Leader>f", function() vim.lsp.buf.format({ async = false }) end, bufopts)
 end
 
 require("mason").setup()
@@ -469,51 +449,35 @@ hydra({
   heads = {
     {
       ">",
-      function()
-        My.all_mode_wincmd(">")
-      end,
+      function() My.all_mode_wincmd(">") end,
     },
     {
       "<",
-      function()
-        My.all_mode_wincmd("<")
-      end,
+      function() My.all_mode_wincmd("<") end,
     },
     {
       "+",
-      function()
-        My.all_mode_wincmd("+")
-      end,
+      function() My.all_mode_wincmd("+") end,
     },
     {
       "-",
-      function()
-        My.all_mode_wincmd("-")
-      end,
+      function() My.all_mode_wincmd("-") end,
     },
     {
       "<c-h>",
-      function()
-        My.all_mode_wincmd("h")
-      end,
+      function() My.all_mode_wincmd("h") end,
     },
     {
       "<c-j>",
-      function()
-        My.all_mode_wincmd("j")
-      end,
+      function() My.all_mode_wincmd("j") end,
     },
     {
       "<c-k>",
-      function()
-        My.all_mode_wincmd("k")
-      end,
+      function() My.all_mode_wincmd("k") end,
     },
     {
       "<c-l>",
-      function()
-        My.all_mode_wincmd("l")
-      end,
+      function() My.all_mode_wincmd("l") end,
     },
   },
 })
@@ -590,12 +554,7 @@ noremap("g*", function()
 end)
 
 nnoremap("g/", function()
-  local pattern = [[\V]] .. fn.join(
-    vim.tbl_map(function(line)
-      return fn.escape(line, [[/\]])
-    end, fn.getreg(vim.v.register, 1, 1)),
-    [[\n]]
-  )
+  local pattern = [[\V]] .. fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vim.v.register, 1, 1)), [[\n]])
   opt.hlsearch = opt.hlsearch
   fn.setreg("/", pattern)
   fn.histadd("/", pattern)
@@ -659,19 +618,13 @@ telescope.load_extension("fzf")
 
 local tele_builtin = require("telescope.builtin")
 nnoremap("<Space>F", "", {
-  callback = function()
-    tele_builtin.oldfiles()
-  end,
+  callback = function() tele_builtin.oldfiles() end,
 })
 nnoremap("<Space>f", "", {
-  callback = function()
-    tele_builtin.oldfiles({ only_cwd = true })
-  end,
+  callback = function() tele_builtin.oldfiles({ only_cwd = true }) end,
 })
 nnoremap("<Space>R", "", {
-  callback = function()
-    tele_builtin.resume()
-  end,
+  callback = function() tele_builtin.resume() end,
 })
 
 nnoremap("<Space>.", [[<cmd>e $MYVIMRC<CR>]])
