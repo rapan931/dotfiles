@@ -1,5 +1,18 @@
 My = require("my")
 
+local my_map = require("my.map")
+-- local map = my_map.map
+-- local xmap = my_map.xmap
+-- local nmap = my_map.nmap
+-- local imap = My.keymap.imap
+-- local cmap = My.keymap.cmap
+local noremap = my_map.noremap
+local xnoremap = my_map.xnoremap
+local nnoremap = my_map.nnoremap
+local inoremap = my_map.inoremap
+local cnoremap = my_map.cnoremap
+local onoremap = my_map.onoremap
+
 local api = vim.api
 local fn = vim.fn
 
@@ -11,7 +24,7 @@ local autocmd = vim.api.nvim_create_autocmd
 
 -- packer.nvim
 opt.packpath = fn.stdpath("data") .. "/site/"
-cmd.packadd("packer.nvim")
+cmd("packadd packer.nvim")
 local packer = require("packer")
 packer.init({ plugin_package = "p" })
 packer.startup(function(use)
@@ -23,26 +36,48 @@ packer.startup(function(use)
 
   use({
     "jose-elias-alvarez/null-ls.nvim",
-    config = function()
-      require("null-ls").setup({
-        sources = {
-          require("null-ls").builtins.formatting.stylua,
-        },
-      })
-    end,
     requires = { "nvim-lua/plenary.nvim" },
   })
 
-  use("nvim-lua/plenary.nvim")
   use({
     "nvim-telescope/telescope.nvim",
-    requires = { "nvim-lua/plenary.nvim" },
+    requires = { "nvim-lua/plenary.nvim", "kyazdani42/nvim-web-devicons" },
   })
   use({
     "nvim-telescope/telescope-fzf-native.nvim",
     run = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
   })
   use("nvim-telescope/telescope-file-browser.nvim")
+
+  use({
+    "kyazdani42/nvim-tree.lua",
+    requires = { "kyazdani42/nvim-web-devicons" },
+  })
+  use({
+    "nvim-neo-tree/neo-tree.nvim",
+    requires = {
+      "nvim-lua/plenary.nvim",
+      "kyazdani42/nvim-web-devicons",
+      "MunifTanjim/nui.nvim",
+      {
+        "s1n7ax/nvim-window-picker",
+        tag = "v1.*",
+        config = function()
+          require("window-picker").setup({
+            autoselect_one = true,
+            include_current = false,
+            other_win_hl_color = "#e35e4f",
+            filter_rules = {
+              bo = {
+                filetype = { "neo-tree", "neo-tree-popup", "notify", "quickfix" },
+                buftype = { "terminal" },
+              },
+            },
+          })
+        end,
+      },
+    },
+  })
 
   use("neovim/nvim-lspconfig")
   use("williamboman/mason.nvim")
@@ -67,10 +102,7 @@ packer.startup(function(use)
   use("cocopon/iceberg.vim")
 
   use("nvim-lualine/lualine.nvim")
-  use({
-    "numToStr/Comment.nvim",
-    config = function() require("Comment").setup() end,
-  })
+  use("numToStr/Comment.nvim")
 
   use("haya14busa/vim-asterisk")
   use("AndrewRadev/linediff.vim")
@@ -82,10 +114,7 @@ packer.startup(function(use)
 
   use({ "machakann/vim-sandwich", opt = true })
 
-  use({
-    "windwp/nvim-autopairs",
-    config = function() require("nvim-autopairs").setup({}) end,
-  })
+  use("windwp/nvim-autopairs")
 
   use("anuvyklack/hydra.nvim")
 
@@ -94,6 +123,14 @@ packer.startup(function(use)
   use("~/repos/github.com/rapan931/utahraptor.nvim")
   use("~/repos/github.com/rapan931/binary_comments.vim")
 end)
+require("Comment").setup()
+require("nvim-autopairs").setup({})
+
+require("null-ls").setup({
+  sources = {
+    require("null-ls").builtins.formatting.stylua,
+  },
+})
 
 local my_filetype = require("my.filetype")
 local bistahieversor = require("bistahieversor")
@@ -104,19 +141,314 @@ utahraptor.setup({
   flash_hl_group = "MyFlash",
 })
 
+-- telescope
+local telescope = require("telescope")
+telescope.setup({
+  defaults = {
+    mappings = {
+      i = {
+        ["<C-u>"] = false,
+        ["<Up>"] = require("telescope.actions").preview_scrolling_up,
+        ["<Down>"] = require("telescope.actions").preview_scrolling_down,
+      },
+    },
+  },
+  extensions = {
+    fzf = {
+      fuzzy = false,
+      override_generic_sorter = true,
+      override_file_sorter = true,
+      case_mode = "smart_case",
+    },
+    file_browser = {
+      theme = "ivy",
+      -- disables netrw and use telescope-file-browser in its place
+      hijack_netrw = true,
+      mappings = {
+        ["i"] = {
+          -- your custom insert mode mappings
+        },
+        ["n"] = {
+          -- your custom normal mode mappings
+        },
+      },
+    },
+  },
+})
+telescope.load_extension("fzf")
+
+local tele_builtin = require("telescope.builtin")
+nnoremap("<Space>F", function() tele_builtin.oldfiles() end)
+nnoremap("<Space>f", function() tele_builtin.oldfiles({ only_cwd = true }) end)
+nnoremap("<Space>R", function() tele_builtin.resume() end)
+nnoremap("<Space>g", function() tele_builtin.live_grep() end)
+nnoremap("<Space>S", function() tele_builtin.find_files() end)
+nnoremap("<Space>s", function() tele_builtin.find_files({ cwd = My.get_root_dir() }) end)
+
+require("neo-tree").setup({
+  sort_function = nil,
+  use_default_mappings = true,
+  source_selector = {
+    winbar = true,
+    separator = "|",
+  },
+  window = {
+    width = 50,
+    popup = {
+      size = {
+        height = "80%",
+        width = "50%",
+      },
+      position = "50%",
+    },
+    mapping_options = {
+      noremap = true,
+      nowait = true,
+    },
+    mappings = {
+      ["ZZ"] = function(state) pp(state.tree:get_node()) end,
+      ["h"] = function(state)
+        local node = state.tree:get_node()
+        if node.type == "directory" and node:get_depth() == 1 then
+          require("neo-tree.sources.filesystem.commands").navigate_up(state)
+        elseif node.type == "directory" and node:is_expanded() then
+          require("neo-tree.sources.filesystem").toggle_directory(state, node)
+        else
+          require("neo-tree.ui.renderer").focus_node(state, node:get_parent_id())
+        end
+      end,
+      ["l"] = function(state)
+        local node = state.tree:get_node()
+        if node.type == "directory" then
+          if not node:is_expanded() then
+            require("neo-tree.sources.filesystem").toggle_directory(state, node)
+          elseif node:has_children() then
+            require("neo-tree.ui.renderer").focus_node(state, node:get_child_ids()[1])
+          end
+        end
+      end,
+      ["<CR>"] = function(state)
+        local node = state.tree:get_node()
+        if node.type == "directory" then
+          if node._parent_id ~= nil then
+            require("neo-tree.sources.filesystem.commands").set_root(state)
+          end
+        else
+          require("neo-tree.sources.filesystem.commands").open_with_window_picker(state)
+        end
+      end,
+      ["t"] = function(state)
+        local node = state.tree:get_node()
+        if node.type ~= "directory" then
+          return
+        end
+        cmd("topleft new")
+        fn.termopen("bash", { cwd = node.absolute_path })
+      end,
+      ["<C-l>"] = "refresh",
+      ["q"] = "close_window",
+      ["T"] = "expand_all_nodes",
+
+      ["<space>"] = { "toggle_node", nowait = false },
+      ["<2-LeftMouse>"] = "open",
+      ["<esc>"] = "revert_preview",
+      ["P"] = { "toggle_preview", config = { use_float = true } },
+
+      ["S"] = "open_split",
+      ["s"] = "open_vsplit",
+      -- ["t"] = "open_tabnew",
+      ["w"] = "open_with_window_picker",
+      ["C"] = "close_node",
+      ["z"] = "close_all_nodes",
+      -- ["Z"] = "expand_all_nodes",
+      -- ["l"] = "expand",
+      -- ["R"] = "refresh",
+      ["a"] = { "add", config = { show_path = "none" } },
+      ["A"] = "add_directory",
+      ["d"] = "delete",
+      ["r"] = "rename",
+      ["y"] = "copy_to_clipboard",
+      ["x"] = "cut_to_clipboard",
+      ["p"] = "paste_from_clipboard",
+      ["c"] = "copy",
+      ["m"] = "move",
+      ["?"] = "show_help",
+      ["<"] = "prev_source",
+      [">"] = "next_source",
+    },
+  },
+  filesystem = {
+    window = {
+      mappings = {
+        ["H"] = "toggle_hidden",
+        ["/"] = "fuzzy_finder",
+        ["D"] = "fuzzy_finder_directory",
+        ["f"] = "filter_on_submit",
+        ["<C-x>"] = "clear_filter",
+        ["<bs>"] = "navigate_up",
+        ["."] = "set_root",
+        ["[g"] = "prev_git_modified",
+        ["]g"] = "next_git_modified",
+      },
+    },
+    filtered_items = {
+      visible = false, -- when true, they will just be displayed differently than normal items
+      force_visible_in_empty_folder = false, -- when true, hidden files will be shown if the root folder is otherwise empty
+      show_hidden_count = true, -- when true, the number of hidden items in each folder will be shown as the last entry
+      hide_dotfiles = false,
+      hide_gitignored = false,
+      hide_hidden = true,
+      hide_by_name = { ".DS_Store", "thumbs.db", "node_modules" },
+    },
+    find_by_full_path_words = false,
+  },
+  buffers = {
+    bind_to_cwd = true,
+    follow_current_file = true, -- This will find and focus the file in the active buffer every time
+    -- the current file is changed while the tree is open.
+    group_empty_dirs = true, -- when true, empty directories will be grouped together
+    window = {
+      mappings = {
+        ["<bs>"] = "navigate_up",
+        ["."] = "set_root",
+        ["bd"] = "buffer_delete",
+      },
+    },
+  },
+  git_status = {
+    window = {
+      mappings = {
+        ["A"] = "git_add_all",
+        ["gu"] = "git_unstage_file",
+        ["ga"] = "git_add_file",
+        ["gr"] = "git_revert_file",
+        ["gc"] = "git_commit",
+        ["gp"] = "git_push",
+        ["gg"] = "git_commit_and_push",
+      },
+    },
+  },
+})
+
+-- local tapi = require("nvim-tree.api")
+require("nvim-tree").setup({
+  remove_keymaps = true,
+  actions = {
+    open_file = {
+      window_picker = {
+        enable = true,
+        chars = "sdfghjkl;qwertyuiopzcvbnm",
+        exclude = {
+          filetype = { "notify", "packer", "qf", "diff", "fugitive", "fugitiveblame" },
+          buftype = { "nofile", "terminal", "help" },
+        },
+      },
+    },
+    expand_all = {
+      max_folder_discovery = 300,
+      exclude = { ".git", "target", "build", "node_modules" },
+    },
+  },
+  view = {
+    width = 45,
+    mappings = {
+      custom_only = true,
+    },
+  },
+  on_attach = function(bufnr)
+    local inode = require("nvim-tree.utils").inject_node
+    local core = require("nvim-tree.core")
+    local renderer = require("nvim-tree.renderer")
+    local change_dir = require("nvim-tree.actions.root.change-dir")
+
+    local tree_api = require("nvim-tree.api")
+
+    local function map(lhs, rhs) nnoremap(lhs, rhs, { buffer = bufnr }) end
+
+    map("<Space>g", inode(function(node) tele_builtin.live_grep({ search_dirs = { node.absolute_path } }) end))
+    map(
+      "<Space>s",
+      inode(function(node)
+        if node.type == "directory" then
+          tele_builtin.find_files({ search_dirs = { node.absolute_path } })
+        end
+      end)
+    )
+
+    map("yp", tree_api.fs.copy.absolute_path)
+    map("yr", tree_api.fs.copy.relative_path)
+    map("yn", tree_api.fs.copy.filename)
+
+    map("K", tree_api.node.show_info_popup)
+
+    map("CCC", tree_api.fs.copy.node)
+    map("PPP", tree_api.fs.paste)
+    map("RRR", tree_api.fs.rename)
+
+    map(
+      "h",
+      inode(function(node)
+        if node.name == ".." then
+          change_dir.fn("..")
+        else
+          tree_api.node.navigate.parent_close()
+        end
+      end)
+    )
+    map(
+      "l",
+      inode(function(node)
+        if node.parent and node.nodes and not node.open then
+          node.open = true
+
+          if node.has_children then
+            node.has_children = false
+          end
+
+          if #node.nodes == 0 then
+            core.get_explorer():expand(node)
+          end
+
+          if #node.nodes ~= 0 then
+            cmd("normal! j")
+          end
+        end
+        renderer.draw()
+      end)
+    )
+    map("<C-l>", tree_api.tree.reload)
+    map("q", tree_api.tree.close)
+    map("T", tree_api.tree.expand_all)
+    map("<Tab>", tree_api.node.open.preview)
+    map(
+      "<CR>",
+      -- open or cd
+      inode(function(node)
+        if node.type == "directory" then
+          tree_api.tree.change_root_to_node()
+        else
+          tree_api.node.open.edit()
+        end
+      end)
+    )
+    map(
+      "t",
+      inode(function(node)
+        if node.type ~= "directory" then
+          return
+        end
+        cmd("topleft new")
+        fn.termopen("bash", { cwd = node.absolute_path })
+      end)
+    )
+  end,
+})
+
+nnoremap("<Space>ee", "<CMD>NvimTreeClose | NvimTreeOpen<CR>")
+nnoremap("<Space>ef", "<CMD>NvimTreeClose | NvimTreeFindFile!<CR>")
+nnoremap("<Space>ep", "<CMD>NvimTreeClose | NvimTreeOpen " .. opt.packpath:get()[1] .. "pack/p/<CR>")
+
 vim.g.mapleader = ","
-local my_map = require("my.map")
--- local map = my_map.map
--- local xmap = my_map.xmap
--- local nmap = my_map.nmap
--- local imap = My.keymap.imap
--- local cmap = My.keymap.cmap
-local noremap = my_map.noremap
-local xnoremap = my_map.xnoremap
-local nnoremap = my_map.nnoremap
-local inoremap = my_map.inoremap
-local cnoremap = my_map.cnoremap
-local onoremap = my_map.onoremap
 
 local binary_comments = require("binary_comments")
 xnoremap("ge", binary_comments.draw)
@@ -172,7 +504,8 @@ autocmd("CmdlineLeave", {
   callback = function()
     if vim.v.event.abort == false then
       api.nvim_feedkeys(
-        api.nvim_replace_termcodes(":lua require('bistahieversor').echo() require('utahraptor').flash()<CR>", true, false, true),
+        api.nvim_replace_termcodes(":lua require('bistahieversor').echo() require('utahraptor').flash()<CR>", true, false
+          , true),
         "n",
         false
       )
@@ -187,7 +520,8 @@ autocmd("FocusGained", {
     vim.defer_fn(function()
       local win_id = fn.win_getid()
       local match_id =
-        fn.matchadd("MyWindowFlash", [[\%>]] .. (fn.line("w0") - 1) .. [[l\_.*\%<]] .. (fn.line("w$") + 1) .. "l", 100, -1, { window = win_id })
+      fn.matchadd("MyWindowFlash", [[\%>]] .. (fn.line("w0") - 1) .. [[l\_.*\%<]] .. (fn.line("w$") + 1) .. "l", 100, -1
+        , { window = win_id })
       vim.defer_fn(function()
         if #fn.getwininfo(win_id) ~= 0 then
           fn.matchdelete(match_id, win_id)
@@ -250,27 +584,6 @@ command("TCurrent", function()
     print("Current buffer is not file!!")
   end
 end, {})
-
--- command('OpenTerm', function()
---   local buffer_handle = vim.api.nvim_create_buf(false, false)
---   if not buffer_handle then
---     return
---   end
---
---   local window_handle = vim.api.nvim_open_win(buffer_handle, true, {
---     relative = 'editor',
---     width = 100,
---     height = 25,
---     row = 10,
---     col = 10
---   })
---
---   if not window_handle then
---     return
---   end
---
---   vim.api.nvim_open_term(buffer_handle, {})
--- end, {})
 
 vim.g.did_install_default_menus = 1
 vim.g.did_install_syntax_menu = 1
@@ -447,38 +760,18 @@ hydra({
   mode = { "i", "t", "n" },
   body = [[<C-\>]],
   heads = {
-    {
-      ">",
-      function() My.all_mode_wincmd(">") end,
-    },
-    {
-      "<",
-      function() My.all_mode_wincmd("<") end,
-    },
-    {
-      "+",
-      function() My.all_mode_wincmd("+") end,
-    },
-    {
-      "-",
-      function() My.all_mode_wincmd("-") end,
-    },
-    {
-      "<c-h>",
-      function() My.all_mode_wincmd("h") end,
-    },
-    {
-      "<c-j>",
-      function() My.all_mode_wincmd("j") end,
-    },
-    {
-      "<c-k>",
-      function() My.all_mode_wincmd("k") end,
-    },
-    {
-      "<c-l>",
-      function() My.all_mode_wincmd("l") end,
-    },
+    { ">", function() My.all_mode_wincmd(">") end },
+    { "<", function() My.all_mode_wincmd("<") end },
+    { "+", function() My.all_mode_wincmd("+") end },
+    { "-", function() My.all_mode_wincmd("-") end },
+    { "H", function() My.all_mode_wincmd("H") end },
+    { "J", function() My.all_mode_wincmd("J") end },
+    { "K", function() My.all_mode_wincmd("K") end },
+    { "L", function() My.all_mode_wincmd("L") end },
+    { "<c-h>", function() My.all_mode_wincmd("h") end },
+    { "<c-j>", function() My.all_mode_wincmd("j") end },
+    { "<c-k>", function() My.all_mode_wincmd("k") end },
+    { "<c-l>", function() My.all_mode_wincmd("l") end },
   },
 })
 
@@ -554,7 +847,8 @@ noremap("g*", function()
 end)
 
 nnoremap("g/", function()
-  local pattern = [[\V]] .. fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vim.v.register, 1, 1)), [[\n]])
+  local pattern = [[\V]] ..
+      fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vim.v.register, 1, 1)), [[\n]])
   opt.hlsearch = opt.hlsearch
   fn.setreg("/", pattern)
   fn.histadd("/", pattern)
@@ -580,53 +874,6 @@ xnoremap("v", "$h")
 xnoremap("<ESC>", "o<ESC>")
 nnoremap("gv", "gvo")
 
--- telescope
-local telescope = require("telescope")
-telescope.setup({
-  defaults = {
-    mappings = {
-      i = {
-        ["<C-u>"] = false,
-        ["<Up>"] = require("telescope.actions").preview_scrolling_up,
-        ["<Down>"] = require("telescope.actions").preview_scrolling_down,
-      },
-    },
-  },
-  extensions = {
-    fzf = {
-      fuzzy = false,
-      override_generic_sorter = true,
-      override_file_sorter = true,
-      case_mode = "smart_case",
-    },
-    file_browser = {
-      theme = "ivy",
-      -- disables netrw and use telescope-file-browser in its place
-      hijack_netrw = true,
-      mappings = {
-        ["i"] = {
-          -- your custom insert mode mappings
-        },
-        ["n"] = {
-          -- your custom normal mode mappings
-        },
-      },
-    },
-  },
-})
-telescope.load_extension("fzf")
-
-local tele_builtin = require("telescope.builtin")
-nnoremap("<Space>F", "", {
-  callback = function() tele_builtin.oldfiles() end,
-})
-nnoremap("<Space>f", "", {
-  callback = function() tele_builtin.oldfiles({ only_cwd = true }) end,
-})
-nnoremap("<Space>R", "", {
-  callback = function() tele_builtin.resume() end,
-})
-
 nnoremap("<Space>.", [[<cmd>e $MYVIMRC<CR>]])
 
 nnoremap("j", "gj")
@@ -642,8 +889,6 @@ xnoremap("<Esc>", "o<Esc>")
 nnoremap("gv", "gvo")
 
 nnoremap("gF", "<Cmd>vertical botright wincmd F<CR>")
-
--- nnoremap('n', 'n', { callback = function() print('callback!!!') end })
 
 -- setting
 opt.undofile = true
@@ -731,7 +976,7 @@ opt.termguicolors = true
 vim.g.sandwich_no_default_key_mappings = 1
 vim.g.operator_sandwich_no_default_key_mappings = 1
 
-cmd.packadd("vim-sandwich")
+cmd("packadd vim-sandwich")
 fn["operator#sandwich#set"]("add", "all", "highlight", 10)
 fn["operator#sandwich#set"]("delete", "all", "highlight", 10)
 fn["operator#sandwich#set"]("add", "all", "hi_duration", 10)
@@ -751,4 +996,4 @@ xnoremap("iq", "<Plug>(textobj-sandwich-auto-i)")
 onoremap("aq", "<Plug>(textobj-sandwich-auto-a)")
 onoremap("aq", "<Plug>(textobj-sandwich-auto-a)")
 
-cmd.colorscheme("tokyonight")
+cmd("colorscheme tokyonight")
