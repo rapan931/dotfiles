@@ -50,10 +50,6 @@ packer.startup(function(use)
   use("nvim-telescope/telescope-file-browser.nvim")
 
   use({
-    "kyazdani42/nvim-tree.lua",
-    requires = { "kyazdani42/nvim-web-devicons" },
-  })
-  use({
     "nvim-neo-tree/neo-tree.nvim",
     requires = {
       "nvim-lua/plenary.nvim",
@@ -187,7 +183,7 @@ nnoremap("<Space>s", function() tele_builtin.find_files({ cwd = My.get_root_dir(
 
 require("neo-tree").setup({
   sort_function = nil,
-  use_default_mappings = true,
+  use_default_mappings = false,
   source_selector = {
     winbar = true,
     separator = "|",
@@ -243,36 +239,27 @@ require("neo-tree").setup({
           return
         end
         cmd("topleft new")
-        fn.termopen("bash", { cwd = node.absolute_path })
+        fn.termopen("bash", { cwd = node.path })
       end,
       ["<C-l>"] = "refresh",
       ["q"] = "close_window",
       ["T"] = "expand_all_nodes",
 
       ["<space>"] = { "toggle_node", nowait = false },
-      ["<2-LeftMouse>"] = "open",
       ["<esc>"] = "revert_preview",
-      ["P"] = { "toggle_preview", config = { use_float = true } },
+      ["p"] = { "toggle_preview", config = { use_float = true } },
+      ["Z"] = "close_all_nodes",
 
-      ["S"] = "open_split",
-      ["s"] = "open_vsplit",
-      -- ["t"] = "open_tabnew",
-      ["w"] = "open_with_window_picker",
-      ["C"] = "close_node",
-      ["z"] = "close_all_nodes",
-      -- ["Z"] = "expand_all_nodes",
-      -- ["l"] = "expand",
-      -- ["R"] = "refresh",
-      ["a"] = { "add", config = { show_path = "none" } },
-      ["A"] = "add_directory",
-      ["d"] = "delete",
-      ["r"] = "rename",
-      ["y"] = "copy_to_clipboard",
-      ["x"] = "cut_to_clipboard",
-      ["p"] = "paste_from_clipboard",
-      ["c"] = "copy",
-      ["m"] = "move",
-      ["?"] = "show_help",
+      ["AAA"] = { "add", config = { show_path = "none" } },
+      ["KKK"] = "add_directory",
+      ["DDD"] = "delete",
+      ["RRR"] = "rename",
+      ["YYY"] = "copy_to_clipboard",
+      ["XXX"] = "cut_to_clipboard",
+      ["PPP"] = "paste_from_clipboard",
+      ["CCC"] = "copy",
+      ["MMM"] = "move",
+      ["g?"] = "show_help",
       ["<"] = "prev_source",
       [">"] = "next_source",
     },
@@ -282,11 +269,11 @@ require("neo-tree").setup({
       mappings = {
         ["H"] = "toggle_hidden",
         ["/"] = "fuzzy_finder",
-        ["D"] = "fuzzy_finder_directory",
+        ["?"] = "fuzzy_finder_directory",
         ["f"] = "filter_on_submit",
         ["<C-x>"] = "clear_filter",
-        ["<bs>"] = "navigate_up",
-        ["."] = "set_root",
+        -- ["<bs>"] = "navigate_up",
+        -- ["."] = "set_root",
         ["[g"] = "prev_git_modified",
         ["]g"] = "next_git_modified",
       },
@@ -328,120 +315,6 @@ require("neo-tree").setup({
       },
     },
   },
-})
-
--- local tapi = require("nvim-tree.api")
-require("nvim-tree").setup({
-  remove_keymaps = true,
-  actions = {
-    open_file = {
-      window_picker = {
-        enable = true,
-        chars = "sdfghjkl;qwertyuiopzcvbnm",
-        exclude = {
-          filetype = { "notify", "packer", "qf", "diff", "fugitive", "fugitiveblame" },
-          buftype = { "nofile", "terminal", "help" },
-        },
-      },
-    },
-    expand_all = {
-      max_folder_discovery = 300,
-      exclude = { ".git", "target", "build", "node_modules" },
-    },
-  },
-  view = {
-    width = 45,
-    mappings = {
-      custom_only = true,
-    },
-  },
-  on_attach = function(bufnr)
-    local inode = require("nvim-tree.utils").inject_node
-    local core = require("nvim-tree.core")
-    local renderer = require("nvim-tree.renderer")
-    local change_dir = require("nvim-tree.actions.root.change-dir")
-
-    local tree_api = require("nvim-tree.api")
-
-    local function map(lhs, rhs) nnoremap(lhs, rhs, { buffer = bufnr }) end
-
-    map("<Space>g", inode(function(node) tele_builtin.live_grep({ search_dirs = { node.absolute_path } }) end))
-    map(
-      "<Space>s",
-      inode(function(node)
-        if node.type == "directory" then
-          tele_builtin.find_files({ search_dirs = { node.absolute_path } })
-        end
-      end)
-    )
-
-    map("yp", tree_api.fs.copy.absolute_path)
-    map("yr", tree_api.fs.copy.relative_path)
-    map("yn", tree_api.fs.copy.filename)
-
-    map("K", tree_api.node.show_info_popup)
-
-    map("CCC", tree_api.fs.copy.node)
-    map("PPP", tree_api.fs.paste)
-    map("RRR", tree_api.fs.rename)
-
-    map(
-      "h",
-      inode(function(node)
-        if node.name == ".." then
-          change_dir.fn("..")
-        else
-          tree_api.node.navigate.parent_close()
-        end
-      end)
-    )
-    map(
-      "l",
-      inode(function(node)
-        if node.parent and node.nodes and not node.open then
-          node.open = true
-
-          if node.has_children then
-            node.has_children = false
-          end
-
-          if #node.nodes == 0 then
-            core.get_explorer():expand(node)
-          end
-
-          if #node.nodes ~= 0 then
-            cmd("normal! j")
-          end
-        end
-        renderer.draw()
-      end)
-    )
-    map("<C-l>", tree_api.tree.reload)
-    map("q", tree_api.tree.close)
-    map("T", tree_api.tree.expand_all)
-    map("<Tab>", tree_api.node.open.preview)
-    map(
-      "<CR>",
-      -- open or cd
-      inode(function(node)
-        if node.type == "directory" then
-          tree_api.tree.change_root_to_node()
-        else
-          tree_api.node.open.edit()
-        end
-      end)
-    )
-    map(
-      "t",
-      inode(function(node)
-        if node.type ~= "directory" then
-          return
-        end
-        cmd("topleft new")
-        fn.termopen("bash", { cwd = node.absolute_path })
-      end)
-    )
-  end,
 })
 
 nnoremap("<Space>ee", "<CMD>NvimTreeClose | NvimTreeOpen<CR>")
