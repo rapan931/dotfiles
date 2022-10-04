@@ -181,6 +181,7 @@ nnoremap("<Space>g", function() tele_builtin.live_grep() end)
 nnoremap("<Space>S", function() tele_builtin.find_files() end)
 nnoremap("<Space>s", function() tele_builtin.find_files({ cwd = My.get_root_dir() }) end)
 
+vim.g.neo_tree_remove_legacy_commands = 1
 require("neo-tree").setup({
   sort_function = nil,
   use_default_mappings = false,
@@ -205,23 +206,34 @@ require("neo-tree").setup({
       ["ZZ"] = function(state) pp(state.tree:get_node()) end,
       ["h"] = function(state)
         local node = state.tree:get_node()
-        if node.type == "directory" and node:get_depth() == 1 then
-          require("neo-tree.sources.filesystem.commands").navigate_up(state)
-        elseif node.type == "directory" and node:is_expanded() then
-          require("neo-tree.sources.filesystem").toggle_directory(state, node)
+        local parent_id =  node:get_parent_id()
+        if node.type == "directory" then
+          if node:get_depth() == 1 then
+            require("neo-tree.sources.filesystem.commands").navigate_up(state)
+          elseif node:is_expanded() then
+            require("neo-tree.sources.filesystem.commands").navigate_up(state)
+            require("neo-tree.sources.filesystem").toggle_directory(state, node)
+          else
+            require("neo-tree.sources.filesystem").toggle_directory(state, state.tree:get_node(parent_id))
+            require("neo-tree.ui.renderer").redraw(state)
+          end
         else
-          require("neo-tree.ui.renderer").focus_node(state, node:get_parent_id())
+          -- require("neo-tree.sources.filesystem.commands").navigate_up(state)
+          -- require("neo-tree.ui.renderer").focus_node(state, node:get_parent_id())
+          require("neo-tree.sources.filesystem").toggle_directory(state, state.tree:get_node(parent_id))
+          require("neo-tree.ui.renderer").redraw(state)
         end
       end,
       ["l"] = function(state)
         local node = state.tree:get_node()
-        if node.type == "directory" then
-          if not node:is_expanded() then
-            require("neo-tree.sources.filesystem").toggle_directory(state, node)
-          elseif node:has_children() then
-            require("neo-tree.ui.renderer").focus_node(state, node:get_child_ids()[1])
-          end
+        if node.type ~= "directory" then
+          return
         end
+
+        if not node:is_expanded() then
+          require("neo-tree.sources.filesystem").toggle_directory(state, node)
+        end
+        require("neo-tree.ui.renderer").focus_node(state, node:get_child_ids()[1])
       end,
       ["<CR>"] = function(state)
         local node = state.tree:get_node()
@@ -236,14 +248,45 @@ require("neo-tree").setup({
       ["t"] = function(state)
         local node = state.tree:get_node()
         if node.type ~= "directory" then
+          api.nvim_echo({ { "works only for directories!", "WarningMsg" } }, true, {})
           return
         end
         cmd("topleft new")
         fn.termopen("bash", { cwd = node.path })
       end,
+      ["T"] = function(state)
+        local node = state.tree:get_node()
+
+        if node.type ~= "directory" then
+          api.nvim_echo({ { "works only for directories!", "WarningMsg" } }, true, {})
+          return
+        end
+
+        local toggle_dir_no_redraw =
+        function(_state, _node) require("neo-tree.sources.filesystem").toggle_directory(_state, _node, nil, true, true) end
+
+        local expand_node
+        expand_node = function(_node)
+          local id = _node:get_id()
+          if _node.type == "directory" and not _node:is_expanded() then
+            toggle_dir_no_redraw(state, _node)
+            _node = state.tree:get_node(id)
+          end
+          local children = state.tree:get_nodes(id)
+          if children then
+            for _, child in ipairs(children) do
+              if child.type == "directory" then
+                expand_node(child)
+              end
+            end
+          end
+        end
+
+        expand_node(node)
+        require("neo-tree.ui.renderer").redraw(state)
+      end,
       ["<C-l>"] = "refresh",
       ["q"] = "close_window",
-      ["T"] = "expand_all_nodes",
 
       ["<space>"] = { "toggle_node", nowait = false },
       ["<esc>"] = "revert_preview",
@@ -305,9 +348,9 @@ require("neo-tree").setup({
   git_status = {
     window = {
       mappings = {
-        ["A"] = "git_add_all",
-        ["gu"] = "git_unstage_file",
+        ["gA"] = "git_add_all",
         ["ga"] = "git_add_file",
+        ["gu"] = "git_unstage_file",
         ["gr"] = "git_revert_file",
         ["gc"] = "git_commit",
         ["gp"] = "git_push",
@@ -317,9 +360,11 @@ require("neo-tree").setup({
   },
 })
 
-nnoremap("<Space>ee", "<CMD>NvimTreeClose | NvimTreeOpen<CR>")
-nnoremap("<Space>ef", "<CMD>NvimTreeClose | NvimTreeFindFile!<CR>")
-nnoremap("<Space>ep", "<CMD>NvimTreeClose | NvimTreeOpen " .. opt.packpath:get()[1] .. "pack/p/<CR>")
+nnoremap("<Space>ee", "<CMD>Neotree dir=./ toggle<CR>")
+nnoremap("<Space>er", "<CMD>Neotree dir=./<CR>")
+nnoremap("<Space>ef", "<CMD>Neotree dir=./ reveal_force_cwd<CR>")
+nnoremap("<Space>ep", "<CMD>Neotree " .. opt.packpath:get()[1] .. "pack/p/<CR>")
+nnoremap("<Space>eh", "<CMD>Neotree dir=~<CR>")
 
 vim.g.mapleader = ","
 
