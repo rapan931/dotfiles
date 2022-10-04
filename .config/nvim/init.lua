@@ -1,12 +1,7 @@
 My = require("my")
 
 local my_map = require("my.map")
--- local map = my_map.map
--- local xmap = my_map.xmap
--- local nmap = my_map.nmap
--- local imap = My.keymap.imap
--- local cmap = My.keymap.cmap
-local noremap = my_map.noremap
+local noremap  = my_map.noremap
 local xnoremap = my_map.xnoremap
 local nnoremap = my_map.nnoremap
 local inoremap = my_map.inoremap
@@ -107,6 +102,7 @@ packer.startup(function(use)
   use("klen/nvim-config-local")
   use("rhysd/committia.vim")
   use("hotwatermorning/auto-git-diff")
+  use("haya14busa/vim-edgemotion")
 
   use({ "machakann/vim-sandwich", opt = true })
 
@@ -192,21 +188,15 @@ require("neo-tree").setup({
   window = {
     width = 50,
     popup = {
-      size = {
-        height = "80%",
-        width = "50%",
-      },
+      size = { height = "80%", width = "50%" },
       position = "50%",
     },
-    mapping_options = {
-      noremap = true,
-      nowait = true,
-    },
+    mapping_options = { noremap = true, nowait = true },
     mappings = {
       ["ZZ"] = function(state) pp(state.tree:get_node()) end,
       ["h"] = function(state)
         local node = state.tree:get_node()
-        local parent_id =  node:get_parent_id()
+        local parent_id = node:get_parent_id()
         if node.type == "directory" then
           if node:get_depth() == 1 then
             require("neo-tree.sources.filesystem.commands").navigate_up(state)
@@ -610,7 +600,7 @@ local on_attach = function(_, bufnr)
   nnoremap("gd", vim.lsp.buf.definition, bufopts)
   nnoremap("K", vim.lsp.buf.hover, bufopts)
   nnoremap("<Leader><Leaer>gi", vim.lsp.buf.implementation, bufopts)
-  nnoremap("<C-k>", vim.lsp.buf.signature_help, bufopts)
+  nnoremap("<C-q>", vim.lsp.buf.signature_help, bufopts)
   nnoremap("<Leader><Leader>wa", vim.lsp.buf.add_workspace_folder, bufopts)
   nnoremap("<Leader><Leader>wr", vim.lsp.buf.remove_workspace_folder, bufopts)
   nnoremap("<Leader><Leader>wl", function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, bufopts)
@@ -807,6 +797,9 @@ xnoremap("<Esc>", "o<Esc>")
 nnoremap("gv", "gvo")
 
 nnoremap("gF", "<Cmd>vertical botright wincmd F<CR>")
+
+nnoremap("<C-j>", "<Plug>(edgemotion-j)")
+nnoremap("<C-k>", "<Plug>(edgemotion-k)")
 
 -- setting
 opt.undofile = true
