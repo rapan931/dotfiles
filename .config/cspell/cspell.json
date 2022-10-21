@@ -1,0 +1,34 @@
+{
+  "allowCompoundWords": true,
+  "dictionaries": [
+    "lua",
+    "vim"
+  ],
+  "dictionaryDefinitions": [
+    {
+      "name": "vim",
+      "path": "~/.local/share/cspell/vim.txt.gz",
+      "description": "Vim Script Language dictionary"
+    }
+  ],
+  "languageSettings": [
+    {
+      "languageId": "lua",
+      "locale": "*",
+      "ignoreRegExpList": [
+        "/require.*/",
+        "/  use\\b.*/"
+      ],
+      "dictionaries": [
+        "lua"
+      ]
+    },
+    {
+      "languageId": "vim",
+      "locale": "*",
+      "dictionaries": [
+        "vim"
+      ]
+    }
+  ]
+}

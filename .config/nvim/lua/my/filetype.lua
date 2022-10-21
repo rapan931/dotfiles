@@ -1,20 +1,19 @@
 local M = {}
-local bm = vim.api.nvim_buf_set_keymap
-local noremap = { noremap = true }
-local lopt = vim.opt_local
+local buf_nmap = require('my.map').buf_nmap
+local opt = vim.opt_local
 
 ---@param tab_length number
 ---@param is_hard_tab boolean
 local function set_indent(tab_length, is_hard_tab)
   if is_hard_tab then
-    lopt.expandtab = false
+    opt.expandtab = false
   else
-    lopt.expandtab = true
+    opt.expandtab = true
   end
 
-  lopt.shiftwidth  = tab_length
-  lopt.softtabstop = tab_length
-  lopt.tabstop     = tab_length
+  opt.shiftwidth  = tab_length
+  opt.softtabstop = tab_length
+  opt.tabstop     = tab_length
 end
 
 M.gitconfig = function()
@@ -26,11 +25,15 @@ M.make = function()
 end
 
 M.help = function()
-  bm(0, 'n', 'q', 'ZZ', noremap)
+  buf_nmap('q', 'ZZ')
+end
+
+M.gitcommit = function()
+  opt.spell = true
 end
 
 M.qf = function()
-  bm(0, 'n', 'q', 'ZZ', noremap)
+  buf_nmap('q', 'ZZ')
 end
 
 M.java = function()

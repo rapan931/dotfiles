@@ -1,12 +1,12 @@
 My = require("my")
 
 local my_map = require("my.map")
-local noremap  = my_map.noremap
-local xnoremap = my_map.xnoremap
-local nnoremap = my_map.nnoremap
-local inoremap = my_map.inoremap
-local cnoremap = my_map.cnoremap
-local onoremap = my_map.onoremap
+local map = my_map.map
+local xmap = my_map.xmap
+local nmap = my_map.nmap
+local imap = my_map.imap
+local cmap = my_map.cmap
+local omap = my_map.omap
 
 local api = vim.api
 local fn = vim.fn
@@ -42,7 +42,6 @@ packer.startup(function(use)
     "nvim-telescope/telescope-fzf-native.nvim",
     run = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
   })
-  use("nvim-telescope/telescope-file-browser.nvim")
 
   use({
     "nvim-neo-tree/neo-tree.nvim",
@@ -50,23 +49,7 @@ packer.startup(function(use)
       "nvim-lua/plenary.nvim",
       "kyazdani42/nvim-web-devicons",
       "MunifTanjim/nui.nvim",
-      {
-        "s1n7ax/nvim-window-picker",
-        tag = "v1.*",
-        config = function()
-          require("window-picker").setup({
-            autoselect_one = true,
-            include_current = false,
-            other_win_hl_color = "#e35e4f",
-            filter_rules = {
-              bo = {
-                filetype = { "neo-tree", "neo-tree-popup", "notify", "quickfix" },
-                buftype = { "terminal" },
-              },
-            },
-          })
-        end,
-      },
+      "~/repos/github.com/rapan931/nvim-window-picker",
     },
   })
 
@@ -107,31 +90,76 @@ packer.startup(function(use)
   use({ "machakann/vim-sandwich", opt = true })
 
   use("windwp/nvim-autopairs")
+  use("previm/previm")
 
   use("anuvyklack/hydra.nvim")
 
   use("~/repos/github.com/rapan931/lasterisk.nvim")
   use("~/repos/github.com/rapan931/bistahieversor.nvim")
-  use("~/repos/github.com/rapan931/utahraptor.nvim")
   use("~/repos/github.com/rapan931/binary_comments.vim")
+  -- use("~/repos/github.com/rapan931/utahraptor.nvim")
 end)
+
+vim.g.mapleader = ","
+vim.g.previm_wsl_mode = 1
+
+require("nvim-treesitter.configs").setup({
+  highlight = {
+    enable = true,
+    disable = function(lang)
+      local ok = pcall(function() vim.treesitter.get_query(lang, "highlights") end)
+      return not ok
+    end,
+  },
+})
+
+-- opt.winbar = '%f'
+require("window-picker").setup({
+  include_current_win = true,
+  -- use_winbar = 'always',
+  autoselect_one = true,
+  selection_chars = "SDFGHJKL;QWERTYUIOPZCVBNM",
+  other_win_hl_color = "#e35e4f",
+  filter_rules = {
+    bo = {
+      filetype = { "neo-tree", "neo-tree-popup", "notify" },
+      buftype = { "terminal", "quickfix" },
+    },
+  },
+  hl_position = "all",
+})
+
 require("Comment").setup()
 require("nvim-autopairs").setup({})
 
-require("null-ls").setup({
+local null_ls = require("null-ls")
+null_ls.setup({
   sources = {
-    require("null-ls").builtins.formatting.stylua,
+    -- null_ls.builtins.formatting.stylua,
+    null_ls.builtins.formatting.stylua.with({
+      cwd = function(_)
+        local root = My.get_root_dir()
+        if #root > 0 then
+          return root
+        else
+          return fn.expand("%:p:h")
+        end
+      end,
+    }),
+    null_ls.builtins.diagnostics.cspell.with({
+      condition = function() return vim.fn.executable("cspell") > 0 end,
+      -- extra_args = { "--show-suggestions", "--config", "~/.config/cspell/cspell.json" },
+      extra_args = { "--show-suggestions", "--config", vim.env.HOME .. "/.config/cspell/cspell.json" },
+      -- extra_args = { "--config", vim.env.HOME .. "/.config/cspell/cspell.json" },
+      diagnostics_postprocess = function(diagnostic) diagnostic.severity = vim.diagnostic.severity.WARN end,
+    }),
   },
+  debug = true,
 })
 
 local my_filetype = require("my.filetype")
 local bistahieversor = require("bistahieversor")
 local lasterisk = require("lasterisk")
-local utahraptor = require("utahraptor")
-utahraptor.setup({
-  flash_ms = 500,
-  flash_hl_group = "MyFlash",
-})
 
 -- telescope
 local telescope = require("telescope")
@@ -152,33 +180,25 @@ telescope.setup({
       override_file_sorter = true,
       case_mode = "smart_case",
     },
-    file_browser = {
-      theme = "ivy",
-      -- disables netrw and use telescope-file-browser in its place
-      hijack_netrw = true,
-      mappings = {
-        ["i"] = {
-          -- your custom insert mode mappings
-        },
-        ["n"] = {
-          -- your custom normal mode mappings
-        },
-      },
-    },
   },
 })
 telescope.load_extension("fzf")
 
-local tele_builtin = require("telescope.builtin")
-nnoremap("<Space>F", function() tele_builtin.oldfiles() end)
-nnoremap("<Space>f", function() tele_builtin.oldfiles({ only_cwd = true }) end)
-nnoremap("<Space>R", function() tele_builtin.resume() end)
-nnoremap("<Space>g", function() tele_builtin.live_grep() end)
-nnoremap("<Space>S", function() tele_builtin.find_files() end)
-nnoremap("<Space>s", function() tele_builtin.find_files({ cwd = My.get_root_dir() }) end)
+local telescope_builtin = require("telescope.builtin")
+nmap("<Space>f", function() telescope_builtin.oldfiles({ only_cwd = true }) end)
+nmap("<Space>F", function() telescope_builtin.oldfiles() end)
+nmap("<Space>R", function() telescope_builtin.resume() end)
+nmap("<Space><Space>g", function() telescope_builtin.live_grep() end)
+nmap("<Space><Space>f", function() telescope_builtin.fd({ cwd = vim.fn.expand("%:p:h") }) end)
+nmap("<Space><Space>F", function() telescope_builtin.fd({ find_command = { "fd", "--type", "f" } }) end)
 
 vim.g.neo_tree_remove_legacy_commands = 1
 require("neo-tree").setup({
+  hide_root_node = true,
+  sources = {
+    "filesystem",
+    "git_status",
+  },
   sort_function = nil,
   use_default_mappings = false,
   source_selector = {
@@ -193,95 +213,30 @@ require("neo-tree").setup({
     },
     mapping_options = { noremap = true, nowait = true },
     mappings = {
+      -- ["ZZ"] = function(state) fn.setreg(vim.v.register, vim.inspect(state.tree:get_node())) end,
       ["ZZ"] = function(state) pp(state.tree:get_node()) end,
-      ["h"] = function(state)
-        local node = state.tree:get_node()
-        local parent_id = node:get_parent_id()
-        if node.type == "directory" then
-          if node:get_depth() == 1 then
-            require("neo-tree.sources.filesystem.commands").navigate_up(state)
-          elseif node:is_expanded() then
-            require("neo-tree.sources.filesystem.commands").navigate_up(state)
-            require("neo-tree.sources.filesystem").toggle_directory(state, node)
-          else
-            require("neo-tree.sources.filesystem").toggle_directory(state, state.tree:get_node(parent_id))
-            require("neo-tree.ui.renderer").redraw(state)
-          end
-        else
-          -- require("neo-tree.sources.filesystem.commands").navigate_up(state)
-          -- require("neo-tree.ui.renderer").focus_node(state, node:get_parent_id())
-          require("neo-tree.sources.filesystem").toggle_directory(state, state.tree:get_node(parent_id))
-          require("neo-tree.ui.renderer").redraw(state)
-        end
-      end,
-      ["l"] = function(state)
-        local node = state.tree:get_node()
-        if node.type ~= "directory" then
-          return
-        end
-
-        if not node:is_expanded() then
-          require("neo-tree.sources.filesystem").toggle_directory(state, node)
-        end
-        require("neo-tree.ui.renderer").focus_node(state, node:get_child_ids()[1])
-      end,
-      ["<CR>"] = function(state)
-        local node = state.tree:get_node()
-        if node.type == "directory" then
-          if node._parent_id ~= nil then
-            require("neo-tree.sources.filesystem.commands").set_root(state)
-          end
-        else
-          require("neo-tree.sources.filesystem.commands").open_with_window_picker(state)
-        end
-      end,
+      ["zz"] = function(state) fn.setreg(vim.v.register, vim.inspect(state.tree)) end,
+      ["Zz"] = function(state) fn.setreg(vim.v.register, vim.inspect(state)) end,
       ["t"] = function(state)
         local node = state.tree:get_node()
-        if node.type ~= "directory" then
-          api.nvim_echo({ { "works only for directories!", "WarningMsg" } }, true, {})
-          return
+        local path = ""
+        if node.type == "directory" then
+          path = node.path
+        else
+          path = node.path:match("(^.+/).+$")
         end
         cmd("topleft new")
-        fn.termopen("bash", { cwd = node.path })
+        fn.termopen("bash", { cwd = path })
       end,
-      ["T"] = function(state)
-        local node = state.tree:get_node()
-
-        if node.type ~= "directory" then
-          api.nvim_echo({ { "works only for directories!", "WarningMsg" } }, true, {})
-          return
-        end
-
-        local toggle_dir_no_redraw =
-        function(_state, _node) require("neo-tree.sources.filesystem").toggle_directory(_state, _node, nil, true, true) end
-
-        local expand_node
-        expand_node = function(_node)
-          local id = _node:get_id()
-          if _node.type == "directory" and not _node:is_expanded() then
-            toggle_dir_no_redraw(state, _node)
-            _node = state.tree:get_node(id)
-          end
-          local children = state.tree:get_nodes(id)
-          if children then
-            for _, child in ipairs(children) do
-              if child.type == "directory" then
-                expand_node(child)
-              end
-            end
-          end
-        end
-
-        expand_node(node)
-        require("neo-tree.ui.renderer").redraw(state)
-      end,
+      ["<Space><Space>g"] = function(state) telescope_builtin.live_grep({ cwd = state.tree:get_node().path }) end,
       ["<C-l>"] = "refresh",
       ["q"] = "close_window",
 
       ["<space>"] = { "toggle_node", nowait = false },
       ["<esc>"] = "revert_preview",
       ["p"] = { "toggle_preview", config = { use_float = true } },
-      ["Z"] = "close_all_nodes",
+      ["Za"] = "expand_all_nodes",
+      ["o"] = "open",
 
       ["AAA"] = { "add", config = { show_path = "none" } },
       ["KKK"] = "add_directory",
@@ -301,14 +256,112 @@ require("neo-tree").setup({
     window = {
       mappings = {
         ["H"] = "toggle_hidden",
-        ["/"] = "fuzzy_finder",
-        ["?"] = "fuzzy_finder_directory",
+        ["z/"] = "fuzzy_finder",
+        ["z?"] = "fuzzy_finder_directory",
         ["f"] = "filter_on_submit",
         ["<C-x>"] = "clear_filter",
         -- ["<bs>"] = "navigate_up",
-        -- ["."] = "set_root",
         ["[g"] = "prev_git_modified",
         ["]g"] = "next_git_modified",
+
+        ["T"] = function(state)
+          local node = state.tree:get_node()
+
+          if node.type ~= "directory" then
+            api.nvim_echo({ { "works only for directories!", "WarningMsg" } }, true, {})
+            return
+          end
+
+          local toggle_dir_no_redraw =
+            function(_state, _node) require("neo-tree.sources.filesystem").toggle_directory(_state, _node, nil, true, true) end
+
+          local expand_node
+          expand_node = function(_node)
+            local id = _node:get_id()
+            if _node.type == "directory" and not _node:is_expanded() then
+              toggle_dir_no_redraw(state, _node)
+              _node = state.tree:get_node(id)
+            end
+            local children = state.tree:get_nodes(id)
+            if children then
+              for _, child in ipairs(children) do
+                if child.type == "directory" then
+                  expand_node(child)
+                end
+              end
+            end
+          end
+
+          expand_node(node)
+          require("neo-tree.ui.renderer").redraw(state)
+        end,
+        ["<CR>"] = function(state)
+          local node = state.tree:get_node()
+          if node.type == "directory" then
+            if node._parent_id ~= nil then
+              require("neo-tree.sources.filesystem.commands").set_root(state)
+            end
+          else
+            require("neo-tree.sources.common.commands").open_with_window_picker(state)
+          end
+        end,
+
+        ["l"] = function(state)
+          local node = state.tree:get_node()
+          if node.type ~= "directory" then
+            return
+          end
+
+          if not node:is_expanded() then
+            require("neo-tree.sources.filesystem").toggle_directory(state, node)
+          end
+          require("neo-tree.ui.renderer").focus_node(state, node:get_child_ids()[1])
+        end,
+        ["h"] = function(state)
+          local node = state.tree:get_node()
+          if node.type == "directory" then
+            if node.level == 0 then
+              if node:is_expanded() then
+                require("neo-tree.sources.filesystem").toggle_directory(state, node)
+              else
+                local parent_path = fn.fnamemodify(string.gsub(node.path, "/$", ""), ":h:h")
+                pp(node.path)
+                pp(fn.fnamemodify(string.gsub(node.path, "/$", ""), ":h"))
+                pp(parent_path)
+                if not require("neo-tree.utils").truthy(parent_path) then
+                  return
+                end
+
+                if state.search_pattern then
+                  require("neo-tree.sources.filesystem").reset_search(state, false)
+                end
+                require("neo-tree.sources.filesystem")._navigate_internal(state, parent_path, nil, nil, false)
+              end
+            else
+              if node:is_expanded() then
+                require("neo-tree.sources.filesystem").toggle_directory(state, node)
+              else
+                require("neo-tree.sources.filesystem").toggle_directory(state, state.tree:get_node(node:get_parent_id()))
+              end
+            end
+          else
+            if node.level == 0 then
+              local parent_path = fn.fnamemodify(string.gsub(node.path, "/$", ""), ":h:h")
+              if not require("neo-tree.utils").truthy(parent_path) then
+                return
+              end
+
+              if state.search_pattern then
+                require("neo-tree.sources.filesystem").reset_search(state, false)
+              end
+              require("neo-tree.sources.filesystem")._navigate_internal(state, parent_path, nil, nil, false)
+            else
+              require("neo-tree.sources.filesystem").toggle_directory(state, state.tree:get_node(node:get_parent_id()))
+            end
+          end
+
+          require("neo-tree.ui.renderer").redraw(state)
+        end,
       },
     },
     filtered_items = {
@@ -322,19 +375,6 @@ require("neo-tree").setup({
     },
     find_by_full_path_words = false,
   },
-  buffers = {
-    bind_to_cwd = true,
-    follow_current_file = true, -- This will find and focus the file in the active buffer every time
-    -- the current file is changed while the tree is open.
-    group_empty_dirs = true, -- when true, empty directories will be grouped together
-    window = {
-      mappings = {
-        ["<bs>"] = "navigate_up",
-        ["."] = "set_root",
-        ["bd"] = "buffer_delete",
-      },
-    },
-  },
   git_status = {
     window = {
       mappings = {
@@ -343,23 +383,23 @@ require("neo-tree").setup({
         ["gu"] = "git_unstage_file",
         ["gr"] = "git_revert_file",
         ["gc"] = "git_commit",
-        ["gp"] = "git_push",
+        ["gpp"] = "git_push",
         ["gg"] = "git_commit_and_push",
       },
     },
   },
 })
 
-nnoremap("<Space>ee", "<CMD>Neotree dir=./ toggle<CR>")
-nnoremap("<Space>er", "<CMD>Neotree dir=./<CR>")
-nnoremap("<Space>ef", "<CMD>Neotree dir=./ reveal_force_cwd<CR>")
-nnoremap("<Space>ep", "<CMD>Neotree " .. opt.packpath:get()[1] .. "pack/p/<CR>")
-nnoremap("<Space>eh", "<CMD>Neotree dir=~<CR>")
-
-vim.g.mapleader = ","
+nmap("<Space>ee", "<CMD>Neotree toggle<CR>")
+nmap("<Space>er", "<CMD>Neotree dir=./<CR>")
+nmap("<Space>ef", "<CMD>Neotree dir=./ reveal_force_cwd<CR>")
+nmap("<Space>ep", "<CMD>Neotree " .. opt.packpath:get()[1] .. "pack/p/<CR>")
+nmap("<Space>eh", "<CMD>Neotree dir=~<CR>")
+nmap("<Space>ev", "<CMD>Neotree $VIMRUNTIME<CR>")
+nmap("<Space>ev", "<CMD>Neotree /usr/local/src/neovim<CR>")
 
 local binary_comments = require("binary_comments")
-xnoremap("ge", binary_comments.draw)
+xmap("ge", binary_comments.draw)
 
 vim.g.ruby_no_expensive = 1
 
@@ -411,12 +451,7 @@ autocmd("CmdlineLeave", {
   pattern = { "/", "\\?" },
   callback = function()
     if vim.v.event.abort == false then
-      api.nvim_feedkeys(
-        api.nvim_replace_termcodes(":lua require('bistahieversor').echo() require('utahraptor').flash()<CR>", true, false
-          , true),
-        "n",
-        false
-      )
+      api.nvim_feedkeys(api.nvim_replace_termcodes(":lua require('bistahieversor').echo()<CR>", true, false, true), "n", false)
     end
   end,
 })
@@ -428,8 +463,7 @@ autocmd("FocusGained", {
     vim.defer_fn(function()
       local win_id = fn.win_getid()
       local match_id =
-      fn.matchadd("MyWindowFlash", [[\%>]] .. (fn.line("w0") - 1) .. [[l\_.*\%<]] .. (fn.line("w$") + 1) .. "l", 100, -1
-        , { window = win_id })
+        fn.matchadd("MyWindowFlash", [[\%>]] .. (fn.line("w0") - 1) .. [[l\_.*\%<]] .. (fn.line("w$") + 1) .. "l", 100, -1, { window = win_id })
       vim.defer_fn(function()
         if #fn.getwininfo(win_id) ~= 0 then
           fn.matchdelete(match_id, win_id)
@@ -587,28 +621,28 @@ cmp.setup.cmdline(":", {
   }),
 })
 
-nnoremap("<Leader><Leader>e", vim.diagnostic.open_float)
-nnoremap("g[", vim.diagnostic.goto_prev)
-nnoremap("g]", vim.diagnostic.goto_next)
-nnoremap("<Leader><Leader>q", vim.diagnostic.setloclist)
+nmap("<Leader><Leader>e", vim.diagnostic.open_float)
+nmap("g[", vim.diagnostic.goto_prev)
+nmap("g]", vim.diagnostic.goto_next)
+nmap("<Leader><Leader>q", vim.diagnostic.setloclist)
 
 local on_attach = function(_, bufnr)
   -- vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 
-  local bufopts = { buffer = bufnr }
-  nnoremap("gD", vim.lsp.buf.declaration, bufopts)
-  nnoremap("gd", vim.lsp.buf.definition, bufopts)
-  nnoremap("K", vim.lsp.buf.hover, bufopts)
-  nnoremap("<Leader><Leaer>gi", vim.lsp.buf.implementation, bufopts)
-  nnoremap("<C-q>", vim.lsp.buf.signature_help, bufopts)
-  nnoremap("<Leader><Leader>wa", vim.lsp.buf.add_workspace_folder, bufopts)
-  nnoremap("<Leader><Leader>wr", vim.lsp.buf.remove_workspace_folder, bufopts)
-  nnoremap("<Leader><Leader>wl", function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, bufopts)
-  nnoremap("<Leader><Leader>D", vim.lsp.buf.type_definition, bufopts)
-  nnoremap("<Leader><Leader>rn", vim.lsp.buf.rename, bufopts)
-  nnoremap("<Leader><Leader>ca", vim.lsp.buf.code_action, bufopts)
-  nnoremap("gr", vim.lsp.buf.references, bufopts)
-  nnoremap("<Leader><Leader>f", function() vim.lsp.buf.format({ async = false }) end, bufopts)
+  local buf_opts = { buffer = bufnr }
+  nmap("gD", vim.lsp.buf.declaration, buf_opts)
+  nmap("gd", vim.lsp.buf.definition, buf_opts)
+  nmap("K", vim.lsp.buf.hover, buf_opts)
+  nmap("<Leader><Leader>gi", vim.lsp.buf.implementation, buf_opts)
+  nmap("<C-q>", vim.lsp.buf.signature_help, buf_opts)
+  nmap("<Leader><Leader>wa", vim.lsp.buf.add_workspace_folder, buf_opts)
+  nmap("<Leader><Leader>wr", vim.lsp.buf.remove_workspace_folder, buf_opts)
+  nmap("<Leader><Leader>wl", function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, buf_opts)
+  nmap("<Leader><Leader>D", vim.lsp.buf.type_definition, buf_opts)
+  nmap("<Leader><Leader>rn", vim.lsp.buf.rename, buf_opts)
+  nmap("<Leader><Leader>ca", vim.lsp.buf.code_action, buf_opts)
+  nmap("gr", vim.lsp.buf.references, buf_opts)
+  nmap("<Leader><Leader>f", function() vim.lsp.buf.format({ async = false }) end, buf_opts)
 end
 
 require("mason").setup()
@@ -656,6 +690,9 @@ nvim_lspconfig.sumneko_lua.setup({
         checkThirdParty = false,
       },
       telemetry = {
+        enable = false,
+      },
+      format = {
         enable = false,
       },
     },
@@ -722,84 +759,83 @@ require("lualine").setup({
     lualine_z = {},
   },
   tabline = {},
-  extensions = {},
+  extensions = { "quickfix", "neo-tree" },
 })
 
 bistahieversor.setup({ maxcount = 1000, echo_wrapscan = true })
-noremap("n", function()
+map("n", function() bistahieversor.n_and_echo() end)
+map("N", function() bistahieversor.N_and_echo() end)
+map("<C-n>", function()
   bistahieversor.n_and_echo()
-  utahraptor.flash()
+  vim.cmd("normal! zz")
 end)
 
-noremap("N", function()
-  bistahieversor.N_and_echo()
-  utahraptor.flash()
-end)
-
-noremap("*", function()
+map("*", function()
   lasterisk.search()
   bistahieversor.echo()
-  utahraptor.flash()
 end)
 
-xnoremap("*", function()
+xmap("*", function()
   lasterisk.search({ is_whole = false })
   bistahieversor.echo()
-  utahraptor.flash()
 end)
 
-noremap("g*", function()
+map("g*", function()
   lasterisk.search({ is_whole = false })
   bistahieversor.echo()
-  utahraptor.flash()
 end)
 
-nnoremap("g/", function()
-  local pattern = [[\V]] ..
-      fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vim.v.register, 1, 1)), [[\n]])
+nmap("g/", function()
+  local pattern = [[\V]] .. fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vim.v.register, 1, 1)), [[\n]])
   opt.hlsearch = opt.hlsearch
   fn.setreg("/", pattern)
   fn.histadd("/", pattern)
   bistahieversor.n_and_echo()
-  utahraptor.flash()
 end)
 
-cnoremap("<C-e>", "<End>")
-inoremap("<C-e>", "<End>")
-cnoremap("<C-a>", "<Home>")
-inoremap("<C-a>", "<Home>")
-cnoremap("<C-f>", "<Right>")
-inoremap("<C-f>", "<Right>")
-cnoremap("<C-b>", "<Left>")
-inoremap("<C-b>", "<Left>")
+cmap("<C-e>", "<End>")
+imap("<C-e>", "<End>")
+cmap("<C-a>", "<Home>")
+imap("<C-a>", "<Home>")
+cmap("<C-f>", "<Right>")
+imap("<C-f>", "<Right>")
+cmap("<C-b>", "<Left>")
+imap("<C-b>", "<Left>")
 
-nnoremap("gs", ":<C-u>%s///g<Left><Left>")
-xnoremap("gs", ":s///g<Left><Left>")
+nmap("gs", ":<C-u>%s///g<Left><Left>")
+xmap("gs", ":s///g<Left><Left>")
 
-xnoremap("v", "$h")
--- xnoremap('v', '$')
+xmap("v", "$h")
+-- xmap('v', '$')
 
-xnoremap("<ESC>", "o<ESC>")
-nnoremap("gv", "gvo")
+xmap("<ESC>", "o<ESC>")
+nmap("gv", "gvo")
 
-nnoremap("<Space>.", [[<cmd>e $MYVIMRC<CR>]])
+nmap("<Space>.", [[<cmd>e $MYVIMRC<CR>]])
 
-nnoremap("j", "gj")
-xnoremap("j", "gj")
-nnoremap("k", "gk")
-xnoremap("k", "gk")
+nmap("j", "gj")
+xmap("j", "gj")
+nmap("k", "gk")
+xmap("k", "gk")
 
-nnoremap("yie", [[<cmd>%y<cr>]])
-nnoremap("die", "ggdG")
-nnoremap("vie", "ggdG")
+nmap("yie", [[<cmd>%y<cr>]])
+nmap("die", "ggdG")
+nmap("vie", "ggVG")
 
-xnoremap("<Esc>", "o<Esc>")
-nnoremap("gv", "gvo")
+xmap("<Esc>", "o<Esc>")
+nmap("gv", "gvo")
 
-nnoremap("gF", "<Cmd>vertical botright wincmd F<CR>")
+nmap("gF", "<Cmd>vertical botright wincmd F<CR>")
 
-nnoremap("<C-j>", "<Plug>(edgemotion-j)")
-nnoremap("<C-k>", "<Plug>(edgemotion-k)")
+nmap("<C-j>", "<Plug>(edgemotion-j)")
+xmap("<C-j>", "<Plug>(edgemotion-j)")
+nmap("<C-k>", "<Plug>(edgemotion-k)")
+xmap("<C-k>", "<Plug>(edgemotion-k)")
+
+nmap("<Leader>ob", "<Plug>(openbrowser-smart-search)")
+xmap("<Leader>ob", "<Plug>(openbrowser-smart-search)")
+
+nmap("<F4>", "<CMD>set wrap!<CR>")
 
 -- setting
 opt.undofile = true
@@ -893,18 +929,18 @@ fn["operator#sandwich#set"]("delete", "all", "highlight", 10)
 fn["operator#sandwich#set"]("add", "all", "hi_duration", 10)
 fn["operator#sandwich#set"]("delete", "all", "hi_duration", 10)
 
-xnoremap("sd", "<Plug>(operator-sandwich-delete)")
-xnoremap("sr", "<Plug>(operator-sandwich-replace)")
-nnoremap("sa", "<Plug>(operator-sandwich-add)iw")
-xnoremap("sa", "<Plug>(operator-sandwich-add)")
-noremap("sA", "<Plug>(operator-sandwich-add)")
+xmap("sd", "<Plug>(operator-sandwich-delete)")
+xmap("sr", "<Plug>(operator-sandwich-replace)")
+nmap("sa", "<Plug>(operator-sandwich-add)iw")
+xmap("sa", "<Plug>(operator-sandwich-add)")
+map("sA", "<Plug>(operator-sandwich-add)")
 
-nnoremap("sd", "<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-auto-a)")
-nnoremap("sr", "<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-auto-a)")
+nmap("sd", "<Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-auto-a)")
+nmap("sr", "<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-auto-a)")
 
-onoremap("iq", "<Plug>(textobj-sandwich-auto-i)")
-xnoremap("iq", "<Plug>(textobj-sandwich-auto-i)")
-onoremap("aq", "<Plug>(textobj-sandwich-auto-a)")
-onoremap("aq", "<Plug>(textobj-sandwich-auto-a)")
+omap("iq", "<Plug>(textobj-sandwich-auto-i)")
+xmap("iq", "<Plug>(textobj-sandwich-auto-i)")
+omap("aq", "<Plug>(textobj-sandwich-auto-a)")
+omap("aq", "<Plug>(textobj-sandwich-auto-a)")
 
 cmd("colorscheme tokyonight")
