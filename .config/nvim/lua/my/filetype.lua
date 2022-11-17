@@ -20,6 +20,10 @@ M.gitconfig = function()
   set_indent(2, true)
 end
 
+M.quickrun = function()
+  buf_nmap('q', 'ZZ')
+end
+
 M.make = function()
   set_indent(4, true)
 end

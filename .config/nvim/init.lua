@@ -10,16 +10,14 @@ local omap = my_map.omap
 
 local api = vim.api
 local fn = vim.fn
-
-local opt = vim.opt
-local cmd = vim.cmd
+local call = vim.call
 
 local command = vim.api.nvim_create_user_command
 local autocmd = vim.api.nvim_create_autocmd
 
 -- packer.nvim
-opt.packpath = fn.stdpath("data") .. "/site/"
-cmd("packadd packer.nvim")
+vim.opt.packpath = fn.stdpath("data") .. "/site/"
+vim.cmd("packadd packer.nvim")
 local packer = require("packer")
 packer.init({ plugin_package = "p" })
 packer.startup(function(use)
@@ -94,10 +92,13 @@ packer.startup(function(use)
 
   use("anuvyklack/hydra.nvim")
 
+  use("lambdalisue/mr.vim")
+
+  use("thinca/vim-quickrun")
+  use("lambdalisue/vim-quickrun-neovim-job")
+
   use("~/repos/github.com/rapan931/lasterisk.nvim")
   use("~/repos/github.com/rapan931/bistahieversor.nvim")
-  use("~/repos/github.com/rapan931/binary_comments.vim")
-  -- use("~/repos/github.com/rapan931/utahraptor.nvim")
 end)
 
 vim.g.mapleader = ","
@@ -135,16 +136,9 @@ require("nvim-autopairs").setup({})
 local null_ls = require("null-ls")
 null_ls.setup({
   sources = {
-    -- null_ls.builtins.formatting.stylua,
-    null_ls.builtins.formatting.stylua.with({
-      cwd = function(_)
-        local root = My.get_root_dir()
-        if #root > 0 then
-          return root
-        else
-          return fn.expand("%:p:h")
-        end
-      end,
+    null_ls.builtins.formatting.stylua,
+    null_ls.builtins.formatting.prettier.with({
+      prefer_local = "node_modules/.bin",
     }),
     null_ls.builtins.diagnostics.cspell.with({
       condition = function() return vim.fn.executable("cspell") > 0 end,
@@ -157,6 +151,10 @@ null_ls.setup({
   debug = true,
 })
 
+vim.g.mr_mru_disabled = 0
+vim.g.mr_mrw_disabled = 1
+vim.g.mr_mrr_disabled = 1
+
 local my_filetype = require("my.filetype")
 local bistahieversor = require("bistahieversor")
 local lasterisk = require("lasterisk")
@@ -165,6 +163,7 @@ local lasterisk = require("lasterisk")
 local telescope = require("telescope")
 telescope.setup({
   defaults = {
+    path_display = { "absolute" },
     mappings = {
       i = {
         ["<C-u>"] = false,
@@ -184,13 +183,36 @@ telescope.setup({
 })
 telescope.load_extension("fzf")
 
-local telescope_builtin = require("telescope.builtin")
-nmap("<Space>f", function() telescope_builtin.oldfiles({ only_cwd = true }) end)
-nmap("<Space>F", function() telescope_builtin.oldfiles() end)
-nmap("<Space>R", function() telescope_builtin.resume() end)
-nmap("<Space><Space>g", function() telescope_builtin.live_grep() end)
-nmap("<Space><Space>f", function() telescope_builtin.fd({ cwd = vim.fn.expand("%:p:h") }) end)
-nmap("<Space><Space>F", function() telescope_builtin.fd({ find_command = { "fd", "--type", "f" } }) end)
+local t_scope_pickers = require("telescope.pickers")
+local t_scope_finders = require("telescope.finders")
+local t_scope_conf = require("telescope.config").values
+local t_scope_make_entry = require("telescope.make_entry")
+
+local function my_picker_mru(o)
+  local opts = o or {}
+  t_scope_pickers
+    .new(opts, {
+      prompt_title = "Oldfiles",
+      finder = t_scope_finders.new_table({
+        results = opts.only_cwd and call("mr#filter", { fn["mr#mru#list"](), fn.getcwd() }) or fn["mr#mru#list"](),
+        entry_maker = t_scope_make_entry.gen_from_file(opts),
+      }),
+      sorter = t_scope_conf.file_sorter(opts),
+      previewer = t_scope_conf.file_previewer(opts),
+    })
+    :find()
+end
+
+local t_scope_builtin = require("telescope.builtin")
+nmap("<Space>f", function() my_picker_mru({ only_cwd = true }) end)
+nmap("<Space>F", function() my_picker_mru() end)
+
+-- nmap("<Space>f", function() t_scope_builtin.oldfiles({ only_cwd = true }) end)
+-- nmap("<Space>F", function() t_scope_builtin.oldfiles() end)
+nmap("<Space>R", function() t_scope_builtin.resume() end)
+nmap("<Leader><Leader>g", function() t_scope_builtin.live_grep() end)
+nmap("<Leader><Leader>f", function() t_scope_builtin.fd({ cwd = vim.fn.expand("%:p:h") }) end)
+nmap("<Leader><Leader>F", function() t_scope_builtin.fd({ find_command = { "fd", "--type", "f" } }) end)
 
 vim.g.neo_tree_remove_legacy_commands = 1
 require("neo-tree").setup({
@@ -223,12 +245,12 @@ require("neo-tree").setup({
         if node.type == "directory" then
           path = node.path
         else
-          path = node.path:match("(^.+/).+$")
+          path = fn.fnamemodify(string.gsub(node.path, "/$", ""), ":h:h")
         end
-        cmd("topleft new")
+        vim.cmd("topleft new")
         fn.termopen("bash", { cwd = path })
       end,
-      ["<Space><Space>g"] = function(state) telescope_builtin.live_grep({ cwd = state.tree:get_node().path }) end,
+      ["<Space><Space>g"] = function(state) t_scope_builtin.live_grep({ cwd = state.tree:get_node().path }) end,
       ["<C-l>"] = "refresh",
       ["q"] = "close_window",
 
@@ -250,6 +272,7 @@ require("neo-tree").setup({
       ["g?"] = "show_help",
       ["<"] = "prev_source",
       [">"] = "next_source",
+      ["."] = "set_root",
     },
   },
   filesystem = {
@@ -393,19 +416,16 @@ require("neo-tree").setup({
 nmap("<Space>ee", "<CMD>Neotree toggle<CR>")
 nmap("<Space>er", "<CMD>Neotree dir=./<CR>")
 nmap("<Space>ef", "<CMD>Neotree dir=./ reveal_force_cwd<CR>")
-nmap("<Space>ep", "<CMD>Neotree " .. opt.packpath:get()[1] .. "pack/p/<CR>")
+nmap("<Space>ep", "<CMD>Neotree " .. vim.opt.packpath:get()[1] .. "pack/p/<CR>")
 nmap("<Space>eh", "<CMD>Neotree dir=~<CR>")
 nmap("<Space>ev", "<CMD>Neotree $VIMRUNTIME<CR>")
 nmap("<Space>ev", "<CMD>Neotree /usr/local/src/neovim<CR>")
-
-local binary_comments = require("binary_comments")
-xmap("ge", binary_comments.draw)
 
 vim.g.ruby_no_expensive = 1
 
 if fn.has("vim_starting") then
   -- opt.viminfo = "!,'1000,<100,s10,h"
-  opt.shada = { "!", "'1000", "<100", "s10", "h" }
+  vim.opt.shada = { "!", "'1000", "<100", "s10", "h" }
 end
 
 api.nvim_create_augroup("vimrc_augroup", {})
@@ -467,7 +487,7 @@ autocmd("FocusGained", {
       vim.defer_fn(function()
         if #fn.getwininfo(win_id) ~= 0 then
           fn.matchdelete(match_id, win_id)
-          cmd("redraw")
+          vim.cmd("redraw")
         end
       end, 300)
     end, 30)
@@ -485,7 +505,7 @@ autocmd("BufEnter", {
     local root_dir = My.get_root_dir()
     if root_dir ~= nil and #root_dir ~= 0 then
       -- vim.bo.path = '.,,' .. root_dir .. '/**'
-      cmd("lcd " .. root_dir)
+      vim.cmd("lcd " .. root_dir)
     end
   end,
 })
@@ -520,12 +540,14 @@ command("TCurrent", function()
   if fn.filereadable(path) == 1 then
     local dir_path = fn.expand("%:p:h")
 
-    cmd("new")
+    vim.cmd("new")
     fn.termopen("bash", { cwd = dir_path })
   else
     print("Current buffer is not file!!")
   end
 end, {})
+
+command("RTP", function() print(fn.substitute(vim.opt.runtimepath._value, ",", "\n", "g")) end, {})
 
 vim.g.did_install_default_menus = 1
 vim.g.did_install_syntax_menu = 1
@@ -621,10 +643,10 @@ cmp.setup.cmdline(":", {
   }),
 })
 
-nmap("<Leader><Leader>e", vim.diagnostic.open_float)
+nmap("<Space><Space>e", vim.diagnostic.open_float)
 nmap("g[", vim.diagnostic.goto_prev)
 nmap("g]", vim.diagnostic.goto_next)
-nmap("<Leader><Leader>q", vim.diagnostic.setloclist)
+nmap("<Space><Space>l", vim.diagnostic.setloclist)
 
 local on_attach = function(_, bufnr)
   -- vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -633,16 +655,16 @@ local on_attach = function(_, bufnr)
   nmap("gD", vim.lsp.buf.declaration, buf_opts)
   nmap("gd", vim.lsp.buf.definition, buf_opts)
   nmap("K", vim.lsp.buf.hover, buf_opts)
-  nmap("<Leader><Leader>gi", vim.lsp.buf.implementation, buf_opts)
+  nmap("<Space><Space>gi", vim.lsp.buf.implementation, buf_opts)
   nmap("<C-q>", vim.lsp.buf.signature_help, buf_opts)
-  nmap("<Leader><Leader>wa", vim.lsp.buf.add_workspace_folder, buf_opts)
-  nmap("<Leader><Leader>wr", vim.lsp.buf.remove_workspace_folder, buf_opts)
-  nmap("<Leader><Leader>wl", function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, buf_opts)
-  nmap("<Leader><Leader>D", vim.lsp.buf.type_definition, buf_opts)
-  nmap("<Leader><Leader>rn", vim.lsp.buf.rename, buf_opts)
-  nmap("<Leader><Leader>ca", vim.lsp.buf.code_action, buf_opts)
+  nmap("<Space><Space>wa", vim.lsp.buf.add_workspace_folder, buf_opts)
+  nmap("<Space><Space>wr", vim.lsp.buf.remove_workspace_folder, buf_opts)
+  nmap("<Space><Space>wl", function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, buf_opts)
+  nmap("<Space><Space>D", vim.lsp.buf.type_definition, buf_opts)
+  nmap("<Space><Space>rn", vim.lsp.buf.rename, buf_opts)
+  nmap("<Space><Space>ca", vim.lsp.buf.code_action, buf_opts)
   nmap("gr", vim.lsp.buf.references, buf_opts)
-  nmap("<Leader><Leader>f", function() vim.lsp.buf.format({ async = false }) end, buf_opts)
+  nmap("<Space><Space>f", function() vim.lsp.buf.format({ async = false }) end, buf_opts)
 end
 
 require("mason").setup()
@@ -732,6 +754,16 @@ hydra({
   },
 })
 
+hydra({
+  name = "go to older/newer position in change list",
+  mode = "n",
+  body = "g",
+  heads = {
+    { ";", "g;" },
+    { ",", "g," },
+  },
+})
+
 require("lualine").setup({
   options = {
     icons_enabled = false,
@@ -787,11 +819,32 @@ end)
 
 nmap("g/", function()
   local pattern = [[\V]] .. fn.join(vim.tbl_map(function(line) return fn.escape(line, [[/\]]) end, fn.getreg(vim.v.register, 1, 1)), [[\n]])
-  opt.hlsearch = opt.hlsearch
+  vim.opt.hlsearch = vim.opt.hlsearch
   fn.setreg("/", pattern)
   fn.histadd("/", pattern)
   bistahieversor.n_and_echo()
 end)
+
+vim.g.quickrun_config = {
+  ["_"] = {
+    outputter = "error",
+    runner = "neovim_job",
+    ["outputter/error/success"] = "buffer",
+    ["outputter/error/error"] = "buffer",
+    ["outputter/buffer/opener"] = ":botright 15split",
+    ["outputter/buffer/close_on_empty"] = 1,
+  },
+  typescript = {
+    command = "./node_modules/.bin/tsc",
+    cmdopt = "--no-check --allow-all --unstable",
+    tempfile = "%{tempname()}.ts",
+    exec = { "%c", "node dist/%s:t:r.js" },
+  },
+  lua = {
+    command = 'nvim',
+    exec = [[%c --clean --headless -c 'source %s' -c 'cquit 0']]
+  }
+}
 
 cmap("<C-e>", "<End>")
 imap("<C-e>", "<End>")
@@ -837,73 +890,76 @@ xmap("<Leader>ob", "<Plug>(openbrowser-smart-search)")
 
 nmap("<F4>", "<CMD>set wrap!<CR>")
 
+imap("<S-CR>", "<CMD>echo 111<CR>")
+map("<S-CR>", "<CMD>echo 111<CR>")
+
 -- setting
-opt.undofile = true
-opt.undodir = vim.env.XDG_STATE_HOME .. "/nvim/undo/"
+vim.opt.undofile = true
+vim.opt.undodir = vim.env.XDG_STATE_HOME .. "/nvim/undo/"
 
-opt.smartcase = true
-opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.ignorecase = true
 
-opt.hidden = false
+vim.opt.hidden = false
 
-opt.undofile = true
-opt.undodir = vim.env.XDG_STATE_HOME .. "/nvim/undo/"
+vim.opt.undofile = true
+vim.opt.undodir = vim.env.XDG_STATE_HOME .. "/nvim/undo/"
 
-opt.directory = vim.env.XDG_STATE_HOME .. "/nvim/swap/"
-opt.swapfile = true
+vim.opt.directory = vim.env.XDG_STATE_HOME .. "/nvim/swap/"
+vim.opt.swapfile = true
 
-opt.cursorline = true
+vim.opt.cursorline = true
 
-opt.signcolumn = "yes"
+vim.opt.signcolumn = "yes"
 
-opt.shortmess = "filmnrwxtToOISs"
+vim.opt.shortmess = "filmnrwxtToOISs"
 
-opt.title = true
-opt.cmdheight = 2
-opt.showcmd = true
+vim.opt.title = true
+vim.opt.cmdheight = 2
+vim.opt.showcmd = true
 
-opt.backup = false
-opt.writebackup = false
+vim.opt.backup = false
+vim.opt.writebackup = false
 
-opt.equalalways = true
-opt.splitright = true
+vim.opt.equalalways = true
+vim.opt.splitright = true
 
-opt.list = true
-opt.listchars = {
+vim.opt.list = true
+vim.opt.listchars = {
   tab = ">--",
 }
 
-opt.sidescroll = 3
+vim.opt.sidescroll = 3
 
-opt.matchpairs = { "(:)", "{:}", "[:]", "<:>" }
+vim.opt.matchpairs = { "(:)", "{:}", "[:]", "<:>" }
 
-opt.expandtab = true
-opt.tabstop = 2
-opt.softtabstop = 2
-opt.shiftwidth = 2
-opt.shiftround = true
+vim.opt.expandtab = true
+vim.opt.tabstop = 2
+vim.opt.softtabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.shiftround = true
 
-opt.spelllang = { "en", "cjk" }
+vim.opt.spelllang = { "en", "cjk" }
 
-opt.formatoptions = "tcroqmMj"
+vim.opt.formatoptions = "tcroqmMj"
 
-opt.fixendofline = false
+vim.opt.fixendofline = false
 
-opt.mouse = "nv"
-opt.mousehide = false
+vim.opt.mouse = "nv"
+vim.opt.mousehide = false
 
-opt.fileencoding = "utf-8"
+vim.opt.fileencoding = "utf-8"
 
 if fn.executable("rg") then
-  opt.grepprg = "rg --vimgrep --no-heading"
+  vim.opt.grepprg = "rg --vimgrep --no-heading"
 end
 
-opt.completeopt = {
+vim.opt.completeopt = {
   "menu",
   "menuone",
   "noselect",
 }
-opt.clipboard = "unnamed"
+vim.opt.clipboard = "unnamed"
 vim.g.clipboard = {
   name = "win32yank-wsl",
 
@@ -918,12 +974,12 @@ vim.g.clipboard = {
   cache_enable = 1,
 }
 
-opt.termguicolors = true
+vim.opt.termguicolors = true
 
 vim.g.sandwich_no_default_key_mappings = 1
 vim.g.operator_sandwich_no_default_key_mappings = 1
 
-cmd("packadd vim-sandwich")
+vim.cmd("packadd vim-sandwich")
 fn["operator#sandwich#set"]("add", "all", "highlight", 10)
 fn["operator#sandwich#set"]("delete", "all", "highlight", 10)
 fn["operator#sandwich#set"]("add", "all", "hi_duration", 10)
@@ -943,4 +999,4 @@ xmap("iq", "<Plug>(textobj-sandwich-auto-i)")
 omap("aq", "<Plug>(textobj-sandwich-auto-a)")
 omap("aq", "<Plug>(textobj-sandwich-auto-a)")
 
-cmd("colorscheme tokyonight")
+vim.cmd("colorscheme tokyonight")

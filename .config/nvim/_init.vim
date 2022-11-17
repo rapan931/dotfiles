@@ -679,7 +679,7 @@ let g:quickrun_config =  {
      \     'command': 'ts-node',
      \     'cmdopt': '--compiler-options {\\"target\":\"es2015\"}',
      \     'tempfile': '%{tempname()}.ts',
-     \     'exec': '%c %o %s',
+     \     'exec': {'%c %o %s', ''},
      \   },
      \   'rspec': {
      \     'command': 'rspec',
