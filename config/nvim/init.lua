@@ -11,13 +11,14 @@ local omap = my_map.omap
 local api = vim.api
 local fn = vim.fn
 local call = vim.call
+local cmd = vim.cmd
 
 local command = vim.api.nvim_create_user_command
 local autocmd = vim.api.nvim_create_autocmd
 
 -- packer.nvim
 vim.opt.packpath = fn.stdpath("data") .. "/site/"
-vim.cmd("packadd packer.nvim")
+cmd("packadd packer.nvim")
 local packer = require("packer")
 packer.init({ plugin_package = "p" })
 packer.startup(function(use)
@@ -26,6 +27,7 @@ packer.startup(function(use)
   -- treesister
   use({ "nvim-treesitter/nvim-treesitter", run = ":TSUpdate" })
   use("nvim-treesitter/nvim-treesitter-textobjects")
+  use("stevearc/aerial.nvim")
 
   use({
     "jose-elias-alvarez/null-ls.nvim",
@@ -54,6 +56,7 @@ packer.startup(function(use)
   use("neovim/nvim-lspconfig")
   use("williamboman/mason.nvim")
   use("williamboman/mason-lspconfig.nvim")
+  use("j-hui/fidget.nvim")
 
   use("hrsh7th/nvim-cmp")
   use("hrsh7th/cmp-nvim-lsp")
@@ -64,42 +67,124 @@ packer.startup(function(use)
   use("hrsh7th/cmp-nvim-lua")
 
   use("hrsh7th/cmp-vsnip")
-  use("hrsh7th/vim-vsnip")
 
   use("folke/tokyonight.nvim")
   use("mjlbach/onedark.nvim")
   use("rebelot/kanagawa.nvim")
   use("ellisonleao/gruvbox.nvim")
   use("EdenEast/nightfox.nvim")
-  use("cocopon/iceberg.vim")
 
   use("nvim-lualine/lualine.nvim")
   use("numToStr/Comment.nvim")
 
-  use("haya14busa/vim-asterisk")
-  use("AndrewRadev/linediff.vim")
-  use("tyru/open-browser.vim")
-  use("tyru/open-browser-github.vim")
   use("klen/nvim-config-local")
-  use("rhysd/committia.vim")
-  use("hotwatermorning/auto-git-diff")
-  use("haya14busa/vim-edgemotion")
-
-  use({ "machakann/vim-sandwich", opt = true })
-
-  use("windwp/nvim-autopairs")
-  use("previm/previm")
 
   use("anuvyklack/hydra.nvim")
 
-  use("lambdalisue/mr.vim")
-
-  use("thinca/vim-quickrun")
-  use("lambdalisue/vim-quickrun-neovim-job")
+  use("ggandor/leap.nvim")
+  use("ggandor/flit.nvim")
+  use("notomo/reacher.nvim")
 
   use("~/repos/github.com/rapan931/lasterisk.nvim")
   use("~/repos/github.com/rapan931/bistahieversor.nvim")
+  use("~/repos/github.com/rapan931/dentaku.nvim")
+
+  -- vim script
+  use("vim-denops/denops.vim")
+  use("t9md/vim-quickhl")
+  use({ "machakann/vim-sandwich", opt = true })
+  use({ "cohama/lexima.vim", opt = true })
+  use("rhysd/committia.vim")
+  use("hrsh7th/vim-vsnip")
+  use("rafamadriz/friendly-snippets")
+  use("previm/previm")
+  use("lambdalisue/mr.vim")
+  use("thinca/vim-quickrun")
+  use("lambdalisue/vim-quickrun-neovim-job")
+  use("haya14busa/vim-edgemotion")
+  use("AndrewRadev/linediff.vim")
+  use("tyru/open-browser.vim")
+  use("tyru/open-browser-github.vim")
+  use("cocopon/iceberg.vim")
+  use("lambdalisue/gin.vim")
+
+  use("kana/vim-textobj-user")
+  use("kana/vim-textobj-line")
+  use("kana/vim-textobj-indent")
+  use("thinca/vim-textobj-between")
+
+  use("kana/vim-operator-user")
+  use("kana/vim-operator-replace")
 end)
+
+require("leap")
+nmap("S", "<Plug>(leap-cross-window)")
+nmap("z/", function() require("reacher").start({}) end)
+xmap("z/", function() require("reacher").start({}) end)
+
+require("flit").setup({
+  keys = { f = "f", F = "F", t = "t", T = "T" },
+  -- A string like "nv", "nvo", "o", etc.
+  labeled_modes = "",
+  multiline = false,
+  opts = {},
+})
+
+require("fidget").setup({})
+require("aerial").setup({
+  backends = {
+    "treesitter",
+    "markdown",
+    "man",
+  },
+
+  layout = {
+    max_width = { 80, 0.5 },
+    width = nil,
+    min_width = 20,
+    win_opts = {
+      winblend = 30,
+    },
+
+    default_direction = "float",
+    placement = "edge",
+  },
+
+  keymaps = {
+    ["q"] = "actions.close",
+  },
+  disable_max_lines = 10000,
+  disable_max_size = 2000000,
+  filter_kind = {
+    "Class",
+    "Constructor",
+    "Enum",
+    "Function",
+    "Interface",
+    "Module",
+    "Method",
+    "Struct",
+  },
+  highlight_mode = "last",
+  manage_folds = "auto",
+  link_folds_to_tree = false,
+  link_tree_to_folds = true,
+  close_on_select = true,
+  show_guides = true,
+  float = {
+    border = "rounded",
+    relative = "win",
+    max_height = 0.9,
+    height = nil,
+    min_height = { 8, 0.1 },
+    override = function(conf, source_winid)
+      conf.anchor = "NE"
+      conf.col = vim.fn.winwidth(source_winid)
+      conf.row = 0
+      return conf
+    end,
+  },
+})
 
 vim.g.mapleader = ","
 vim.g.previm_wsl_mode = 1
@@ -107,45 +192,59 @@ vim.g.previm_wsl_mode = 1
 require("nvim-treesitter.configs").setup({
   highlight = {
     enable = true,
-    disable = function(lang)
-      local ok = pcall(function() vim.treesitter.get_query(lang, "highlights") end)
-      return not ok
+    disable = function(lang, bufnr)
+      local byte_size = fn.getfsize(api.nvim_buf_get_name(bufnr))
+      if byte_size > 512 * 1000 then
+        return true
+      end
+      local ok = true
+      ok = pcall(function() vim.treesitter.get_parser(bufnr, lang):parse() end) and ok
+      ok = pcall(function() vim.treesitter.get_query(lang, "highlights") end) and ok
+      if not ok then
+        return true
+      end
+      return false
     end,
   },
 })
 
--- opt.winbar = '%f'
-require("window-picker").setup({
-  include_current_win = true,
-  -- use_winbar = 'always',
-  autoselect_one = true,
-  selection_chars = "SDFGHJKL;QWERTYUIOPZCVBNM",
-  other_win_hl_color = "#e35e4f",
-  filter_rules = {
-    bo = {
-      filetype = { "neo-tree", "neo-tree-popup", "notify" },
-      buftype = { "terminal", "quickfix" },
-    },
-  },
-  hl_position = "all",
-})
-
 require("Comment").setup()
-require("nvim-autopairs").setup({})
 
 local null_ls = require("null-ls")
+local null_ls_helper = require("null-ls.helpers")
 null_ls.setup({
   sources = {
+    null_ls.builtins.formatting.black,
     null_ls.builtins.formatting.stylua,
-    null_ls.builtins.formatting.prettier.with({
-      prefer_local = "node_modules/.bin",
-    }),
+    -- null_ls.builtins.formatting.prettier.with({
+    --   prefer_local = "node_modules/.bin",
+    -- }),
     null_ls.builtins.diagnostics.cspell.with({
       condition = function() return vim.fn.executable("cspell") > 0 end,
       -- extra_args = { "--show-suggestions", "--config", "~/.config/cspell/cspell.json" },
       extra_args = { "--show-suggestions", "--config", vim.env.HOME .. "/.config/cspell/cspell.json" },
       -- extra_args = { "--config", vim.env.HOME .. "/.config/cspell/cspell.json" },
       diagnostics_postprocess = function(diagnostic) diagnostic.severity = vim.diagnostic.severity.WARN end,
+      method = null_ls.methods.DIAGNOSTICS_ON_SAVE,
+    }),
+    null_ls.builtins.diagnostics.textlint.with({
+      prefer_local = "node_modules/.bin",
+      filetypes = { "markdown" },
+      condition = function(utils) return utils.root_has_file({ ".textlintrc" }) end,
+    }),
+    null_ls_helper.make_builtin({
+      condition = function(utils) return utils.root_has_file({ ".textlintrc" }) end,
+      name = "textlint_formatting",
+      meta = { url = "https://example.com", description = "TODO" },
+      method = null_ls.methods.FORMATTING,
+      filetypes = { "markdown" },
+      generator_opts = {
+        command = "textlint",
+        args = { "--fix", "$FILENAME" },
+        to_temp_file = true,
+      },
+      prefer_local = "node_modules/.bin",
+      factory = null_ls_helper.formatter_factory,
     }),
   },
   debug = true,
@@ -188,17 +287,33 @@ local t_scope_finders = require("telescope.finders")
 local t_scope_conf = require("telescope.config").values
 local t_scope_make_entry = require("telescope.make_entry")
 
+local function recent_file_sorter()
+  -- 適当なsorter。score>0とそれ以外の差さえ出してくれれば何でも良いのでfile_sorterと大きな差はないはず。
+  local file_sorter = t_scope_conf.file_sorter()
+  local base_scorer = file_sorter.scoring_function
+  file_sorter.scoring_function = function(self, prompt, line)
+    local score = base_scorer(self, prompt, line)
+    if score <= 0 then
+      return -1
+    else
+      return 1
+    end
+  end
+  return file_sorter
+end
+
 local function my_picker_mru(o)
   local opts = o or {}
   t_scope_pickers
     .new(opts, {
       prompt_title = "Oldfiles",
       finder = t_scope_finders.new_table({
-        results = opts.only_cwd and call("mr#filter", { fn["mr#mru#list"](), fn.getcwd() }) or fn["mr#mru#list"](),
+        results = opts.only_cwd and call("mr#filter", fn["mr#mru#list"](), fn.getcwd()) or call("mr#mru#list"),
         entry_maker = t_scope_make_entry.gen_from_file(opts),
       }),
-      sorter = t_scope_conf.file_sorter(opts),
+      sorter = recent_file_sorter(),
       previewer = t_scope_conf.file_previewer(opts),
+      tiebreak = function(_, _) return false end,
     })
     :find()
 end
@@ -214,6 +329,21 @@ nmap("<Leader><Leader>g", function() t_scope_builtin.live_grep() end)
 nmap("<Leader><Leader>f", function() t_scope_builtin.fd({ cwd = vim.fn.expand("%:p:h") }) end)
 nmap("<Leader><Leader>F", function() t_scope_builtin.fd({ find_command = { "fd", "--type", "f" } }) end)
 
+require("window-picker").setup({
+  include_current_win = true,
+  autoselect_one = true,
+  selection_chars = "SDFGHJKL;QWERTYUIOPZCVBNM",
+  other_win_hl_color = "#e35e4f",
+  filter_rules = {
+    bo = {
+      filetype = { "neo-tree", "neo-tree-popup", "notify" },
+      buftype = { "terminal", "quickfix" },
+    },
+  },
+  hl_position = "all",
+})
+
+
 vim.g.neo_tree_remove_legacy_commands = 1
 require("neo-tree").setup({
   hide_root_node = true,
@@ -228,29 +358,28 @@ require("neo-tree").setup({
     separator = "|",
   },
   window = {
-    width = 50,
+    width = 40,
     popup = {
       size = { height = "80%", width = "50%" },
       position = "50%",
     },
     mapping_options = { noremap = true, nowait = true },
     mappings = {
-      -- ["ZZ"] = function(state) fn.setreg(vim.v.register, vim.inspect(state.tree:get_node())) end,
-      ["ZZ"] = function(state) pp(state.tree:get_node()) end,
-      ["zz"] = function(state) fn.setreg(vim.v.register, vim.inspect(state.tree)) end,
-      ["Zz"] = function(state) fn.setreg(vim.v.register, vim.inspect(state)) end,
+      -- ["ZZ"] = function(state) pp(state.tree:get_node()) end,
+      -- ["zz"] = function(state) fn.setreg(vim.v.register, vim.inspect(state.tree)) end,
+      -- ["Zz"] = function(state) fn.setreg(vim.v.register, vim.inspect(state)) end,
       ["t"] = function(state)
         local node = state.tree:get_node()
         local path = ""
         if node.type == "directory" then
           path = node.path
         else
-          path = fn.fnamemodify(string.gsub(node.path, "/$", ""), ":h:h")
+          path = fn.fnamemodify(string.gsub(node.path, "/$", ""), ":h")
         end
-        vim.cmd("topleft new")
+        cmd("topleft new")
         fn.termopen("bash", { cwd = path })
       end,
-      ["<Space><Space>g"] = function(state) t_scope_builtin.live_grep({ cwd = state.tree:get_node().path }) end,
+      ["<Leader><Leader>g"] = function(state) t_scope_builtin.live_grep({ cwd = state.tree:get_node().path }) end,
       ["<C-l>"] = "refresh",
       ["q"] = "close_window",
 
@@ -276,6 +405,7 @@ require("neo-tree").setup({
     },
   },
   filesystem = {
+    bind_to_cwd = false,
     window = {
       mappings = {
         ["H"] = "toggle_hidden",
@@ -342,19 +472,21 @@ require("neo-tree").setup({
         end,
         ["h"] = function(state)
           local node = state.tree:get_node()
-          if node.type == "directory" then
+          local parent_path, _ = require("neo-tree.utils").split_path(state.path)
+          if not require("neo-tree.utils").truthy(parent_path) then
+            return
+          end
+
+          if node == nil then
+            if state.search_pattern then
+              require("neo-tree.sources.filesystem").reset_search(state, false)
+            end
+            require("neo-tree.sources.filesystem")._navigate_internal(state, parent_path, nil, nil, false)
+          elseif node.type == "directory" then
             if node.level == 0 then
               if node:is_expanded() then
                 require("neo-tree.sources.filesystem").toggle_directory(state, node)
               else
-                local parent_path = fn.fnamemodify(string.gsub(node.path, "/$", ""), ":h:h")
-                pp(node.path)
-                pp(fn.fnamemodify(string.gsub(node.path, "/$", ""), ":h"))
-                pp(parent_path)
-                if not require("neo-tree.utils").truthy(parent_path) then
-                  return
-                end
-
                 if state.search_pattern then
                   require("neo-tree.sources.filesystem").reset_search(state, false)
                 end
@@ -369,15 +501,15 @@ require("neo-tree").setup({
             end
           else
             if node.level == 0 then
-              local parent_path = fn.fnamemodify(string.gsub(node.path, "/$", ""), ":h:h")
-              if not require("neo-tree.utils").truthy(parent_path) then
+              local parent = fn.fnamemodify(string.gsub(node.path, "/$", ""), ":h:h")
+              if not require("neo-tree.utils").truthy(parent) then
                 return
               end
 
               if state.search_pattern then
                 require("neo-tree.sources.filesystem").reset_search(state, false)
               end
-              require("neo-tree.sources.filesystem")._navigate_internal(state, parent_path, nil, nil, false)
+              require("neo-tree.sources.filesystem")._navigate_internal(state, parent, nil, nil, false)
             else
               require("neo-tree.sources.filesystem").toggle_directory(state, state.tree:get_node(node:get_parent_id()))
             end
@@ -418,8 +550,9 @@ nmap("<Space>er", "<CMD>Neotree dir=./<CR>")
 nmap("<Space>ef", "<CMD>Neotree dir=./ reveal_force_cwd<CR>")
 nmap("<Space>ep", "<CMD>Neotree " .. vim.opt.packpath:get()[1] .. "pack/p/<CR>")
 nmap("<Space>eh", "<CMD>Neotree dir=~<CR>")
-nmap("<Space>ev", "<CMD>Neotree $VIMRUNTIME<CR>")
 nmap("<Space>ev", "<CMD>Neotree /usr/local/src/neovim<CR>")
+nmap("<Space>eV", "<CMD>Neotree $VIMRUNTIME<CR>")
+nmap("<Space>ed", "<CMD>Neotree ~/repos/github.com/rapan931/dotfiles<CR>")
 
 vim.g.ruby_no_expensive = 1
 
@@ -487,7 +620,7 @@ autocmd("FocusGained", {
       vim.defer_fn(function()
         if #fn.getwininfo(win_id) ~= 0 then
           fn.matchdelete(match_id, win_id)
-          vim.cmd("redraw")
+          cmd("redraw")
         end
       end, 300)
     end, 30)
@@ -505,7 +638,7 @@ autocmd("BufEnter", {
     local root_dir = My.get_root_dir()
     if root_dir ~= nil and #root_dir ~= 0 then
       -- vim.bo.path = '.,,' .. root_dir .. '/**'
-      vim.cmd("lcd " .. root_dir)
+      cmd("lcd " .. root_dir)
     end
   end,
 })
@@ -523,7 +656,7 @@ autocmd("TextYankPost", {
     vim.highlight.on_yank({
       higroup = "MyFlash",
       timeout = 400,
-      on_visual = false,
+      on_visual = true,
     })
   end,
 })
@@ -540,7 +673,7 @@ command("TCurrent", function()
   if fn.filereadable(path) == 1 then
     local dir_path = fn.expand("%:p:h")
 
-    vim.cmd("new")
+    cmd("new")
     fn.termopen("bash", { cwd = dir_path })
   else
     print("Current buffer is not file!!")
@@ -576,8 +709,11 @@ require("nvim-treesitter.configs").setup({
 })
 
 -- nvim-cmp setup
+
+vim.g.vsnip_snippet_dir = fn.stdpath("data") .. "/site/pack/p/start/friendly-snippets/snippets"
 local cmp = require("cmp")
 cmp.setup({
+  preselect = cmp.PreselectMode.None,
   snippet = {
     expand = function(args)
       fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
@@ -595,24 +731,22 @@ cmp.setup({
     ["<C-d>"] = cmp.mapping.scroll_docs(-4),
     ["<C-f>"] = cmp.mapping.scroll_docs(4),
     -- ['<C-Space>'] = cmp.mapping.complete(),
-    ["<CR>"] = cmp.mapping.confirm({
-      behavior = cmp.ConfirmBehavior.Replace,
-      select = false,
-    }),
-    ["<Tab>"] = cmp.mapping(function(fallback)
+    ["<CR>"] = cmp.mapping.confirm({ select = false }),
+    ["<C-Tab>"] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_next_item()
       else
         fallback()
       end
     end, { "i", "s" }),
-    ["<S-Tab>"] = cmp.mapping(function(fallback)
+    ["<C-S-Tab>"] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_prev_item()
       else
         fallback()
       end
     end, { "i", "s" }),
+    ["<C-s>"] = cmp.mapping.complete({ config = { sources = { { name = "vsnip" } } } }),
   }),
 })
 
@@ -664,7 +798,7 @@ local on_attach = function(_, bufnr)
   nmap("<Space><Space>rn", vim.lsp.buf.rename, buf_opts)
   nmap("<Space><Space>ca", vim.lsp.buf.code_action, buf_opts)
   nmap("gr", vim.lsp.buf.references, buf_opts)
-  nmap("<Space><Space>f", function() vim.lsp.buf.format({ async = false }) end, buf_opts)
+  nmap("<Space><Space>f", function() vim.lsp.buf.format({ async = false, timeout_ms = 4000 }) end, buf_opts)
 end
 
 require("mason").setup()
@@ -674,6 +808,10 @@ mason_lspconfig.setup_handlers({
   function(server_name)
     local opts = {}
     opts.on_attach = on_attach
+
+    if server_name == "html" then
+      opts.filetypes = { "html", "htmldjango" }
+    end
 
     if server_name == "yamlls" then
       opts.settings = {
@@ -687,11 +825,13 @@ mason_lspconfig.setup_handlers({
   end,
 })
 
+nvim_lspconfig.gopls.setup({ on_attach = on_attach })
 nvim_lspconfig.sumneko_lua.setup({
   on_attach = on_attach,
   cmd = { "lua-language-server" },
   settings = {
     Lua = {
+      semantic = { enable = false },
       runtime = {
         version = "LuaJIT",
         path = {
@@ -700,7 +840,8 @@ nvim_lspconfig.sumneko_lua.setup({
         },
       },
       completion = {
-        callSnippet = "Replace",
+        callSnippet = "Disable",
+        keywordSnippet = "Disable",
       },
       diagnostics = {
         globals = { "vim", "pp" }, -- pp is same vim.pretty_print
@@ -799,7 +940,7 @@ map("n", function() bistahieversor.n_and_echo() end)
 map("N", function() bistahieversor.N_and_echo() end)
 map("<C-n>", function()
   bistahieversor.n_and_echo()
-  vim.cmd("normal! zz")
+  cmd("normal! zz")
 end)
 
 map("*", function()
@@ -841,10 +982,16 @@ vim.g.quickrun_config = {
     exec = { "%c", "node dist/%s:t:r.js" },
   },
   lua = {
-    command = 'nvim',
-    exec = [[%c --clean --headless -c 'source %s' -c 'cquit 0']]
-  }
+    command = "nvim",
+    exec = [[%c --clean --headless -c 'source %s' -c 'cquit 0']],
+  },
 }
+
+vim.g.textobj_indent_no_default_key_mappings = 1
+omap("ai", "<Plug>(textobj-indent-a)")
+xmap("ai", "<Plug>(textobj-indent-a)")
+omap("ii", "<Plug>(textobj-indent-a)")
+xmap("ii", "<Plug>(textobj-indent-a)")
 
 cmap("<C-e>", "<End>")
 imap("<C-e>", "<End>")
@@ -890,8 +1037,20 @@ xmap("<Leader>ob", "<Plug>(openbrowser-smart-search)")
 
 nmap("<F4>", "<CMD>set wrap!<CR>")
 
-imap("<S-CR>", "<CMD>echo 111<CR>")
-map("<S-CR>", "<CMD>echo 111<CR>")
+nmap("<Leader>qw", "<CMD>windo diffthis<CR>")
+nmap("<Leader>qo", "<CMD>windo diffoff<CR>")
+nmap("<Leader>qu", "<CMD>diffupdate<CR>")
+
+nmap("2o", "jo")
+
+nmap("<Space>m", "<Plug>(quickhl-manual-this)")
+xmap("<Space>m", "<Plug>(quickhl-manual-this)")
+nmap("<Space>M", "<Plug>(quickhl-manual-reset)")
+xmap("<Space>M", "<Plug>(quickhl-manual-reset)")
+
+-- CR付けない
+nmap("<Leader>R", ":QuickRun")
+xmap("<Leader>R", ":QuickRun")
 
 -- setting
 vim.opt.undofile = true
@@ -979,7 +1138,7 @@ vim.opt.termguicolors = true
 vim.g.sandwich_no_default_key_mappings = 1
 vim.g.operator_sandwich_no_default_key_mappings = 1
 
-vim.cmd("packadd vim-sandwich")
+cmd("packadd vim-sandwich")
 fn["operator#sandwich#set"]("add", "all", "highlight", 10)
 fn["operator#sandwich#set"]("delete", "all", "highlight", 10)
 fn["operator#sandwich#set"]("add", "all", "hi_duration", 10)
@@ -999,4 +1158,71 @@ xmap("iq", "<Plug>(textobj-sandwich-auto-i)")
 omap("aq", "<Plug>(textobj-sandwich-auto-a)")
 omap("aq", "<Plug>(textobj-sandwich-auto-a)")
 
-vim.cmd("colorscheme tokyonight")
+vim.g.lexima_map_escape = ""
+vim.g.lexima_enable_endwise_rules = false
+vim.g.lexima_accept_pum_with_enter = false
+
+cmd("packadd lexima.vim")
+
+call("lexima#set_default_rules")
+
+-- [ \%# ]の状態から']'の入力でleaveするようにする
+-- call("lexima#add_rule", { char = "]", at = [==[\s\%#\s]]==], leave = 2 })
+
+-- typescript
+call("lexima#add_rule", {
+  filetype = { "typescript", "typescriptreact", "javascript" },
+  char = ">",
+  at = [==[\.[a-zA-Z]\+([a-zA-Z,]*>\%#)]==],
+  input = [==[<BS> => {]==],
+  input_after = "}",
+})
+call("lexima#add_rule", {
+  filetype = { "typescript", "typescriptreact", "javascript" },
+  char = ">",
+  at = [==[\.[a-zA-Z]\+(([a-zA-Z, :<>]*>\%#))]==],
+  input = [==[<BS><C-g>U<Right> => {]==],
+  input_after = "}",
+})
+call("lexima#add_rule", {
+  filetype = { "typescript", "typescriptreact", "javascript" },
+  char = ">",
+  at = [==[([a-zA-Z, :<>]*>\%#)]==],
+  input = [==[<BS><C-g>U<Right> => {]==],
+  input_after = "}",
+})
+call("lexima#add_rule", {
+  filetype = { "typescript", "typescriptreact", "javascript" },
+  char = ">",
+  at = [==[({[a-zA-Z, :<>]\+>\%#\s\?})]==],
+  input = [==[<BS><C-o>:normal! f)<CR><C-g>U<Right> => {}<C-g>U<Left>]==],
+})
+
+-- ruby
+call("lexima#add_rule", {
+  filetype = { "ruby" },
+  char = "<CR>",
+  at = [==[^\s*\%(module\|def\|class\|if\|unless\)\s\w\+\((.*)\)\?\%#$]==],
+  input = "<CR>",
+  input_after = "<CR>end",
+})
+call("lexima#add_rule", { filetype = { "ruby" }, char = "<CR>", at = [==[^\s*\%(begin\)\s*\%#]==], input_after = "<CR>end" })
+call("lexima#add_rule", { filetype = { "ruby" }, char = "<CR>", at = [==[\%(^\s*#.*\)\@<!do\%(\s*|.*|\)\?\s*\%#]==], input_after = "<CR>end" })
+call("lexima#add_rule", { filetype = { "ruby" }, char = "<Bar>", at = [==[do\%#]==], input = "<Space><Bar>", input_after = "<Bar><CR>end" })
+call("lexima#add_rule", { filetype = { "ruby" }, char = "<Bar>", at = [==[do\s\%#]==], input = "<Bar>", input_after = "<Bar><CR>end" })
+call("lexima#add_rule", { filetype = { "ruby" }, char = "<Bar>", at = [==[{\%#}]==], input = "<Space><Bar>", input_after = "<Bar><Space>" })
+call("lexima#add_rule", { filetype = { "ruby" }, char = "<Bar>", at = [==[{\s\%#\s}]==], input = "<Bar>", input_after = "<Bar><Space>" })
+
+-- 各種ログの設定 ppp<Space>で発火するようにする
+call(
+  "lexima#add_rule",
+  { filetype = { "typescript", "typescriptreact", "javascript" }, char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS><BS>console.log()<Left>" }
+)
+
+call("lexima#add_rule", { filetype = "lua", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>vim.pretty_print()<Left>" })
+call("lexima#add_rule", { filetype = "vim", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>echo <Space>" })
+call("lexima#add_rule", { filetype = "python", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>print()<Left>" })
+
+imap("<S-CR>", function() return "<End>" .. call("lexima#expand", "<LT>CR>", "i") end, { expr = true, remap = true, silent = true })
+
+cmd("colorscheme tokyonight")

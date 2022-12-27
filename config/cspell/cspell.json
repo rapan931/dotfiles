@@ -1,10 +1,20 @@
 {
+  "words": [
+    "rapan",
+    "dentaku",
+    "hoge",
+    "integ",
+    "untrace",
+    "gofmt",
+    "nmap",
+    "nvim"
+  ],
   "allowCompoundWords": true,
   "dictionaries": [
     "lua",
     "vim"
   ],
-  "dictionaryDefinitions": [
+  "diction aryDefinitions": [
     {
       "name": "vim",
       "path": "~/.local/share/cspell/vim.txt.gz",
