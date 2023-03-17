@@ -7,14 +7,15 @@
     "untrace",
     "gofmt",
     "nmap",
-    "nvim"
+    "nvim",
+    "nums"
   ],
   "allowCompoundWords": true,
   "dictionaries": [
     "lua",
     "vim"
   ],
-  "diction aryDefinitions": [
+  "dictionaryDefinitions": [
     {
       "name": "vim",
       "path": "~/.local/share/cspell/vim.txt.gz",
@@ -26,8 +27,7 @@
       "languageId": "lua",
       "locale": "*",
       "ignoreRegExpList": [
-        "/require.*/",
-        "/  use\\b.*/"
+        "/require.*/"
       ],
       "dictionaries": [
         "lua"

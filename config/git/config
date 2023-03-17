@@ -35,7 +35,9 @@
 	defaultBranch = main
 [ghq]
 	root = ~/repos
-
-; [includeIf "gitdir:~/repos/github.com/mycompany/"]
-; 	path = ~/.gitconfig-mycompany
-
+[core]
+	editor = nvim
+[push]
+	useForceIfIncludes = true
+[commit]
+	template = /home/rapan931/.config/git/.gitmessage

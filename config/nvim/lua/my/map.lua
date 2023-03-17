@@ -47,8 +47,22 @@ end
 ---@param lhs string
 ---@param rhs string | function
 ---@param ... table options
+M.smap = function(lhs, rhs, ...)
+  vim.keymap.set("s", lhs, rhs, ...)
+end
+
+---@param lhs string
+---@param rhs string | function
+---@param ... table options
 M.map = function(lhs, rhs, ...)
   vim.keymap.set({ "n", "x", "o" }, lhs, rhs, ...)
+end
+
+---@param lhs string
+---@param rhs string | function
+---@param ... table options
+M.nxmap = function(lhs, rhs, ...)
+  vim.keymap.set({ "n", "x" }, lhs, rhs, ...)
 end
 
 ---@param lhs string

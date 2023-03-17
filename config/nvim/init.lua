@@ -7,6 +7,8 @@ local nmap = my_map.nmap
 local imap = my_map.imap
 local cmap = my_map.cmap
 local omap = my_map.omap
+local smap = my_map.smap
+local nxmap = my_map.nmap
 
 local api = vim.api
 local fn = vim.fn
@@ -16,118 +18,158 @@ local cmd = vim.cmd
 local command = vim.api.nvim_create_user_command
 local autocmd = vim.api.nvim_create_autocmd
 
--- packer.nvim
-vim.opt.packpath = fn.stdpath("data") .. "/site/"
-cmd("packadd packer.nvim")
-local packer = require("packer")
-packer.init({ plugin_package = "p" })
-packer.startup(function(use)
-  use({ "wbthomason/packer.nvim", opt = true })
+vim.g.mapleader = ","
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({ "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", lazypath })
+end
+vim.opt.rtp:prepend(lazypath)
 
-  -- treesister
-  use({ "nvim-treesitter/nvim-treesitter", run = ":TSUpdate" })
-  use("nvim-treesitter/nvim-treesitter-textobjects")
-  use("stevearc/aerial.nvim")
+require("lazy").setup({
+  { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
+  "nvim-treesitter/nvim-treesitter-textobjects",
+  "stevearc/aerial.nvim",
 
-  use({
-    "jose-elias-alvarez/null-ls.nvim",
-    requires = { "nvim-lua/plenary.nvim" },
-  })
+  { "jose-elias-alvarez/null-ls.nvim", dependencies = { "nvim-lua/plenary.nvim" } },
 
-  use({
-    "nvim-telescope/telescope.nvim",
-    requires = { "nvim-lua/plenary.nvim", "kyazdani42/nvim-web-devicons" },
-  })
-  use({
+  { "nvim-telescope/telescope.nvim", dependencies = { "nvim-lua/plenary.nvim", "kyazdani42/nvim-web-devicons" } },
+  {
     "nvim-telescope/telescope-fzf-native.nvim",
-    run = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
-  })
+    build = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
+  },
 
-  use({
+  {
     "nvim-neo-tree/neo-tree.nvim",
-    requires = {
+    dependencies = {
       "nvim-lua/plenary.nvim",
       "kyazdani42/nvim-web-devicons",
       "MunifTanjim/nui.nvim",
-      "~/repos/github.com/rapan931/nvim-window-picker",
+      "s1n7ax/nvim-window-picker",
     },
-  })
+  },
 
-  use("neovim/nvim-lspconfig")
-  use("williamboman/mason.nvim")
-  use("williamboman/mason-lspconfig.nvim")
-  use("j-hui/fidget.nvim")
+  "neovim/nvim-lspconfig",
+  "williamboman/mason.nvim",
+  "williamboman/mason-lspconfig.nvim",
+  "j-hui/fidget.nvim",
 
-  use("hrsh7th/nvim-cmp")
-  use("hrsh7th/cmp-nvim-lsp")
-  use("hrsh7th/cmp-buffer")
-  use("hrsh7th/cmp-path")
-  use("hrsh7th/cmp-cmdline")
-  use("hrsh7th/cmp-emoji")
-  use("hrsh7th/cmp-nvim-lua")
+  "hrsh7th/nvim-cmp",
+  "hrsh7th/cmp-nvim-lsp",
+  "hrsh7th/cmp-buffer",
+  "hrsh7th/cmp-path",
+  "hrsh7th/cmp-cmdline",
+  "hrsh7th/cmp-emoji",
+  "hrsh7th/cmp-nvim-lua",
 
-  use("hrsh7th/cmp-vsnip")
+  "hrsh7th/cmp-vsnip",
 
-  use("folke/tokyonight.nvim")
-  use("mjlbach/onedark.nvim")
-  use("rebelot/kanagawa.nvim")
-  use("ellisonleao/gruvbox.nvim")
-  use("EdenEast/nightfox.nvim")
+  -- colorscheme
+  "folke/tokyonight.nvim",
+  { "catppuccin/nvim", name = "catppuccin" },
+  "mjlbach/onedark.nvim",
+  "rebelot/kanagawa.nvim",
+  "ellisonleao/gruvbox.nvim",
+  "EdenEast/nightfox.nvim",
 
-  use("nvim-lualine/lualine.nvim")
-  use("numToStr/Comment.nvim")
+  "nvim-lualine/lualine.nvim",
+  "numToStr/Comment.nvim",
 
-  use("klen/nvim-config-local")
+  "klen/nvim-config-local",
 
-  use("anuvyklack/hydra.nvim")
+  "anuvyklack/hydra.nvim",
 
-  use("ggandor/leap.nvim")
-  use("ggandor/flit.nvim")
-  use("notomo/reacher.nvim")
+  "ggandor/leap.nvim",
+  "ggandor/flit.nvim",
+  "notomo/reacher.nvim",
 
-  use("~/repos/github.com/rapan931/lasterisk.nvim")
-  use("~/repos/github.com/rapan931/bistahieversor.nvim")
-  use("~/repos/github.com/rapan931/dentaku.nvim")
+  "monaqa/dial.nvim",
 
-  -- vim script
-  use("vim-denops/denops.vim")
-  use("t9md/vim-quickhl")
-  use({ "machakann/vim-sandwich", opt = true })
-  use({ "cohama/lexima.vim", opt = true })
-  use("rhysd/committia.vim")
-  use("hrsh7th/vim-vsnip")
-  use("rafamadriz/friendly-snippets")
-  use("previm/previm")
-  use("lambdalisue/mr.vim")
-  use("thinca/vim-quickrun")
-  use("lambdalisue/vim-quickrun-neovim-job")
-  use("haya14busa/vim-edgemotion")
-  use("AndrewRadev/linediff.vim")
-  use("tyru/open-browser.vim")
-  use("tyru/open-browser-github.vim")
-  use("cocopon/iceberg.vim")
-  use("lambdalisue/gin.vim")
+  { "chentoast/marks.nvim", { dir = "~/repos/github.com/chentoast/marks.nvim" } },
 
-  use("kana/vim-textobj-user")
-  use("kana/vim-textobj-line")
-  use("kana/vim-textobj-indent")
-  use("thinca/vim-textobj-between")
+  { "rapan931/lasterisk.nvim", { dir = "~/repos/github.com/rapan931/lasterisk.nvim" } },
+  { "rapan931/bistahieversor.nvim", { dir = "~/repos/github.com/rapan931/bistahieversor.nvim" } },
+  { "rapan931/dentaku.nvim", { dir = "~/repos/github.com/rapan931/dentaku.nvim" } },
 
-  use("kana/vim-operator-user")
-  use("kana/vim-operator-replace")
-end)
+  -- include vim script
+  "andymass/vim-matchup",
+  "vim-denops/denops.vim",
+  "t9md/vim-quickhl",
+  "machakann/vim-sandwich",
+  "cohama/lexima.vim",
+  "rhysd/committia.vim",
+  "hrsh7th/vim-vsnip",
+  "rafamadriz/friendly-snippets",
+  "previm/previm",
+  "lambdalisue/mr.vim",
+  "thinca/vim-quickrun",
+  "lambdalisue/vim-quickrun-neovim-job",
+  "haya14busa/vim-edgemotion",
+  "AndrewRadev/linediff.vim",
+  "tyru/capture.vim",
+  "tyru/open-browser.vim",
+  "cocopon/iceberg.vim",
+  -- "lambdalisue/gin.vim",
+  "kana/vim-textobj-user",
+  { "tyru/open-browser-github.vim", dependencies = { "tyru/open-browser.vim" } },
+  { "kana/vim-textobj-line", dependencies = { "kana/vim-textobj-user" } },
+  { "kana/vim-textobj-indent", dependencies = { "kana/vim-textobj-user" } },
+  { "thinca/vim-textobj-between", dependencies = { "kana/vim-textobj-user" } },
+  "kana/vim-operator-user",
+  { "kana/vim-operator-replace", dependencies = { "kana/vim-operator-user" } },
+}, {
+  install = {
+    missing = false,
+  },
+})
 
-require("leap")
-nmap("S", "<Plug>(leap-cross-window)")
-nmap("z/", function() require("reacher").start({}) end)
-xmap("z/", function() require("reacher").start({}) end)
+local augend = require("dial.augend")
+require("dial.config").augends:register_group({
+  -- default augends used when no group name is specified
+  default = {
+    augend.integer.alias.decimal,
+    augend.constant.new({ elements = { "true", "false" }, preserve_case = true }),
+    augend.constant.new({ elements = { "Yes", "No" }, preserve_case = true }),
+    -- augend.constant.new({ elements = { "&&", "||" }, word = false, cyclic = false }),
+    augend.constant.new({ elements = { "&&", "||" }, word = false }),
+    augend.constant.new({ elements = { "and", "or" }, preserve_case = true }),
+    augend.date.alias["%Y/%m/%d"], -- date (2022/02/19, etc.)
+    augend.constant.new({ elements = { "on", "off" }, preserve_case = true }),
+    augend.constant.new({ elements = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" }, preserve_case = true }),
+    augend.constant.new({
+      elements = { "Jan", "Feb", "Apr", "Mar", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" },
+      preserve_case = true,
+    }),
+    augend.integer.alias.hex,
+    augend.integer.alias.binary,
+  },
+})
+
+api.nvim_set_hl(0, "MarkSignLineHL", { link = "Underlined" })
+require("marks").setup({
+  force_write_shada = true,
+  default_mappings = false,
+  refresh_interval = 1000,
+  mappings = {
+    toggle = "m.",
+    prev = "mk",
+    next = "mj",
+    delete_buf = "m<Space>",
+    preview = "m/",
+    set_bookmark0 = "m0",
+  },
+})
+
+vim.g.committia_use_singlecolumn = "always"
+
+nxmap("z/", function() require("reacher").start() end)
+
+local leap = require("leap")
+nxmap("S", function() leap.leap({ target_windows = { fn.win_getid() } }) end)
 
 require("flit").setup({
   keys = { f = "f", F = "F", t = "t", T = "T" },
-  -- A string like "nv", "nvo", "o", etc.
   labeled_modes = "",
   multiline = false,
-  opts = {},
 })
 
 require("fidget").setup({})
@@ -186,7 +228,6 @@ require("aerial").setup({
   },
 })
 
-vim.g.mapleader = ","
 vim.g.previm_wsl_mode = 1
 
 require("nvim-treesitter.configs").setup({
@@ -208,7 +249,12 @@ require("nvim-treesitter.configs").setup({
   },
 })
 
-require("Comment").setup()
+require("Comment").setup({
+  mappings = {
+    basic = false,
+    extra = false,
+  },
+})
 
 local null_ls = require("null-ls")
 local null_ls_helper = require("null-ls.helpers")
@@ -282,14 +328,15 @@ telescope.setup({
 })
 telescope.load_extension("fzf")
 
-local t_scope_pickers = require("telescope.pickers")
-local t_scope_finders = require("telescope.finders")
-local t_scope_conf = require("telescope.config").values
-local t_scope_make_entry = require("telescope.make_entry")
+local telescope_pickers = require("telescope.pickers")
+local telescope_finders = require("telescope.finders")
+local telescope_conf = require("telescope.config").values
+local telescope_make_entry = require("telescope.make_entry")
+local telescope_action_state = require("telescope.actions.state")
 
 local function recent_file_sorter()
   -- 適当なsorter。score>0とそれ以外の差さえ出してくれれば何でも良いのでfile_sorterと大きな差はないはず。
-  local file_sorter = t_scope_conf.file_sorter()
+  local file_sorter = telescope_conf.file_sorter()
   local base_scorer = file_sorter.scoring_function
   file_sorter.scoring_function = function(self, prompt, line)
     local score = base_scorer(self, prompt, line)
@@ -304,30 +351,54 @@ end
 
 local function my_picker_mru(o)
   local opts = o or {}
-  t_scope_pickers
+  telescope_pickers
     .new(opts, {
       prompt_title = "Oldfiles",
-      finder = t_scope_finders.new_table({
+      finder = telescope_finders.new_table({
         results = opts.only_cwd and call("mr#filter", fn["mr#mru#list"](), fn.getcwd()) or call("mr#mru#list"),
-        entry_maker = t_scope_make_entry.gen_from_file(opts),
+        entry_maker = telescope_make_entry.gen_from_file(opts),
       }),
       sorter = recent_file_sorter(),
-      previewer = t_scope_conf.file_previewer(opts),
+      previewer = telescope_conf.file_previewer(opts),
       tiebreak = function(_, _) return false end,
     })
     :find()
 end
 
-local t_scope_builtin = require("telescope.builtin")
-nmap("<Space>f", function() my_picker_mru({ only_cwd = true }) end)
-nmap("<Space>F", function() my_picker_mru() end)
+local mr_custom_action = function(_, m)
+  m("n", "dd", function(prompt_bufnr)
+    local current_picker = telescope_action_state.get_current_picker(prompt_bufnr)
+    current_picker:delete_selection(function(selection)
+      call("mr#mru#delete", selection.filename)
+      -- local lines = {}
+      --
+      -- for line in io.lines(file_path) do
+      --   if line ~= selection.filename then
+      --     lines[#lines + 1] = line
+      --   end
+      -- end
+      --
+      -- local file = io.open(file_path, "w")
+      -- if file ~= nil then
+      --   file:write(table.concat(lines, "\n"))
+      --   file:close()
+      -- end
+    end)
+  end)
 
--- nmap("<Space>f", function() t_scope_builtin.oldfiles({ only_cwd = true }) end)
--- nmap("<Space>F", function() t_scope_builtin.oldfiles() end)
-nmap("<Space>R", function() t_scope_builtin.resume() end)
-nmap("<Leader><Leader>g", function() t_scope_builtin.live_grep() end)
-nmap("<Leader><Leader>f", function() t_scope_builtin.fd({ cwd = vim.fn.expand("%:p:h") }) end)
-nmap("<Leader><Leader>F", function() t_scope_builtin.fd({ find_command = { "fd", "--type", "f" } }) end)
+  return true
+end
+
+local telescope_builtin = require("telescope.builtin")
+nmap("<Space>f", function() my_picker_mru({ only_cwd = true, attach_mappings = mr_custom_action }) end)
+nmap("<Space>F", function() my_picker_mru({ attach_mappings = mr_custom_action }) end)
+
+-- nmap("<Space>f", function() telescope_builtin.oldfiles({ only_cwd = true }) end)
+-- nmap("<Space>F", function() telescope_builtin.oldfiles() end)
+nmap("<Space>R", function() telescope_builtin.resume() end)
+nmap("<Leader><Leader>g", function() telescope_builtin.live_grep() end)
+nmap("<Leader><Leader>f", function() telescope_builtin.fd({ cwd = vim.fn.expand("%:p:h") }) end)
+nmap("<Leader><Leader>F", function() telescope_builtin.fd({ find_command = { "fd", "--type", "f" } }) end)
 
 require("window-picker").setup({
   include_current_win = true,
@@ -343,13 +414,12 @@ require("window-picker").setup({
   hl_position = "all",
 })
 
-
 vim.g.neo_tree_remove_legacy_commands = 1
 require("neo-tree").setup({
   hide_root_node = true,
   sources = {
     "filesystem",
-    "git_status",
+    -- "git_status",
   },
   sort_function = nil,
   use_default_mappings = false,
@@ -365,9 +435,10 @@ require("neo-tree").setup({
     },
     mapping_options = { noremap = true, nowait = true },
     mappings = {
-      -- ["ZZ"] = function(state) pp(state.tree:get_node()) end,
-      -- ["zz"] = function(state) fn.setreg(vim.v.register, vim.inspect(state.tree)) end,
-      -- ["Zz"] = function(state) fn.setreg(vim.v.register, vim.inspect(state)) end,
+      ["ZZ"] = function(state) pp(state.tree:get_node()) end,
+      ["zz"] = function(state) fn.setreg(vim.v.register, vim.inspect(state.tree)) end,
+      ["Zz"] = function(state) fn.setreg(vim.v.register, vim.inspect(state)) end,
+      ["<C-y>"] = function(state) My.echo_and_yank(state.tree:get_node().path) end,
       ["t"] = function(state)
         local node = state.tree:get_node()
         local path = ""
@@ -379,7 +450,7 @@ require("neo-tree").setup({
         cmd("topleft new")
         fn.termopen("bash", { cwd = path })
       end,
-      ["<Leader><Leader>g"] = function(state) t_scope_builtin.live_grep({ cwd = state.tree:get_node().path }) end,
+      ["<Leader><Leader>g"] = function(state) telescope_builtin.live_grep({ cwd = state.tree:get_node().path }) end,
       ["<C-l>"] = "refresh",
       ["q"] = "close_window",
 
@@ -425,8 +496,7 @@ require("neo-tree").setup({
             return
           end
 
-          local toggle_dir_no_redraw =
-            function(_state, _node) require("neo-tree.sources.filesystem").toggle_directory(_state, _node, nil, true, true) end
+          local toggle_dir_no_redraw = function(_state, _node) require("neo-tree.sources.filesystem").toggle_directory(_state, _node, nil, true, true) end
 
           local expand_node
           expand_node = function(_node)
@@ -448,6 +518,7 @@ require("neo-tree").setup({
           expand_node(node)
           require("neo-tree.ui.renderer").redraw(state)
         end,
+        -- ["<CR>"] = "set_root",
         ["<CR>"] = function(state)
           local node = state.tree:get_node()
           if node.type == "directory" then
@@ -482,6 +553,9 @@ require("neo-tree").setup({
               require("neo-tree.sources.filesystem").reset_search(state, false)
             end
             require("neo-tree.sources.filesystem")._navigate_internal(state, parent_path, nil, nil, false)
+          elseif node.skip_node and node.is_empty_with_hidden_root then
+            -- empty directory
+            require("neo-tree.sources.filesystem.commands").navigate_up(state)
           elseif node.type == "directory" then
             if node.level == 0 then
               if node:is_expanded() then
@@ -530,26 +604,26 @@ require("neo-tree").setup({
     },
     find_by_full_path_words = false,
   },
-  git_status = {
-    window = {
-      mappings = {
-        ["gA"] = "git_add_all",
-        ["ga"] = "git_add_file",
-        ["gu"] = "git_unstage_file",
-        ["gr"] = "git_revert_file",
-        ["gc"] = "git_commit",
-        ["gpp"] = "git_push",
-        ["gg"] = "git_commit_and_push",
-      },
-    },
-  },
+  -- git_status = {
+  --   window = {
+  --     mappings = {
+  --       ["gA"] = "git_add_all",
+  --       ["ga"] = "git_add_file",
+  --       ["gu"] = "git_unstage_file",
+  --       ["gr"] = "git_revert_file",
+  --       ["gc"] = "git_commit",
+  --       ["gpp"] = "git_push",
+  --       ["gg"] = "git_commit_and_push",
+  --     },
+  --   },
+  -- },
 })
 
 nmap("<Space>ee", "<CMD>Neotree toggle<CR>")
-nmap("<Space>er", "<CMD>Neotree dir=./<CR>")
-nmap("<Space>ef", "<CMD>Neotree dir=./ reveal_force_cwd<CR>")
-nmap("<Space>ep", "<CMD>Neotree " .. vim.opt.packpath:get()[1] .. "pack/p/<CR>")
-nmap("<Space>eh", "<CMD>Neotree dir=~<CR>")
+nmap("<Space>er", "<CMD>Neotree ./<CR>")
+nmap("<Space>ef", "<CMD>Neotree ./ reveal_force_cwd<CR>")
+nmap("<Space>ep", "<CMD>Neotree " .. vim.fn.stdpath("data") .. "/lazy<CR>")
+nmap("<Space>eh", "<CMD>Neotree ~<CR>")
 nmap("<Space>ev", "<CMD>Neotree /usr/local/src/neovim<CR>")
 nmap("<Space>eV", "<CMD>Neotree $VIMRUNTIME<CR>")
 nmap("<Space>ed", "<CMD>Neotree ~/repos/github.com/rapan931/dotfiles<CR>")
@@ -558,7 +632,7 @@ vim.g.ruby_no_expensive = 1
 
 if fn.has("vim_starting") then
   -- opt.viminfo = "!,'1000,<100,s10,h"
-  vim.opt.shada = { "!", "'1000", "<100", "s10", "h" }
+  -- vim.opt.shada = { "!", "'1000", "<100", "s10", "h" }
 end
 
 api.nvim_create_augroup("vimrc_augroup", {})
@@ -722,31 +796,33 @@ cmp.setup({
   sources = cmp.config.sources({
     { name = "nvim_lsp" },
     { name = "vsnip" },
+    { name = "nvim_lua" },
   }, {
     { name = "buffer" },
     { name = "emoji" },
   }),
 
   mapping = cmp.mapping.preset.insert({
-    ["<C-d>"] = cmp.mapping.scroll_docs(-4),
-    ["<C-f>"] = cmp.mapping.scroll_docs(4),
-    -- ['<C-Space>'] = cmp.mapping.complete(),
     ["<CR>"] = cmp.mapping.confirm({ select = false }),
-    ["<C-Tab>"] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
-    ["<C-S-Tab>"] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      else
-        fallback()
-      end
-    end, { "i", "s" }),
     ["<C-s>"] = cmp.mapping.complete({ config = { sources = { { name = "vsnip" } } } }),
+    ["<C-Space>"] = cmp.mapping.complete(),
+    -- ["<C-d>"] = cmp.mapping.scroll_docs(-4),
+    -- ["<C-f>"] = cmp.mapping.scroll_docs(4),
+    -- ['<C-Space>'] = cmp.mapping.complete(),
+    -- ["<C-Tab>"] = cmp.mapping(function(fallback)
+    --   if cmp.visible() then
+    --     cmp.select_next_item()
+    --   else
+    --     fallback()
+    --   end
+    -- end, { "i", "s" }),
+    -- ["<C-S-Tab>"] = cmp.mapping(function(fallback)
+    --   if cmp.visible() then
+    --     cmp.select_prev_item()
+    --   else
+    --     fallback()
+    --   end
+    -- end, { "i", "s" }),
   }),
 })
 
@@ -775,6 +851,22 @@ cmp.setup.cmdline(":", {
   }, {
     { name = "cmdline" },
   }),
+})
+
+vim.diagnostic.config({
+  virtual_text = {
+    -- source = 'always',
+  },
+  float = {
+    -- source = 'always',
+    format = function(diag)
+      if diag.code then
+        return string.format("[%s](%s): %s", diag.source, diag.code, diag.message)
+      else
+        return string.format("[%s]: %s", diag.source, diag.message)
+      end
+    end,
+  },
 })
 
 nmap("<Space><Space>e", vim.diagnostic.open_float)
@@ -826,19 +918,20 @@ mason_lspconfig.setup_handlers({
 })
 
 nvim_lspconfig.gopls.setup({ on_attach = on_attach })
-nvim_lspconfig.sumneko_lua.setup({
+nvim_lspconfig.clangd.setup({ on_attach = on_attach })
+nvim_lspconfig.lua_ls.setup({
   on_attach = on_attach,
   cmd = { "lua-language-server" },
   settings = {
     Lua = {
       semantic = { enable = false },
-      runtime = {
-        version = "LuaJIT",
-        path = {
-          "?.lua",
-          "?/init.lua",
-        },
-      },
+      -- runtime = {
+      --   version = "LuaJIT",
+      --   path = {
+      --     "?.lua",
+      --     "?/init.lua",
+      --   },
+      -- },
       completion = {
         callSnippet = "Disable",
         keywordSnippet = "Disable",
@@ -849,7 +942,8 @@ nvim_lspconfig.sumneko_lua.setup({
       workspace = {
         -- library = vim.api.nvim_get_runtime_file("", true),
         -- '/usr/local/share/lua/5.1/?/?.lua',
-        library = vim.list_extend(My.plugin_paths(), { "/usr/local/share/lua/5.1/" }),
+        -- library = vim.list_extend(My.plugin_paths(), { "/usr/local/share/lua/5.1/" }),
+        library = My.plugin_paths(),
         checkThirdParty = false,
       },
       telemetry = {
@@ -949,12 +1043,12 @@ map("*", function()
 end)
 
 xmap("*", function()
-  lasterisk.search({ is_whole = false })
+  lasterisk.search({ is_whole = false, silent = true })
   bistahieversor.echo()
 end)
 
 map("g*", function()
-  lasterisk.search({ is_whole = false })
+  lasterisk.search({ is_whole = false, silent = true })
   bistahieversor.echo()
 end)
 
@@ -975,13 +1069,20 @@ vim.g.quickrun_config = {
     ["outputter/buffer/opener"] = ":botright 15split",
     ["outputter/buffer/close_on_empty"] = 1,
   },
-  typescript = {
+  ["typescript"] = {
     command = "./node_modules/.bin/tsc",
     cmdopt = "--no-check --allow-all --unstable",
     tempfile = "%{tempname()}.ts",
     exec = { "%c", "node dist/%s:t:r.js" },
   },
-  lua = {
+  ["c"] = {
+    type = fn.executable("gcc") and "c/clang" or "c/gcc",
+  },
+  ["c/clang"] = {
+    command = "clang",
+    exec = { "%c %o %s -ledit -o %s:p:r", "%s:p:r %a" },
+  },
+  ["lua"] = {
     command = "nvim",
     exec = [[%c --clean --headless -c 'source %s' -c 'cquit 0']],
   },
@@ -1005,35 +1106,29 @@ imap("<C-b>", "<Left>")
 nmap("gs", ":<C-u>%s///g<Left><Left>")
 xmap("gs", ":s///g<Left><Left>")
 
+nmap("gc", ":<C-u>vimgrep //j %<Left><Left><Left><Left>")
+
 xmap("v", "$h")
--- xmap('v', '$')
 
 xmap("<ESC>", "o<ESC>")
 nmap("gv", "gvo")
 
 nmap("<Space>.", [[<cmd>e $MYVIMRC<CR>]])
 
-nmap("j", "gj")
-xmap("j", "gj")
-nmap("k", "gk")
-xmap("k", "gk")
+nxmap("j", "gj")
+nxmap("k", "gk")
 
 nmap("yie", [[<cmd>%y<cr>]])
 nmap("die", "ggdG")
+nmap("cie", "ggcG")
 nmap("vie", "ggVG")
-
-xmap("<Esc>", "o<Esc>")
-nmap("gv", "gvo")
 
 nmap("gF", "<Cmd>vertical botright wincmd F<CR>")
 
-nmap("<C-j>", "<Plug>(edgemotion-j)")
-xmap("<C-j>", "<Plug>(edgemotion-j)")
-nmap("<C-k>", "<Plug>(edgemotion-k)")
-xmap("<C-k>", "<Plug>(edgemotion-k)")
+nxmap("<C-j>", "<Plug>(edgemotion-j)")
+nxmap("<C-k>", "<Plug>(edgemotion-k)")
 
-nmap("<Leader>ob", "<Plug>(openbrowser-smart-search)")
-xmap("<Leader>ob", "<Plug>(openbrowser-smart-search)")
+nxmap("<Leader>ob", "<Plug>(openbrowser-smart-search)")
 
 nmap("<F4>", "<CMD>set wrap!<CR>")
 
@@ -1043,11 +1138,25 @@ nmap("<Leader>qu", "<CMD>diffupdate<CR>")
 
 nmap("2o", "jo")
 
-nmap("<Space>m", "<Plug>(quickhl-manual-this)")
-xmap("<Space>m", "<Plug>(quickhl-manual-this)")
-nmap("<Space>M", "<Plug>(quickhl-manual-reset)")
-xmap("<Space>M", "<Plug>(quickhl-manual-reset)")
+nxmap("<Space>m", "<Plug>(quickhl-manual-this)")
+nxmap("<Space>M", "<Plug>(quickhl-manual-reset)")
 
+imap("<C-s>", function() return call("vsnip#expandable") and "<Plug>(vsnip-expand)" or "<C-s>" end, { expr = true })
+smap("<C-s>", function() return call("vsnip#expandable") and "<Plug>(vsnip-expand)" or "<C-s>" end, { expr = true })
+
+imap("<C-k>", function() return call("vsnip#available") and "<Plug>(vsnip-expand-or-jump)" or "<C-k>" end, { expr = true })
+smap("<C-k>", function() return call("vsnip#available") and "<Plug>(vsnip-expand-or-jump)" or "<C-k>" end, { expr = true })
+
+nmap("<Leader>r", "<Plug>(operator-replace)")
+xmap("<Leader>r", "<Plug>(operator-replace)")
+smap("<Leader>r", "<Plug>(operator-replace)")
+
+nmap("dk", function() return fn.line(".") == fn.line("$") and "dk" or "dkk" end, { expr = true })
+
+nmap("+", require("dial.map").inc_normal())
+xmap("+", require("dial.map").inc_visual())
+nmap("-", require("dial.map").dec_normal())
+xmap("-", require("dial.map").dec_visual())
 -- CR付けない
 nmap("<Leader>R", ":QuickRun")
 xmap("<Leader>R", ":QuickRun")
@@ -1138,7 +1247,7 @@ vim.opt.termguicolors = true
 vim.g.sandwich_no_default_key_mappings = 1
 vim.g.operator_sandwich_no_default_key_mappings = 1
 
-cmd("packadd vim-sandwich")
+-- cmd("packadd vim-sandwich")
 fn["operator#sandwich#set"]("add", "all", "highlight", 10)
 fn["operator#sandwich#set"]("delete", "all", "highlight", 10)
 fn["operator#sandwich#set"]("add", "all", "hi_duration", 10)
@@ -1158,11 +1267,36 @@ xmap("iq", "<Plug>(textobj-sandwich-auto-i)")
 omap("aq", "<Plug>(textobj-sandwich-auto-a)")
 omap("aq", "<Plug>(textobj-sandwich-auto-a)")
 
+nmap("<Space>/", "<Plug>(comment_toggle_linewise_current)")
+xmap("<Space>/", "<Plug>(comment_toggle_linewise_visual)")
+nmap("<Leader>/", "<Plug>(comment_toggle_linewise)")
+
+-- for atcode
+nmap("ZZ", function()
+  local file_path = "/home/rapan931/repos/github.com/rapan931/atcoder/input"
+  if fn.filereadable(file_path) == 0 then return end
+
+  fn.writefile(fn.getreg(vim.v.register, 1, 1), file_path)
+
+  local name = fn.bufname(file_path)
+  if #name == 0 then return end
+
+  local bufinfo = fn.getbufinfo(name)
+  if #bufinfo == 0 then return end
+
+  for _, list in pairs(bufinfo) do
+    vim.print(list)
+    for _, winid in pairs(list["windows"]) do
+      fn.win_execute(winid, "e!")
+    end
+  end
+end)
+
 vim.g.lexima_map_escape = ""
 vim.g.lexima_enable_endwise_rules = false
 vim.g.lexima_accept_pum_with_enter = false
 
-cmd("packadd lexima.vim")
+-- cmd("packadd lexima.vim")
 
 call("lexima#set_default_rules")
 
@@ -1213,15 +1347,15 @@ call("lexima#add_rule", { filetype = { "ruby" }, char = "<Bar>", at = [==[do\s\%
 call("lexima#add_rule", { filetype = { "ruby" }, char = "<Bar>", at = [==[{\%#}]==], input = "<Space><Bar>", input_after = "<Bar><Space>" })
 call("lexima#add_rule", { filetype = { "ruby" }, char = "<Bar>", at = [==[{\s\%#\s}]==], input = "<Bar>", input_after = "<Bar><Space>" })
 
--- 各種ログの設定 ppp<Space>で発火するようにする
+-- 各種ログの設定 pp<Space>で発火するようにする
+call("lexima#add_rule", { filetype = "lua", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>vim.pretty_print()<Left>" })
+call("lexima#add_rule", { filetype = "vim", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>echo <Space>" })
+call("lexima#add_rule", { filetype = "python", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>print()<Left>" })
+call("lexima#add_rule", { filetype = "go", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>fmt.Println()<Left>" })
 call(
   "lexima#add_rule",
   { filetype = { "typescript", "typescriptreact", "javascript" }, char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS><BS>console.log()<Left>" }
 )
-
-call("lexima#add_rule", { filetype = "lua", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>vim.pretty_print()<Left>" })
-call("lexima#add_rule", { filetype = "vim", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>echo <Space>" })
-call("lexima#add_rule", { filetype = "python", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>print()<Left>" })
 
 imap("<S-CR>", function() return "<End>" .. call("lexima#expand", "<LT>CR>", "i") end, { expr = true, remap = true, silent = true })
 

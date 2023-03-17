@@ -3,6 +3,8 @@ local buf_nmap = require("my.map").buf_nmap
 local buf_imap = require("my.map").buf_imap
 local opt = vim.opt_local
 
+local fn = vim.fn
+
 ---@param tab_length number
 ---@param is_hard_tab boolean
 local function set_indent(tab_length, is_hard_tab)
@@ -15,9 +17,7 @@ end
 M.gitconfig = function() set_indent(2, true) end
 M.quickrun = function() buf_nmap("q", "ZZ") end
 M.make = function() set_indent(4, true) end
-M.go = function() set_indent(4, true) end
 M.help = function() buf_nmap("q", "ZZ") end
-M.gitcommit = function() opt.spell = true end
 M.qf = function() buf_nmap("q", "ZZ") end
 M.java = function() set_indent(4, false) end
 M.python = function() set_indent(4, false) end
@@ -41,6 +41,26 @@ M.reacher = function()
   buf_imap("<C-n>", function() require("reacher").forward_history() end)
   buf_imap("<C-p>", function() require("reacher").backward_history() end)
 end
+
+M.gitcommit = function()
+  opt.spell = true
+  buf_nmap("<CR><CR>", function()
+    vim.cmd([[execute 'normal! ^w"zdiw"_dip"zPA: ']])
+    vim.cmd([[startinsert!]])
+  end)
+end
+
+M.cpp = function()
+  set_indent(2, false)
+  buf_imap("<C-CR>", "<End>;<CR>")
+  buf_imap("jk", "<End>;")
+end
+
+M.c = M.cpp
+
+M.rust = function() buf_imap("jk", "<End>;") end
+
+M.go = function() set_indent(4, true) end
 
 return setmetatable(M, {
   __index = function()
