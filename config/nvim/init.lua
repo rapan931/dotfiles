@@ -630,11 +630,6 @@ nmap("<Space>ed", "<CMD>Neotree ~/repos/github.com/rapan931/dotfiles<CR>")
 
 vim.g.ruby_no_expensive = 1
 
-if fn.has("vim_starting") then
-  -- opt.viminfo = "!,'1000,<100,s10,h"
-  -- vim.opt.shada = { "!", "'1000", "<100", "s10", "h" }
-end
-
 api.nvim_create_augroup("vimrc_augroup", {})
 
 api.nvim_set_hl(0, "MyFlash", { bg = "Purple", fg = "White" })
@@ -1274,15 +1269,21 @@ nmap("<Leader>/", "<Plug>(comment_toggle_linewise)")
 -- for atcode
 nmap("ZZ", function()
   local file_path = "/home/rapan931/repos/github.com/rapan931/atcoder/input"
-  if fn.filereadable(file_path) == 0 then return end
+  if fn.filereadable(file_path) == 0 then
+    return
+  end
 
   fn.writefile(fn.getreg(vim.v.register, 1, 1), file_path)
 
   local name = fn.bufname(file_path)
-  if #name == 0 then return end
+  if #name == 0 then
+    return
+  end
 
   local bufinfo = fn.getbufinfo(name)
-  if #bufinfo == 0 then return end
+  if #bufinfo == 0 then
+    return
+  end
 
   for _, list in pairs(bufinfo) do
     vim.print(list)
