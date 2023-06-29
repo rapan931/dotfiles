@@ -19,6 +19,13 @@ end
 ---@param lhs string
 ---@param rhs string | function
 ---@param ... table options
+M.tmap = function(lhs, rhs, ...)
+  vim.keymap.set("t", lhs, rhs, ...)
+end
+
+---@param lhs string
+---@param rhs string | function
+---@param ... table options
 M.omap = function(lhs, rhs, ...)
   vim.keymap.set("o", lhs, rhs, ...)
 end

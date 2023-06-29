@@ -8,7 +8,8 @@ local imap = my_map.imap
 local cmap = my_map.cmap
 local omap = my_map.omap
 local smap = my_map.smap
-local nxmap = my_map.nmap
+local tmap = my_map.tmap
+local nxmap = my_map.nxmap
 
 local api = vim.api
 local fn = vim.fn
@@ -20,7 +21,7 @@ local autocmd = vim.api.nvim_create_autocmd
 
 vim.g.mapleader = ","
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
+if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({ "git", "clone", "--filter=blob:none", "https://github.com/folke/lazy.nvim.git", lazypath })
 end
 vim.opt.rtp:prepend(lazypath)
@@ -84,11 +85,17 @@ require("lazy").setup({
 
   "monaqa/dial.nvim",
 
+  "mfussenegger/nvim-dap",
+  { "rcarriga/nvim-dap-ui", dependencies = { "mfussenegger/nvim-dap" } },
+
   { "chentoast/marks.nvim", { dir = "~/repos/github.com/chentoast/marks.nvim" } },
 
   { "rapan931/lasterisk.nvim", { dir = "~/repos/github.com/rapan931/lasterisk.nvim" } },
   { "rapan931/bistahieversor.nvim", { dir = "~/repos/github.com/rapan931/bistahieversor.nvim" } },
   { "rapan931/dentaku.nvim", { dir = "~/repos/github.com/rapan931/dentaku.nvim" } },
+
+  "dart-lang/dart-vim-plugin",
+  { "akinsho/flutter-tools.nvim", dependencies = { "nvim-lua/plenary.nvim", "stevearc/dressing.nvim" } },
 
   -- include vim script
   "andymass/vim-matchup",
@@ -121,6 +128,111 @@ require("lazy").setup({
     missing = false,
   },
 })
+command("LazySync", "Lazy sync", {})
+
+require("tokyonight").setup({
+  transparent = true,
+  styles = {
+    -- sidebars = "transparent",
+    -- floats = "transparent",
+  },
+})
+
+local dap = require("dap")
+dap.adapters.go = {
+  type = "executable",
+  command = "node",
+  args = { os.getenv("HOME") .. "/repos/github.com/golang/vscode-go/dist/debugAdapter.js" },
+}
+dap.configurations.go = {
+  {
+    type = "go",
+    name = "Debug",
+    request = "launch",
+    showLog = true,
+    program = "${file}",
+    dlvToolPath = vim.fn.exepath("dlv"), -- Adjust to where delve is installed
+  },
+}
+
+nmap("<F5>", ":lua require('dap').continue()<CR>")
+nmap("<F10>", ":lua require('dap').step_over()<CR>")
+nmap("<F11>", ":lua require('dap').step_into()<CR>")
+nmap("<F12>", ":lua require('dap').step_out()<CR>")
+nmap("<Leader>bb", ":lua require('dap').toggle_breakpoint()<CR>")
+nmap("<Leader>bc", ":lua require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>")
+nmap("<Leader>bl", ":lua require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: '))<CR>")
+require("dapui").setup({
+  icons = { expanded = "▾", collapsed = "▸", current_frame = "▸" },
+  mappings = {
+    -- Use a table to apply multiple mappings
+    expand = { "<CR>", "<2-LeftMouse>" },
+    open = "o",
+    remove = "d",
+    edit = "e",
+    repl = "r",
+    toggle = "t",
+  },
+  -- Expand lines larger than the window
+  -- Requires >= 0.7
+  expand_lines = vim.fn.has("nvim-0.7") == 1,
+  -- Layouts define sections of the screen to place windows.
+  -- The position can be "left", "right", "top" or "bottom".
+  -- The size specifies the height/width depending on position. It can be an Int
+  -- or a Float. Integer specifies height/width directly (i.e. 20 lines/columns) while
+  -- Float value specifies percentage (i.e. 0.3 - 30% of available lines/columns)
+  -- Elements are the elements shown in the layout (in order).
+  -- Layouts are opened in order so that earlier layouts take priority in window sizing.
+  layouts = {
+    {
+      elements = {
+        -- Elements can be strings or table with id and size keys.
+        { id = "scopes", size = 0.25 },
+        "breakpoints",
+        "stacks",
+        "watches",
+      },
+      size = 40, -- 40 columns
+      position = "left",
+    },
+    {
+      elements = {
+        "repl",
+      },
+      size = 0.25, -- 25% of total lines
+      position = "bottom",
+    },
+  },
+  controls = {
+    -- Requires Neovim nightly (or 0.8 when released)
+    enabled = true,
+    -- Display controls in this element
+    element = "repl",
+    icons = {
+      pause = "",
+      play = "",
+      step_into = "",
+      step_over = "",
+      step_out = "",
+      step_back = "",
+      run_last = "↻",
+      terminate = "□",
+    },
+  },
+  floating = {
+    max_height = nil, -- These can be integers or a float between 0 and 1.
+    max_width = nil, -- Floats will be treated as percentage of your screen.
+    border = "single", -- Border style. Can be "single", "double" or "rounded"
+    mappings = {
+      close = { "q", "<Esc>" },
+    },
+  },
+  windows = { indent = 1 },
+  render = {
+    max_type_length = nil, -- Can be integer or nil.
+    max_value_lines = 100, -- Can be integer or nil.
+  },
+})
 
 local augend = require("dial.augend")
 require("dial.config").augends:register_group({
@@ -130,6 +242,7 @@ require("dial.config").augends:register_group({
     augend.constant.new({ elements = { "true", "false" }, preserve_case = true }),
     augend.constant.new({ elements = { "Yes", "No" }, preserve_case = true }),
     -- augend.constant.new({ elements = { "&&", "||" }, word = false, cyclic = false }),
+    augend.constant.new({ elements = { "==", "!=" }, word = false }),
     augend.constant.new({ elements = { "&&", "||" }, word = false }),
     augend.constant.new({ elements = { "and", "or" }, preserve_case = true }),
     augend.date.alias["%Y/%m/%d"], -- date (2022/02/19, etc.)
@@ -240,7 +353,7 @@ require("nvim-treesitter.configs").setup({
       end
       local ok = true
       ok = pcall(function() vim.treesitter.get_parser(bufnr, lang):parse() end) and ok
-      ok = pcall(function() vim.treesitter.get_query(lang, "highlights") end) and ok
+      ok = pcall(function() vim.treesitter.query.get(lang, "highlights") end) and ok
       if not ok then
         return true
       end
@@ -276,6 +389,7 @@ null_ls.setup({
     null_ls.builtins.diagnostics.textlint.with({
       prefer_local = "node_modules/.bin",
       filetypes = { "markdown" },
+      method = null_ls.methods.DIAGNOSTICS_ON_SAVE,
       condition = function(utils) return utils.root_has_file({ ".textlintrc" }) end,
     }),
     null_ls_helper.make_builtin({
@@ -750,6 +864,7 @@ command("TCurrent", function()
 end, {})
 
 command("RTP", function() print(fn.substitute(vim.opt.runtimepath._value, ",", "\n", "g")) end, {})
+command("ReflectVimrc", "source $MYVIMRC", {})
 
 vim.g.did_install_default_menus = 1
 vim.g.did_install_syntax_menu = 1
@@ -798,7 +913,7 @@ cmp.setup({
   }),
 
   mapping = cmp.mapping.preset.insert({
-    ["<CR>"] = cmp.mapping.confirm({ select = false }),
+    ["<Tab>"] = cmp.mapping.confirm({ select = true }),
     ["<C-s>"] = cmp.mapping.complete({ config = { sources = { { name = "vsnip" } } } }),
     ["<C-Space>"] = cmp.mapping.complete(),
     -- ["<C-d>"] = cmp.mapping.scroll_docs(-4),
@@ -884,7 +999,7 @@ local on_attach = function(_, bufnr)
   nmap("<Space><Space>D", vim.lsp.buf.type_definition, buf_opts)
   nmap("<Space><Space>rn", vim.lsp.buf.rename, buf_opts)
   nmap("<Space><Space>ca", vim.lsp.buf.code_action, buf_opts)
-  nmap("gr", vim.lsp.buf.references, buf_opts)
+  nmap("<Space><Space>r", vim.lsp.buf.references, buf_opts)
   nmap("<Space><Space>f", function() vim.lsp.buf.format({ async = false, timeout_ms = 4000 }) end, buf_opts)
 end
 
@@ -914,6 +1029,7 @@ mason_lspconfig.setup_handlers({
 
 nvim_lspconfig.gopls.setup({ on_attach = on_attach })
 nvim_lspconfig.clangd.setup({ on_attach = on_attach })
+nvim_lspconfig.dartls.setup({ on_attach = on_attach })
 nvim_lspconfig.lua_ls.setup({
   on_attach = on_attach,
   cmd = { "lua-language-server" },
@@ -938,6 +1054,7 @@ nvim_lspconfig.lua_ls.setup({
         -- library = vim.api.nvim_get_runtime_file("", true),
         -- '/usr/local/share/lua/5.1/?/?.lua',
         -- library = vim.list_extend(My.plugin_paths(), { "/usr/local/share/lua/5.1/" }),
+        -- library = vim.tbl_deep_extend("force", vim.api.nvim_get_runtime_file("", true), { }),
         library = My.plugin_paths(),
         checkThirdParty = false,
       },
@@ -1024,6 +1141,12 @@ require("lualine").setup({
   extensions = { "quickfix", "neo-tree" },
 })
 
+require("flutter-tools").setup({
+  lsp = {
+    on_attach = on_attach
+  }
+})
+
 bistahieversor.setup({ maxcount = 1000, echo_wrapscan = true })
 map("n", function() bistahieversor.n_and_echo() end)
 map("N", function() bistahieversor.N_and_echo() end)
@@ -1043,6 +1166,12 @@ xmap("*", function()
 end)
 
 map("g*", function()
+  lasterisk.search({ is_whole = false, silent = true })
+  bistahieversor.echo()
+end)
+
+my_map.nmap("<Leader>*", function()
+  cmd("normal! g_v_")
   lasterisk.search({ is_whole = false, silent = true })
   bistahieversor.echo()
 end)
@@ -1118,12 +1247,18 @@ nmap("die", "ggdG")
 nmap("cie", "ggcG")
 nmap("vie", "ggVG")
 
+map(';', ':')
+
 nmap("gF", "<Cmd>vertical botright wincmd F<CR>")
 
 nxmap("<C-j>", "<Plug>(edgemotion-j)")
 nxmap("<C-k>", "<Plug>(edgemotion-k)")
 
 nxmap("<Leader>ob", "<Plug>(openbrowser-smart-search)")
+nxmap("<Leader>og", "<CMD>OpenGithubProject<CR>")
+
+nmap("<Leader>og", "<CMD>OpenBrowse rhttps://github.com/<C-r>=expand('<cfile>')<CR><CR>")
+xmap("<Leader>og", "<CMD>OpenBrowse rhttps://github.com/<C-r>=luaeval(My.selected_text)<CR><CR>")
 
 nmap("<F4>", "<CMD>set wrap!<CR>")
 
@@ -1155,6 +1290,17 @@ xmap("-", require("dial.map").dec_visual())
 -- CR付けない
 nmap("<Leader>R", ":QuickRun")
 xmap("<Leader>R", ":QuickRun")
+
+tmap("<A-n>", [[<C-\><C-n>]])
+
+tmap("<A-h>", [[<C-\><C-n><C-w>h]])
+tmap("<A-l>", [[<C-\><C-n><C-w>l]])
+tmap("<A-j>", [[<C-\><C-n><C-w>j]])
+tmap("<A-k>", [[<C-\><C-n><C-w>k]])
+nmap("<A-h>", [[<C-w>h]])
+nmap("<A-l>", [[<C-w>l]])
+nmap("<A-j>", [[<C-w>j]])
+nmap("<A-k>", [[<C-w>k]])
 
 -- setting
 vim.opt.undofile = true
@@ -1260,11 +1406,10 @@ nmap("sr", "<Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-co
 omap("iq", "<Plug>(textobj-sandwich-auto-i)")
 xmap("iq", "<Plug>(textobj-sandwich-auto-i)")
 omap("aq", "<Plug>(textobj-sandwich-auto-a)")
-omap("aq", "<Plug>(textobj-sandwich-auto-a)")
+xmap("aq", "<Plug>(textobj-sandwich-auto-a)")
 
 nmap("<Space>/", "<Plug>(comment_toggle_linewise_current)")
 xmap("<Space>/", "<Plug>(comment_toggle_linewise_visual)")
-nmap("<Leader>/", "<Plug>(comment_toggle_linewise)")
 
 -- for atcode
 nmap("ZZ", function()
@@ -1286,7 +1431,6 @@ nmap("ZZ", function()
   end
 
   for _, list in pairs(bufinfo) do
-    vim.print(list)
     for _, winid in pairs(list["windows"]) do
       fn.win_execute(winid, "e!")
     end
@@ -1360,4 +1504,5 @@ call(
 
 imap("<S-CR>", function() return "<End>" .. call("lexima#expand", "<LT>CR>", "i") end, { expr = true, remap = true, silent = true })
 
+-- cmd("colorscheme catppuccin-macchiato")
 cmd("colorscheme tokyonight")

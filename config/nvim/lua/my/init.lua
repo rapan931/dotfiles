@@ -53,9 +53,16 @@ M.echo_and_yank = function(obj)
 end
 
 M.plugin_paths = function()
-  local start_paths = vim.fn.glob(vim.fn.stdpath("data") .. "/site/pack/p/start/*", "", true)
-  local opt_paths = vim.fn.glob(vim.fn.stdpath("data") .. "/site/pack/p/opt/*", "", true)
-  return vim.tbl_map(function(path) return fn.resolve(path) end, vim.tbl_flatten({ start_paths, opt_paths }))
+  local paths = vim.api.nvim_get_runtime_file("", true)
+
+  local lazy_path = vim.fn.stdpath("data") .. "/lazy/"
+  for _, p in pairs(require("lazy").plugins()) do
+    if string.sub(p.dir,1,string.len(lazy_path)) ~= lazy_path then
+      table.insert(paths, p.dir)
+    end
+  end
+
+  return paths
 end
 
 -- M.start_terminal = function()

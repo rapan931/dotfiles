@@ -8,6 +8,12 @@
 	untracked = cyan
 	unmerged = yellow
 
+[pull]
+	rebase = true
+
+[fetch]
+	prune = true
+
 [alias]
 	ad = add
 	addd = add

@@ -15,6 +15,7 @@ local function set_indent(tab_length, is_hard_tab)
 end
 
 M.gitconfig = function() set_indent(2, true) end
+M.dart = function() set_indent(2, false) end
 M.quickrun = function() buf_nmap("q", "ZZ") end
 M.make = function() set_indent(4, true) end
 M.help = function() buf_nmap("q", "ZZ") end
@@ -24,6 +25,8 @@ M.python = function() set_indent(4, false) end
 M.sql = function() set_indent(2, false) end
 M.markdown = function()
   buf_nmap("<Space><Space>f", function() vim.lsp.buf.format({ async = false, timeout_ms = 4000 }) end)
+  -- vim.cmd([[syntax match markdownError '\w\@<=\w\@='"]])
+  vim.cmd([[hi link markdownError NONE]])
 end
 M.reacher = function()
   buf_nmap("<CR>", function() require("reacher").finish() end)
