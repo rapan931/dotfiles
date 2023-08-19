@@ -19,6 +19,8 @@ local cmd = vim.cmd
 local command = vim.api.nvim_create_user_command
 local autocmd = vim.api.nvim_create_autocmd
 
+local vimrc_augroup = api.nvim_create_augroup("vimrc_augroup", {})
+
 vim.g.mapleader = ","
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.uv.fs_stat(lazypath) then
@@ -32,12 +34,14 @@ require("lazy").setup({
   "stevearc/aerial.nvim",
 
   { "jose-elias-alvarez/null-ls.nvim", dependencies = { "nvim-lua/plenary.nvim" } },
-
   { "nvim-telescope/telescope.nvim", dependencies = { "nvim-lua/plenary.nvim", "kyazdani42/nvim-web-devicons" } },
   {
     "nvim-telescope/telescope-fzf-native.nvim",
     build = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
   },
+
+  "lukas-reineke/lsp-format.nvim",
+  "RRethy/vim-illuminate",
 
   {
     "nvim-neo-tree/neo-tree.nvim",
@@ -48,6 +52,8 @@ require("lazy").setup({
       "s1n7ax/nvim-window-picker",
     },
   },
+
+  "chomosuke/term-edit.nvim",
 
   "neovim/nvim-lspconfig",
   "williamboman/mason.nvim",
@@ -87,9 +93,7 @@ require("lazy").setup({
 
   "mfussenegger/nvim-dap",
   { "rcarriga/nvim-dap-ui", dependencies = { "mfussenegger/nvim-dap" } },
-
   { "chentoast/marks.nvim", { dir = "~/repos/github.com/chentoast/marks.nvim" } },
-
   { "rapan931/lasterisk.nvim", { dir = "~/repos/github.com/rapan931/lasterisk.nvim" } },
   { "rapan931/bistahieversor.nvim", { dir = "~/repos/github.com/rapan931/bistahieversor.nvim" } },
   { "rapan931/dentaku.nvim", { dir = "~/repos/github.com/rapan931/dentaku.nvim" } },
@@ -130,6 +134,20 @@ require("lazy").setup({
 })
 command("LazySync", "Lazy sync", {})
 
+require("illuminate").configure({
+  -- providers: provider used to get references in the buffer, ordered by priority
+  providers = {
+    "lsp",
+    "treesitter",
+    "regex",
+  },
+  filetypes_denylist = {
+    "dirvish",
+    "fugitive",
+    "neo-tree",
+  },
+})
+
 require("tokyonight").setup({
   transparent = true,
   styles = {
@@ -154,6 +172,10 @@ dap.configurations.go = {
     dlvToolPath = vim.fn.exepath("dlv"), -- Adjust to where delve is installed
   },
 }
+
+require("term-edit").setup({
+  prompt_end = "> ",
+})
 
 nmap("<F5>", ":lua require('dap').continue()<CR>")
 nmap("<F10>", ":lua require('dap').step_over()<CR>")
@@ -407,7 +429,21 @@ null_ls.setup({
       factory = null_ls_helper.formatter_factory,
     }),
   },
-  debug = true,
+  on_attach = function(client, bufnr)
+    if client.supports_method("textDocument/formatting") then
+      vim.api.nvim_clear_autocmds({ group = vimrc_augroup, buffer = bufnr })
+      vim.api.nvim_create_autocmd("BufWritePost", {
+        group = vimrc_augroup,
+        buffer = bufnr,
+        callback = function()
+          vim.lsp.buf.format({
+            bufnr = bufnr,
+            filter = function(client) return client.name == "null-ls" end,
+          })
+        end,
+      })
+    end
+  end,
 })
 
 vim.g.mr_mru_disabled = 0
@@ -744,12 +780,10 @@ nmap("<Space>ed", "<CMD>Neotree ~/repos/github.com/rapan931/dotfiles<CR>")
 
 vim.g.ruby_no_expensive = 1
 
-api.nvim_create_augroup("vimrc_augroup", {})
-
 api.nvim_set_hl(0, "MyFlash", { bg = "Purple", fg = "White" })
 api.nvim_set_hl(0, "MyWindowFlash", { bg = "LightYellow", fg = "DarkGray" })
 autocmd("ColorScheme", {
-  group = "vimrc_augroup",
+  group = vimrc_augroup,
   pattern = "*",
   callback = function()
     api.nvim_set_hl(0, "MyFlash", { bg = "Purple", fg = "White" })
@@ -758,32 +792,32 @@ autocmd("ColorScheme", {
 })
 
 autocmd("QuickfixCmdPost", {
-  group = "vimrc_augroup",
+  group = vimrc_augroup,
   pattern = { "grep", "vimgrep", "helpgrep" },
   nested = true,
   command = "botright copen",
 })
 
 autocmd("TermOpen", {
-  group = "vimrc_augroup",
+  group = vimrc_augroup,
   pattern = "*",
   command = "startinsert",
 })
 
 autocmd("InsertLeave", {
-  group = "vimrc_augroup",
+  group = vimrc_augroup,
   pattern = "*",
   command = "call system('zenhan.exe 0')",
 })
 
 autocmd("CmdlineLeave", {
-  group = "vimrc_augroup",
+  group = vimrc_augroup,
   pattern = "*",
   command = "call system('zenhan.exe 0')",
 })
 
 autocmd("CmdlineLeave", {
-  group = "vimrc_augroup",
+  group = vimrc_augroup,
   pattern = { "/", "\\?" },
   callback = function()
     if vim.v.event.abort == false then
@@ -793,7 +827,7 @@ autocmd("CmdlineLeave", {
 })
 
 autocmd("FocusGained", {
-  group = "vimrc_augroup",
+  group = vimrc_augroup,
   pattern = "*",
   callback = function()
     vim.defer_fn(function()
@@ -811,7 +845,7 @@ autocmd("FocusGained", {
 })
 
 autocmd("BufEnter", {
-  group = "vimrc_augroup",
+  group = vimrc_augroup,
   pattern = "*",
   callback = function()
     local t = vim.bo.buftype
@@ -827,13 +861,13 @@ autocmd("BufEnter", {
 })
 
 autocmd("FileType", {
-  group = "vimrc_augroup",
+  group = vimrc_augroup,
   pattern = "*",
   callback = function(args) my_filetype[args.match]() end,
 })
 
 autocmd("TextYankPost", {
-  group = "vimrc_augroup",
+  group = vimrc_augroup,
   pattern = "*",
   callback = function()
     vim.highlight.on_yank({
@@ -865,6 +899,11 @@ end, {})
 
 command("RTP", function() print(fn.substitute(vim.opt.runtimepath._value, ",", "\n", "g")) end, {})
 command("ReflectVimrc", "source $MYVIMRC", {})
+
+command("Atcoder", function()
+  cmd("only")
+  cmd("only")
+end, {})
 
 vim.g.did_install_default_menus = 1
 vim.g.did_install_syntax_menu = 1
@@ -984,8 +1023,10 @@ nmap("g[", vim.diagnostic.goto_prev)
 nmap("g]", vim.diagnostic.goto_next)
 nmap("<Space><Space>l", vim.diagnostic.setloclist)
 
-local on_attach = function(_, bufnr)
-  -- vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+vim.lsp.set_log_level("OFF")
+
+local on_attach = function(client, bufnr)
+  require("lsp-format").on_attach(client)
 
   local buf_opts = { buffer = bufnr }
   nmap("gD", vim.lsp.buf.declaration, buf_opts)
@@ -1143,8 +1184,8 @@ require("lualine").setup({
 
 require("flutter-tools").setup({
   lsp = {
-    on_attach = on_attach
-  }
+    on_attach = on_attach,
+  },
 })
 
 bistahieversor.setup({ maxcount = 1000, echo_wrapscan = true })
@@ -1237,7 +1278,7 @@ xmap("v", "$h")
 xmap("<ESC>", "o<ESC>")
 nmap("gv", "gvo")
 
-nmap("<Space>.", [[<cmd>e $MYVIMRC<CR>]])
+nmap("<Space>.", [[<CMD>e $MYVIMRC<CR>]])
 
 nxmap("j", "gj")
 nxmap("k", "gk")
@@ -1247,7 +1288,7 @@ nmap("die", "ggdG")
 nmap("cie", "ggcG")
 nmap("vie", "ggVG")
 
-map(';', ':')
+map(";", ":")
 
 nmap("gF", "<Cmd>vertical botright wincmd F<CR>")
 
@@ -1302,6 +1343,9 @@ nmap("<A-l>", [[<C-w>l]])
 nmap("<A-j>", [[<C-w>j]])
 nmap("<A-k>", [[<C-w>k]])
 
+-- タイプミスでWindowを閉じる子と何度かあったのでNop
+nmap("<C-w><C-q>", [[<Nop>]])
+
 -- setting
 vim.opt.undofile = true
 vim.opt.undodir = vim.env.XDG_STATE_HOME .. "/nvim/undo/"
@@ -1355,7 +1399,6 @@ vim.opt.formatoptions = "tcroqmMj"
 vim.opt.fixendofline = false
 
 vim.opt.mouse = "nv"
-vim.opt.mousehide = false
 
 vim.opt.fileencoding = "utf-8"
 
@@ -1437,6 +1480,15 @@ nmap("ZZ", function()
   end
 end)
 
+nmap("ZQ", function()
+  cmd("only")
+  cmd("e /home/rapan931/repos/github.com/rapan931/atcoder/main.go")
+  cmd("vsp input")
+  cmd("sp output")
+  cmd("sp")
+  cmd("terminal")
+end)
+
 vim.g.lexima_map_escape = ""
 vim.g.lexima_enable_endwise_rules = false
 vim.g.lexima_accept_pum_with_enter = false
@@ -1497,12 +1549,13 @@ call("lexima#add_rule", { filetype = "lua", char = "<Space>", at = [[\<pp\%#]], 
 call("lexima#add_rule", { filetype = "vim", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>echo <Space>" })
 call("lexima#add_rule", { filetype = "python", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>print()<Left>" })
 call("lexima#add_rule", { filetype = "go", char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS>fmt.Println()<Left>" })
-call(
-  "lexima#add_rule",
-  { filetype = { "typescript", "typescriptreact", "javascript" }, char = "<Space>", at = [[\<pp\%#]], input = "<BS><BS><BS>console.log()<Left>" }
-)
+call("lexima#add_rule", {
+  filetype = { "typescript", "typescriptreact", "javascript" },
+  char = "<Space>",
+  at = [[\<pp\%#]],
+  input = "<BS><BS><BS>console.log()<Left>",
+})
 
 imap("<S-CR>", function() return "<End>" .. call("lexima#expand", "<LT>CR>", "i") end, { expr = true, remap = true, silent = true })
 
--- cmd("colorscheme catppuccin-macchiato")
 cmd("colorscheme tokyonight")
