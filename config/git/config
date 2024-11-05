@@ -45,5 +45,6 @@
 	editor = nvim
 [push]
 	useForceIfIncludes = true
+	default = current
 [commit]
 	template = /home/rapan931/.config/git/.gitmessage

@@ -12,65 +12,47 @@ end
 ---@param lhs string
 ---@param rhs string | function
 ---@param ... table options
-M.nmap = function(lhs, rhs, ...)
-  vim.keymap.set("n", lhs, rhs, ...)
-end
+M.nmap = function(lhs, rhs, ...) vim.keymap.set("n", lhs, rhs, ...) end
 
 ---@param lhs string
 ---@param rhs string | function
 ---@param ... table options
-M.tmap = function(lhs, rhs, ...)
-  vim.keymap.set("t", lhs, rhs, ...)
-end
+M.tmap = function(lhs, rhs, ...) vim.keymap.set("t", lhs, rhs, ...) end
 
 ---@param lhs string
 ---@param rhs string | function
 ---@param ... table options
-M.omap = function(lhs, rhs, ...)
-  vim.keymap.set("o", lhs, rhs, ...)
-end
+M.omap = function(lhs, rhs, ...) vim.keymap.set("o", lhs, rhs, ...) end
 
 ---@param lhs string
 ---@param rhs string | function
 ---@param ... table options
-M.xmap = function(lhs, rhs, ...)
-  vim.keymap.set("x", lhs, rhs, ...)
-end
+M.xmap = function(lhs, rhs, ...) vim.keymap.set("x", lhs, rhs, ...) end
 
 ---@param lhs string
 ---@param rhs string | function
 ---@param ... table options
-M.imap = function(lhs, rhs, ...)
-  vim.keymap.set("i", lhs, rhs, ...)
-end
+M.imap = function(lhs, rhs, ...) vim.keymap.set("i", lhs, rhs, ...) end
 
 ---@param lhs string
 ---@param rhs string | function
 ---@param ... table options
-M.cmap = function(lhs, rhs, ...)
-  vim.keymap.set("c", lhs, rhs, ...)
-end
+M.cmap = function(lhs, rhs, ...) vim.keymap.set("c", lhs, rhs, ...) end
 
 ---@param lhs string
 ---@param rhs string | function
 ---@param ... table options
-M.smap = function(lhs, rhs, ...)
-  vim.keymap.set("s", lhs, rhs, ...)
-end
+M.smap = function(lhs, rhs, ...) vim.keymap.set("s", lhs, rhs, ...) end
 
 ---@param lhs string
 ---@param rhs string | function
 ---@param ... table options
-M.map = function(lhs, rhs, ...)
-  vim.keymap.set({ "n", "x", "o" }, lhs, rhs, ...)
-end
+M.map = function(lhs, rhs, ...) vim.keymap.set({ "n", "x", "o" }, lhs, rhs, ...) end
 
 ---@param lhs string
 ---@param rhs string | function
 ---@param ... table options
-M.nxmap = function(lhs, rhs, ...)
-  vim.keymap.set({ "n", "x" }, lhs, rhs, ...)
-end
+M.nxmap = function(lhs, rhs, ...) vim.keymap.set({ "n", "x" }, lhs, rhs, ...) end
 
 ---@param lhs string
 ---@param rhs string | function

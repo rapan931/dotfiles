@@ -31,25 +31,25 @@ local wezterm = require("wezterm")
 -- end)
 --
 
--- local wsl_domains = wezterm.default_wsl_domains()
--- home_dir = ""
--- for _, dom in ipairs(wsl_domains) do
---   if dom.name == "WSL:Ubuntu" then
---     home_dir = dom.default_cwd
---   end
--- end
--- wezterm.log_info(home_dir)
+local wsl_domains = wezterm.default_wsl_domains()
+
+for _, dom in ipairs(wsl_domains) do
+    dom.default_cwd = "~"
+end
 
 return {
   -- allow_win32_input_mode = true,
   -- enable_csi_u_key_encoding = true,
+  wsl_domains = wsl_domains,
   window_close_confirmation = "NeverPrompt",
   skip_close_confirmation_for_processes_named = { "bash", "sh", "zsh", "fish", "tmux", "nu", "cmd.exe", "pwsh.exe", "powershell.exe" },
-  window_background_opacity = 0.9,
+  window_background_opacity = 0.85,
+  text_background_opacity = 0.9,
   font_size = 12,
   hide_tab_bar_if_only_one_tab = true,
   color_scheme = "iceberg-dark",
-  default_prog = { "wsl.exe", "~", "-d", "Ubuntu" },
+  default_domain = "WSL:NeoUbuntu",
+  -- default_prog = { "wsl.exe", "-u", "rapan931"},
   font = wezterm.font("Cica", { weight = "Regular", stretch = "Normal", style = "Normal" }),
   use_ime = true,
   initial_cols = 200,
@@ -61,7 +61,7 @@ return {
     bottom = 0,
   },
   launch_menu = {
-    { label = "Command Prompt", args = { "cmd.exe" } },
+    { label = 'Command Prompt', args = { 'cmd.exe' } },
   },
   keys = {
     { key = "-", mods = "ALT", action = wezterm.action({ SplitVertical = { domain = "CurrentPaneDomain" } }) },
@@ -77,6 +77,7 @@ return {
     { key = "Enter", mods = "ALT", action = "QuickSelect" },
     { key = "Enter", mods = "CTRL", action = wezterm.action.SendString("\x1b[13;5u") },
     { key = "Enter", mods = "SHIFT", action = wezterm.action.SendString("\x1b[13;2u") },
-    { key = "l", mods = "ALT", action = wezterm.action.ShowLauncher },
+    -- { key = 'l', mods = 'ALT', action = wezterm.action.ShowLauncher },
+    { key = 'n', mods = 'ALT', action = wezterm.action.DisableDefaultAssignment },
   },
 }
